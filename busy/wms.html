@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>WareFlow WMS · 창고관제</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0c1014;color:#d0d8e0;font-family:'맑은 고딕','Segoe UI',sans-serif;font-size:12px;overflow:hidden}
+.app{display:grid;grid-template-rows:32px 1fr 22px;height:100vh}
+.tb{background:linear-gradient(180deg,#0f2a1a,#081810);border-bottom:1px solid #1a4028;color:#a0d0b0;display:flex;align-items:center;padding:0 12px;font-size:12px;gap:14px}
+.tb b{color:#4cff88}
+.tb .sh{margin-left:auto;color:#80a090}
+
+.main{display:grid;grid-template-columns:1fr 1.3fr 340px;gap:1px;background:#1a2028;padding:1px;overflow:hidden}
+.panel{background:#121820;border:1px solid #1a2530;padding:8px;overflow:hidden;display:flex;flex-direction:column}
+.panel h4{color:#4cff88;font-size:10.5px;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #1a4028;display:flex;align-items:center;gap:6px}
+.panel h4 .cnt{margin-left:auto;background:#1a4028;color:#4cff88;padding:1px 7px;border-radius:9px;font-size:10px}
+
+/* KPI row */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin-bottom:8px}
+.kpi{background:#0a1218;padding:6px 10px;border:1px solid #1a2530}
+.kpi .l{color:#80a090;font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.kpi .v{font-size:20px;font-weight:800;color:#fff;font-family:'Consolas',monospace}
+.kpi .v.g{color:#4cff88}
+.kpi .v.r{color:#ff6a60}
+.kpi .v.y{color:#ffc850}
+.kpi .d{font-size:9.5px;color:#80a090}
+
+/* order table */
+.ord{overflow-y:auto;font-size:11px}
+table.ot{width:100%;border-collapse:collapse;font-size:11px}
+table.ot th{background:#1a4028;color:#a0d0b0;padding:3px 5px;text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:1px;position:sticky;top:0;border-bottom:1px solid #4cff88}
+table.ot td{padding:3px 5px;border-bottom:1px solid #1a2028;font-family:'Consolas',monospace;font-size:10.5px}
+table.ot td.n{text-align:right}
+table.ot .s-pick{color:#ffc850}
+table.ot .s-pack{color:#4cc2ff}
+table.ot .s-ship{color:#4cff88}
+table.ot .s-hold{color:#ff6a60}
+table.ot .urg{background:rgba(255,106,96,0.1)}
+.pri{padding:0 5px;border-radius:2px;font-size:9px;font-weight:700}
+.pri.p1{background:#c01818;color:#fff}
+.pri.p2{background:#c07020;color:#fff}
+.pri.p3{background:#2060a0;color:#fff}
+
+/* warehouse map */
+.map-wrap{flex:1;background:#081014;border:1px solid #1a2530;position:relative;overflow:hidden;padding:6px}
+.wh-grid{display:grid;grid-template-columns:60px repeat(12,1fr) 60px;grid-template-rows:22px repeat(6,1fr) 60px;gap:2px;height:100%;font-size:9px}
+.wh-cell{background:#0f1820;border:1px solid #1a2530;display:flex;align-items:center;justify-content:center;color:#6a8090;font-family:'Consolas',monospace;font-size:9px;position:relative}
+.wh-aisle{background:#0a0e14;color:#4cc2ff;font-weight:700;font-size:9px}
+.wh-zone{background:#1a2028;color:#a0d0b0;font-weight:700;letter-spacing:1px}
+
+/* rack cells */
+.rack{background:#1a2c20;border:1px solid #2a5038;color:#a0d0b0;display:flex;flex-direction:column;justify-content:center;padding:2px;font-size:8.5px;position:relative}
+.rack .id{color:#80a090;font-size:8px}
+.rack .p{font-weight:700;color:#4cff88}
+.rack.f60{background:#254028;border-color:#4cff88}.rack.f60 .p{color:#4cff88}
+.rack.f80{background:#4a6020;border-color:#ffc850}.rack.f80 .p{color:#ffc850}
+.rack.f95{background:#6a2820;border-color:#ff6a60}.rack.f95 .p{color:#ff8a80}
+.rack.empty{background:#0f1820;border-color:#1a2530;color:#4a5a6a}
+
+/* AGV / forklift on map */
+.agv{position:absolute;width:14px;height:10px;border-radius:2px;display:flex;align-items:center;justify-content:center;color:#000;font-size:7px;font-weight:800;z-index:5;box-shadow:0 0 6px currentColor;animation:blink 1.8s infinite}
+.agv.busy{background:#4cff88}
+.agv.idle{background:#ffc850}
+.agv.charge{background:#ff6a60;animation:none}
+@keyframes blink{50%{opacity:0.7}}
+
+.map-legend{position:absolute;top:8px;right:14px;background:rgba(10,14,20,0.9);border:1px solid #1a4028;padding:5px 8px;font-size:9.5px;line-height:1.7;color:#a0d0b0;z-index:10}
+.map-legend .sw{display:inline-block;width:10px;height:10px;margin-right:4px;vertical-align:-1px;border-radius:1px}
+
+/* right side */
+.ship-sched{font-size:11px}
+.dock{display:grid;grid-template-columns:40px 1fr auto;gap:4px;padding:4px;border-bottom:1px solid #1a2028;align-items:center;font-size:10.5px}
+.dock .did{background:#1a4028;color:#4cff88;padding:3px 0;text-align:center;font-weight:700;font-family:'Consolas',monospace}
+.dock.loading{background:rgba(76,255,136,0.08)}
+.dock.wait{background:rgba(255,200,80,0.08)}
+.dock .info b{color:#fff}
+.dock .info .carrier{color:#80a090;font-size:10px}
+.dock .t{font-family:'Consolas',monospace;font-weight:700}
+.dock .t.live{color:#4cff88;animation:blink 2s infinite}
+.dock .t.late{color:#ff6a60}
+.prog{height:3px;background:#1a2028;margin-top:3px;overflow:hidden}
+.prog i{display:block;height:100%;background:#4cff88}
+
+/* pickers */
+.pickers{font-size:11px}
+.pk{display:grid;grid-template-columns:26px 1fr auto auto;gap:6px;padding:4px 2px;border-bottom:1px solid #1a2028;align-items:center}
+.pk .av{width:22px;height:22px;border-radius:50%;background:#1a4028;color:#4cff88;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px}
+.pk .nm{color:#fff;font-weight:600;font-size:11px}
+.pk .st{font-size:9.5px;color:#80a090}
+.pk .rate{font-family:'Consolas',monospace;color:#4cff88;font-size:11px;font-weight:700}
+.pk .bar{width:60px;height:3px;background:#1a2028;margin-top:2px}
+.pk .bar i{display:block;height:100%;background:#4cff88}
+
+/* exceptions */
+.exc{font-size:11px}
+.ex{padding:4px 6px;margin-bottom:2px;border-left:3px solid;font-size:10.5px}
+.ex.e{background:rgba(255,106,96,0.1);border-color:#ff6a60}
+.ex.w{background:rgba(255,200,80,0.08);border-color:#ffc850}
+.ex .ts{color:#80a090;font-size:9.5px}
+.ex b{color:#fff}
+
+/* inbound/outbound chart */
+.bar-chart{display:grid;grid-template-columns:repeat(24,1fr);gap:1px;align-items:end;height:62px;padding:0 2px;margin-top:4px}
+.bar-chart .b{background:#1a4028;min-height:2px;position:relative}
+.bar-chart .b::after{content:attr(data-v);position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:8px;color:#80a090;display:none}
+.bc-labels{display:grid;grid-template-columns:repeat(24,1fr);font-size:8px;color:#6a8090;text-align:center;margin-top:2px}
+
+.sbar{background:#0a0e14;border-top:1px solid #1a4028;display:flex;align-items:center;padding:0 12px;font-size:10.5px;gap:16px;color:#80a090}
+.sbar .on{color:#4cff88}
+.sbar .w{color:#ffc850}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="table" data-title="창고 재고 — WMS" data-favicon="📦">
+<div class="app">
+  <div class="tb">
+    <span><b>⊞ WareFlow WMS</b> · 노바필드 경기물류센터 [NVF-ICN-02]</span>
+    <span>근무조: 야간 22:00-07:00 · 조장: 최민기</span>
+    <span style="color:#4cff88">● 운영중</span>
+    <span class="sh">2024-09-28 03:18:42 · SKU 48,284 · 팔레트 12,842</span>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><div class="l">금일 입고</div><div class="v g">284</div><div class="d">팔레트 · +18</div></div>
+        <div class="kpi"><div class="l">금일 출고</div><div class="v g">1,428</div><div class="d">박스 · 목표 92%</div></div>
+        <div class="kpi"><div class="l">처리중</div><div class="v y">348</div><div class="d">오더</div></div>
+      </div>
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><div class="l">적재율</div><div class="v y">84.2%</div><div class="d">총 15,248 로케</div></div>
+        <div class="kpi"><div class="l">피킹 정확도</div><div class="v g">99.4%</div><div class="d">24h 평균</div></div>
+        <div class="kpi"><div class="l">미출고 지연</div><div class="v r">7</div><div class="d">오더 · 2h+ 경과</div></div>
+      </div>
+
+      <h4>📦 작업 오더 (Wave WV-2409-28-N1) <span class="cnt">348</span></h4>
+      <div class="ord">
+        <table class="ot">
+          <thead><tr><th>주문번호</th><th>거래처</th><th>SKU</th><th class="n">수량</th><th>우선</th><th>상태</th><th>위치</th></tr></thead>
+          <tbody>
+            <tr class="urg"><td>SO-248104</td><td>쿠팡 FC5</td><td>18</td><td class="n">184</td><td><span class="pri p1">긴급</span></td><td class="s-pick">피킹중</td><td>A03-04</td></tr>
+            <tr class="urg"><td>SO-248103</td><td>롯데ON</td><td>42</td><td class="n">628</td><td><span class="pri p1">긴급</span></td><td class="s-pick">피킹중</td><td>B07-12</td></tr>
+            <tr><td>SO-248102</td><td>네이버 NFA</td><td>12</td><td class="n">248</td><td><span class="pri p2">HI</span></td><td class="s-pack">포장</td><td>DOCK-3</td></tr>
+            <tr><td>SO-248101</td><td>SSG.COM</td><td>7</td><td class="n">94</td><td><span class="pri p2">HI</span></td><td class="s-pack">포장</td><td>DOCK-5</td></tr>
+            <tr><td>SO-248100</td><td>29CM</td><td>24</td><td class="n">312</td><td><span class="pri p3">일반</span></td><td class="s-pick">피킹중</td><td>C02-08</td></tr>
+            <tr><td>SO-248099</td><td>무신사</td><td>18</td><td class="n">248</td><td><span class="pri p3">일반</span></td><td class="s-pick">피킹중</td><td>A08-01</td></tr>
+            <tr><td>SO-248098</td><td>현대H몰</td><td>6</td><td class="n">42</td><td><span class="pri p3">일반</span></td><td class="s-ship">상차중</td><td>DOCK-2</td></tr>
+            <tr><td>SO-248097</td><td>쿠팡 FC3</td><td>84</td><td class="n">1,248</td><td><span class="pri p2">HI</span></td><td class="s-pick">피킹중</td><td>D01-14</td></tr>
+            <tr class="urg"><td>SO-248096</td><td>오아시스</td><td>4</td><td class="n">28</td><td><span class="pri p1">긴급</span></td><td class="s-hold">HOLD</td><td>미확보</td></tr>
+            <tr><td>SO-248095</td><td>마켓컬리</td><td>28</td><td class="n">482</td><td><span class="pri p2">HI</span></td><td class="s-pick">할당완료</td><td>B04-07</td></tr>
+            <tr><td>SO-248094</td><td>11번가</td><td>12</td><td class="n">184</td><td><span class="pri p3">일반</span></td><td class="s-ship">상차완료</td><td>DOCK-1</td></tr>
+            <tr><td>SO-248093</td><td>GS SHOP</td><td>8</td><td class="n">120</td><td><span class="pri p3">일반</span></td><td class="s-pack">포장대기</td><td>STG-02</td></tr>
+            <tr><td>SO-248092</td><td>하프클럽</td><td>42</td><td class="n">618</td><td><span class="pri p3">일반</span></td><td class="s-pick">피킹중</td><td>C08-03</td></tr>
+            <tr><td>SO-248091</td><td>오늘의집</td><td>6</td><td class="n">42</td><td><span class="pri p2">HI</span></td><td class="s-ship">상차중</td><td>DOCK-4</td></tr>
+            <tr><td>SO-248090</td><td>올리브영</td><td>124</td><td class="n">2,480</td><td><span class="pri p2">HI</span></td><td class="s-pick">피킹중</td><td>A01-A12</td></tr>
+            <tr><td>SO-248089</td><td>W컨셉</td><td>18</td><td class="n">142</td><td><span class="pri p3">일반</span></td><td class="s-pick">대기</td><td>B03-18</td></tr>
+            <tr><td>SO-248088</td><td>지그재그</td><td>9</td><td class="n">68</td><td><span class="pri p3">일반</span></td><td class="s-pick">대기</td><td>A04-02</td></tr>
+            <tr><td>SO-248087</td><td>CJ온스타일</td><td>14</td><td class="n">184</td><td><span class="pri p3">일반</span></td><td class="s-pack">포장대기</td><td>STG-04</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="margin-top:8px">📈 시간대별 처리량 (박스/시간)</h4>
+      <div class="bar-chart">
+        <div class="b" style="height:22%"></div>
+        <div class="b" style="height:18%"></div>
+        <div class="b" style="height:20%"></div>
+        <div class="b" style="height:28%"></div>
+        <div class="b" style="height:42%"></div>
+        <div class="b" style="height:68%"></div>
+        <div class="b" style="height:84%"></div>
+        <div class="b" style="height:94%"></div>
+        <div class="b" style="height:72%"></div>
+        <div class="b" style="height:64%"></div>
+        <div class="b" style="height:58%"></div>
+        <div class="b" style="height:42%"></div>
+        <div class="b" style="height:38%"></div>
+        <div class="b" style="height:48%"></div>
+        <div class="b" style="height:52%"></div>
+        <div class="b" style="height:64%"></div>
+        <div class="b" style="height:78%"></div>
+        <div class="b" style="height:88%"></div>
+        <div class="b" style="height:94%"></div>
+        <div class="b" style="height:84%;background:#4cff88"></div>
+        <div class="b" style="height:72%;background:#4cff88"></div>
+        <div class="b" style="height:54%;background:#4cff88"></div>
+        <div class="b" style="height:42%;background:#4cff88"></div>
+        <div class="b" style="height:28%;background:#4cff88;opacity:0.5"></div>
+      </div>
+      <div class="bc-labels">
+        <span>0</span><span></span><span>2</span><span></span><span>4</span><span></span><span>6</span><span></span><span>8</span><span></span><span>10</span><span></span><span>12</span><span></span><span>14</span><span></span><span>16</span><span></span><span>18</span><span></span><span>20</span><span></span><span>22</span><span></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>🏭 창고 실시간 레이아웃 <span class="cnt">AREA-A · 1F</span></h4>
+      <div class="map-wrap">
+        <div class="wh-grid">
+          <!-- row 1 -->
+          <div class="wh-cell wh-zone">ZONE</div>
+          <div class="wh-cell wh-aisle" style="grid-column:2/14">— 통로 MAIN-N →</div>
+          <div class="wh-cell wh-zone">OUT</div>
+
+          <!-- row 2 A aisle -->
+          <div class="wh-cell wh-zone">A 존</div>
+          <div class="rack f80"><span class="id">A01</span><span class="p">84%</span></div>
+          <div class="rack f60"><span class="id">A02</span><span class="p">62%</span></div>
+          <div class="rack f95"><span class="id">A03</span><span class="p">94%</span></div>
+          <div class="rack f80"><span class="id">A04</span><span class="p">78%</span></div>
+          <div class="rack f60"><span class="id">A05</span><span class="p">52%</span></div>
+          <div class="rack f80"><span class="id">A06</span><span class="p">72%</span></div>
+          <div class="rack f95"><span class="id">A07</span><span class="p">98%</span></div>
+          <div class="rack f60"><span class="id">A08</span><span class="p">48%</span></div>
+          <div class="rack f80"><span class="id">A09</span><span class="p">82%</span></div>
+          <div class="rack f60"><span class="id">A10</span><span class="p">64%</span></div>
+          <div class="rack empty"><span class="id">A11</span><span class="p">0%</span></div>
+          <div class="rack f60"><span class="id">A12</span><span class="p">54%</span></div>
+          <div class="wh-cell wh-aisle" style="grid-row:2/5">통<br>로<br>E</div>
+
+          <!-- row 3 B -->
+          <div class="wh-cell wh-zone">B 존</div>
+          <div class="rack f60"><span class="id">B01</span><span class="p">68%</span></div>
+          <div class="rack f80"><span class="id">B02</span><span class="p">84%</span></div>
+          <div class="rack f60"><span class="id">B03</span><span class="p">58%</span></div>
+          <div class="rack f95"><span class="id">B04</span><span class="p">92%</span></div>
+          <div class="rack f80"><span class="id">B05</span><span class="p">76%</span></div>
+          <div class="rack f60"><span class="id">B06</span><span class="p">44%</span></div>
+          <div class="rack f95"><span class="id">B07</span><span class="p">98%</span></div>
+          <div class="rack f80"><span class="id">B08</span><span class="p">82%</span></div>
+          <div class="rack f60"><span class="id">B09</span><span class="p">38%</span></div>
+          <div class="rack empty"><span class="id">B10</span><span class="p">0%</span></div>
+          <div class="rack f60"><span class="id">B11</span><span class="p">58%</span></div>
+          <div class="rack f80"><span class="id">B12</span><span class="p">74%</span></div>
+
+          <!-- row 4 C -->
+          <div class="wh-cell wh-zone">C 존</div>
+          <div class="rack f80"><span class="id">C01</span><span class="p">80%</span></div>
+          <div class="rack f60"><span class="id">C02</span><span class="p">54%</span></div>
+          <div class="rack f80"><span class="id">C03</span><span class="p">82%</span></div>
+          <div class="rack f60"><span class="id">C04</span><span class="p">64%</span></div>
+          <div class="rack f95"><span class="id">C05</span><span class="p">96%</span></div>
+          <div class="rack f80"><span class="id">C06</span><span class="p">74%</span></div>
+          <div class="rack f60"><span class="id">C07</span><span class="p">68%</span></div>
+          <div class="rack f80"><span class="id">C08</span><span class="p">84%</span></div>
+          <div class="rack f95"><span class="id">C09</span><span class="p">92%</span></div>
+          <div class="rack f60"><span class="id">C10</span><span class="p">52%</span></div>
+          <div class="rack f80"><span class="id">C11</span><span class="p">78%</span></div>
+          <div class="rack f60"><span class="id">C12</span><span class="p">62%</span></div>
+
+          <!-- row 5 aisle -->
+          <div class="wh-cell wh-zone">통로</div>
+          <div class="wh-cell wh-aisle" style="grid-column:2/14">— 통로 MAIN-S · AGV lane →</div>
+          <div class="wh-cell wh-aisle">통로 W</div>
+
+          <!-- row 6 D/E -->
+          <div class="wh-cell wh-zone">D 냉장</div>
+          <div class="rack f80"><span class="id">D01</span><span class="p">82%</span></div>
+          <div class="rack f60"><span class="id">D02</span><span class="p">48%</span></div>
+          <div class="rack f80"><span class="id">D03</span><span class="p">78%</span></div>
+          <div class="rack f60"><span class="id">D04</span><span class="p">52%</span></div>
+          <div class="rack f80"><span class="id">D05</span><span class="p">72%</span></div>
+          <div class="rack f60"><span class="id">D06</span><span class="p">48%</span></div>
+          <div class="rack f60"><span class="id">D07</span><span class="p">58%</span></div>
+          <div class="rack empty"><span class="id">D08</span><span class="p">0%</span></div>
+          <div class="rack f80"><span class="id">D09</span><span class="p">76%</span></div>
+          <div class="rack f60"><span class="id">D10</span><span class="p">62%</span></div>
+          <div class="rack f95"><span class="id">D11</span><span class="p">94%</span></div>
+          <div class="rack f80"><span class="id">D12</span><span class="p">84%</span></div>
+
+          <!-- row 7 dock -->
+          <div class="wh-cell wh-zone">DOCK</div>
+          <div class="wh-cell" style="background:#1a4028;color:#4cff88;font-weight:700">D1<br><span style="font-size:8px">상차중</span></div>
+          <div class="wh-cell" style="background:#1a4028;color:#4cff88;font-weight:700">D2<br><span style="font-size:8px">상차중</span></div>
+          <div class="wh-cell" style="background:#4a3818;color:#ffc850;font-weight:700">D3<br><span style="font-size:8px">대기</span></div>
+          <div class="wh-cell" style="background:#1a4028;color:#4cff88;font-weight:700">D4<br><span style="font-size:8px">상차중</span></div>
+          <div class="wh-cell" style="background:#1a4028;color:#4cff88;font-weight:700">D5<br><span style="font-size:8px">포장중</span></div>
+          <div class="wh-cell" style="background:#0f1820;color:#6a8090">D6<br><span style="font-size:8px">빈곳</span></div>
+          <div class="wh-cell" style="background:#6a2820;color:#ffa0a0;font-weight:700">D7<br><span style="font-size:8px">점검중</span></div>
+          <div class="wh-cell" style="background:#0f1820;color:#6a8090">D8<br><span style="font-size:8px">빈곳</span></div>
+          <div class="wh-cell" style="background:#1a4028;color:#4cff88;font-weight:700">D9<br><span style="font-size:8px">상차완료</span></div>
+          <div class="wh-cell" style="background:#0f1820;color:#6a8090">D10<br><span style="font-size:8px">-</span></div>
+          <div class="wh-cell" style="background:#4a3818;color:#ffc850;font-weight:700">D11<br><span style="font-size:8px">대기</span></div>
+          <div class="wh-cell" style="background:#1a4028;color:#4cff88;font-weight:700">D12<br><span style="font-size:8px">검수</span></div>
+          <div class="wh-cell wh-zone">집하</div>
+        </div>
+
+        <!-- AGVs -->
+        <div class="agv busy" style="top:32%;left:18%">A1</div>
+        <div class="agv busy" style="top:32%;left:42%">A2</div>
+        <div class="agv busy" style="top:50%;left:62%">A3</div>
+        <div class="agv idle" style="top:68%;left:24%">A4</div>
+        <div class="agv busy" style="top:68%;left:78%">A5</div>
+        <div class="agv charge" style="top:86%;left:6%">A6</div>
+        <div class="agv idle" style="top:14%;left:88%">A7</div>
+
+        <div class="map-legend">
+          <div><span class="sw" style="background:#1a2c20;border:1px solid #4cff88"></span>가용 &lt;70%</div>
+          <div><span class="sw" style="background:#4a6020"></span>주의 70-90%</div>
+          <div><span class="sw" style="background:#6a2820"></span>포화 90%+</div>
+          <div><span class="sw" style="background:#4cff88;border-radius:2px"></span>AGV 작업중</div>
+          <div><span class="sw" style="background:#ffc850;border-radius:2px"></span>AGV 대기</div>
+          <div><span class="sw" style="background:#ff6a60;border-radius:2px"></span>충전중</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>🚚 상차 스케줄 <span class="cnt">금일 84</span></h4>
+      <div class="ship-sched" style="max-height:200px;overflow-y:auto">
+        <div class="dock loading">
+          <div class="did">D1</div>
+          <div class="info"><b>쿠팡 FC5 · 08.5톤</b><br>
+            <span class="carrier">(주)한진 52바4218</span>
+            <div class="prog"><i style="width:62%"></i></div>
+          </div>
+          <div class="t live">03:24</div>
+        </div>
+        <div class="dock loading">
+          <div class="did">D2</div>
+          <div class="info"><b>롯데ON · 05톤</b><br>
+            <span class="carrier">롯데글로벌 34하8820</span>
+            <div class="prog"><i style="width:84%"></i></div>
+          </div>
+          <div class="t live">03:38</div>
+        </div>
+        <div class="dock wait">
+          <div class="did">D3</div>
+          <div class="info"><b>네이버 NFA · 11톤</b><br>
+            <span class="carrier">CJ대한통운 82조2048 · 게이트대기</span>
+          </div>
+          <div class="t">04:00</div>
+        </div>
+        <div class="dock loading">
+          <div class="did">D4</div>
+          <div class="info"><b>29CM · 03.5톤</b><br>
+            <span class="carrier">로젠택배 28어1184</span>
+            <div class="prog"><i style="width:34%"></i></div>
+          </div>
+          <div class="t live">04:15</div>
+        </div>
+        <div class="dock loading">
+          <div class="did">D5</div>
+          <div class="info"><b>SSG.COM · 08톤 (포장중)</b><br>
+            <span class="carrier">물류배차 대기</span>
+            <div class="prog"><i style="width:22%"></i></div>
+          </div>
+          <div class="t">04:30</div>
+        </div>
+        <div class="dock wait">
+          <div class="did">D9</div>
+          <div class="info"><b>오아시스 · 05톤</b><br>
+            <span class="carrier">SR로지스 82차0114 · 상차완료</span>
+          </div>
+          <div class="t" style="color:#4cff88">완료 ✓</div>
+        </div>
+        <div class="dock" style="background:rgba(255,106,96,0.1)">
+          <div class="did" style="background:#6a2820;color:#ffa0a0">D11</div>
+          <div class="info"><b>마켓컬리 · 냉장 04톤</b><br>
+            <span class="carrier" style="color:#ff8a80">차량 지연 48분 (도로공사)</span>
+          </div>
+          <div class="t late">04:48</div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:8px">👷 피커 현황 <span class="cnt">야간 12명</span></h4>
+      <div class="pickers" style="max-height:200px;overflow-y:auto">
+        <div class="pk"><div class="av">최</div>
+          <div><div class="nm">최민기 (조장)</div><div class="st">감독 · A존 순회</div></div>
+          <div class="rate">—</div><div></div></div>
+        <div class="pk"><div class="av">박</div>
+          <div><div class="nm">박준호</div><div class="st">A03 · 카트08</div><div class="bar"><i style="width:84%"></i></div></div>
+          <div class="rate">142/h</div><div style="font-size:9px;color:#4cff88">+18%</div></div>
+        <div class="pk"><div class="av">김</div>
+          <div><div class="nm">김서진</div><div class="st">B07 · 카트12</div><div class="bar"><i style="width:92%"></i></div></div>
+          <div class="rate">158/h</div><div style="font-size:9px;color:#4cff88">+24%</div></div>
+        <div class="pk"><div class="av">이</div>
+          <div><div class="nm">이도현</div><div class="st">C02 · 카트04</div><div class="bar"><i style="width:58%"></i></div></div>
+          <div class="rate">98/h</div><div style="font-size:9px;color:#ffc850">-8%</div></div>
+        <div class="pk"><div class="av">정</div>
+          <div><div class="nm">정유진</div><div class="st">D01 (냉장) · RF-PDA</div><div class="bar"><i style="width:72%"></i></div></div>
+          <div class="rate">112/h</div><div style="font-size:9px;color:#4cff88">+4%</div></div>
+        <div class="pk"><div class="av">한</div>
+          <div><div class="nm">한지민</div><div class="st">A08 · 카트02</div><div class="bar"><i style="width:68%"></i></div></div>
+          <div class="rate">108/h</div><div></div></div>
+        <div class="pk"><div class="av">윤</div>
+          <div><div class="nm">윤태양</div><div class="st">포장존 PA-02</div><div class="bar"><i style="width:82%"></i></div></div>
+          <div class="rate">84박스/h</div><div></div></div>
+        <div class="pk"><div class="av">조</div>
+          <div><div class="nm">조은비</div><div class="st">검수 STG-03</div><div class="bar"><i style="width:74%"></i></div></div>
+          <div class="rate">94/h</div><div></div></div>
+        <div class="pk"><div class="av">강</div>
+          <div><div class="nm">강민철</div><div class="st">지게차 FK-04</div><div class="bar"><i style="width:48%"></i></div></div>
+          <div class="rate">18팔/h</div><div></div></div>
+      </div>
+
+      <h4 style="margin-top:8px">⚠ 예외/알림 <span class="cnt" style="background:#6a2820;color:#ffa0a0">7</span></h4>
+      <div class="exc">
+        <div class="ex e"><b>재고부족</b> · SKU A-2041 · SO-248096 할당 실패<br><span class="ts">03:14 · 안전재고 미달 (현재 14EA)</span></div>
+        <div class="ex e"><b>바코드 스캔 불량</b> · B07-12 · 라벨 재부착 요청<br><span class="ts">03:08 · 피커 김서진</span></div>
+        <div class="ex w"><b>지게차 FK-06 배터리 &lt;20%</b> · 교체 필요<br><span class="ts">03:02 · 충전스테이션 2번</span></div>
+        <div class="ex w"><b>D11 차량 48분 지연</b> · 마켓컬리 냉장 편<br><span class="ts">02:54 · 도로공사 영향</span></div>
+        <div class="ex w"><b>A11 로케이션 공실</b> · 보충 작업 필요<br><span class="ts">02:42 · D+1 회전율 저하 예상</span></div>
+        <div class="ex w"><b>온도 이상</b> · D존 냉장 4.2℃ (기준 2-4℃)<br><span class="ts">02:28 · 관리자 알림 발송</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <span class="on">● WMS OK · ERP 연동 OK · TMS 연동 OK</span>
+    <span>AGV 7대 운영 (1대 충전)</span>
+    <span>지게차 12대 가동</span>
+    <span>PDA 연결 28대</span>
+    <span class="w">⚠ 지연 오더 7 · 재고알람 3</span>
+    <span style="margin-left:auto">서버 NVF-WMS-PROD01 · uptime 184d · 처리 28.4K/h</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>받은 편지함 - 박경진 - MailClient</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #faf9f8;
+    --panel: #fff;
+    --border: #e1dfdd;
+    --border-strong: #c8c6c4;
+    --text: #201f1e;
+    --dim: #605e5c;
+    --mute: #8a8886;
+    --accent: #0078d4;
+    --accent-soft: #deecf9;
+    --hover: #f3f2f1;
+    --red: #d13438;
+    --amber: #ca5010;
+    --green: #107c10;
+    --purple: #5c2d91;
+  }
+  html, body {
+    height: 100%;
+    font-family: 'Segoe UI', -apple-system, 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .app { display: grid; grid-template-rows: 30px 44px 1fr 22px; height: 100vh; }
+
+  /* Titlebar */
+  .tb { background: #0078d4; color: #fff; display: flex; align-items: center; padding: 0 12px; font-size: 12px; gap: 14px; }
+  .tb .search { flex: 1; max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; }
+  .tb .search::before { content: '🔍'; font-size: 11px; }
+  .tb .user { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: #b4a7d6; color: #40275b; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; }
+
+  /* Toolbar */
+  .toolbar { background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 12px; gap: 2px; }
+  .tb-btn { padding: 6px 10px; border-radius: 3px; font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--text); }
+  .tb-btn:hover { background: var(--hover); }
+  .tb-btn.primary { background: var(--accent); color: #fff; font-weight: 600; padding: 6px 14px; }
+  .tb-btn .ic { font-size: 14px; }
+  .tb-sep { width: 1px; height: 22px; background: var(--border); margin: 0 6px; }
+
+  /* Main */
+  .main { display: grid; grid-template-columns: 200px 380px 1fr; overflow: hidden; }
+  .pane { background: #fff; border-right: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+  .pane:last-child { border-right: none; }
+
+  /* Sidebar */
+  .folders { padding: 8px 0; font-size: 12px; overflow-y: auto; }
+  .folders .section { padding: 6px 14px 4px; color: var(--mute); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+  .folders .f { padding: 5px 14px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .folders .f:hover { background: var(--hover); }
+  .folders .f.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; border-left: 3px solid var(--accent); padding-left: 11px; }
+  .folders .f .count { margin-left: auto; color: var(--dim); font-size: 11px; }
+  .folders .f.active .count { color: var(--accent); }
+
+  /* List */
+  .list-head { padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--dim); display: flex; justify-content: space-between; align-items: center; }
+  .list-head b { color: var(--text); font-weight: 600; font-size: 13px; }
+  .mail-list { flex: 1; overflow-y: auto; }
+  .mail { padding: 10px 14px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 3px 1fr; gap: 10px; position: relative; }
+  .mail::before { content: ''; background: transparent; }
+  .mail.unread::before { background: var(--accent); }
+  .mail:hover { background: var(--hover); }
+  .mail.active { background: var(--accent-soft); }
+  .mail .body { min-width: 0; }
+  .mail .row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .mail .from { font-weight: 600; font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mail.unread .from { color: var(--accent); }
+  .mail .time { font-size: 11px; color: var(--dim); flex-shrink: 0; }
+  .mail .subj { font-size: 12px; color: var(--text); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .mail.unread .subj { font-weight: 700; }
+  .mail .prev { font-size: 11.5px; color: var(--dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mail .tags { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 1px 6px; border-radius: 9px; background: var(--hover); color: var(--dim); }
+  .tag.red { background: #fde7e9; color: var(--red); }
+  .tag.amber { background: #fff4ce; color: var(--amber); }
+  .tag.green { background: #dff6dd; color: var(--green); }
+  .tag.purple { background: #e8deef; color: var(--purple); }
+  .mail .attach { font-size: 11px; color: var(--mute); }
+
+  /* Reading pane */
+  .reader { display: flex; flex-direction: column; overflow: hidden; }
+  .reader .rhead { padding: 16px 24px 12px; border-bottom: 1px solid var(--border); }
+  .reader .rhead h1 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .reader .meta { display: flex; gap: 12px; align-items: center; margin-bottom: 4px; font-size: 12px; color: var(--dim); }
+  .reader .meta .av { width: 32px; height: 32px; border-radius: 50%; background: #ffc5a1; color: #8a4100; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; }
+  .reader .meta .sender { color: var(--text); font-weight: 600; font-size: 13px; }
+  .reader .meta .email { color: var(--accent); font-size: 11.5px; }
+  .reader .actions { display: flex; gap: 4px; padding: 8px 24px; border-bottom: 1px solid var(--border); }
+  .reader .act { padding: 5px 10px; font-size: 12px; border-radius: 3px; color: var(--text); display: flex; align-items: center; gap: 5px; }
+  .reader .act:hover { background: var(--hover); }
+  .reader .act.primary { color: var(--accent); font-weight: 600; }
+  .reader .content { flex: 1; overflow-y: auto; padding: 20px 24px; font-size: 13px; line-height: 1.7; color: var(--text); }
+  .reader .content p { margin-bottom: 12px; }
+  .reader .content .quote { border-left: 3px solid var(--border-strong); padding: 8px 14px; margin: 14px 0; color: var(--dim); background: #fafafa; font-size: 12px; }
+  .reader .content table { border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+  .reader .content table td, .reader .content table th { border: 1px solid var(--border-strong); padding: 6px 10px; }
+  .reader .content table th { background: #f3f2f1; font-weight: 600; }
+  .reader .content ul { margin: 8px 0 12px 24px; }
+  .reader .content li { margin-bottom: 4px; }
+  .reader .attachments { display: flex; gap: 8px; padding: 10px 24px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .att-card { border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; font-size: 12px; min-width: 160px; }
+  .att-card .ic { font-size: 20px; }
+  .att-card .name { font-weight: 500; }
+  .att-card .size { font-size: 10.5px; color: var(--dim); }
+
+  /* Status */
+  .status { background: #0078d4; color: #fff; display: flex; align-items: center; padding: 0 14px; gap: 16px; font-size: 11px; }
+  .status .spacer { flex: 1; }
+  .status .dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd068; display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.4} }
+  .typing { color: #fff; font-style: italic; opacity: 0.9; }
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="(3) 받은 편지함 — Mail" data-favicon="📧">
+<div class="app">
+  <div class="tb">
+    <span style="font-weight:600">✉ MailClient</span>
+    <div class="search">mail:조건 OR 첨부파일:.xlsx …</div>
+    <div class="user"><span style="opacity:0.85">박경진 · 마케팅본부</span><div class="avatar">KP</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tb-btn primary"><span class="ic">✉</span> 새 메일</div>
+    <div class="tb-sep"></div>
+    <div class="tb-btn"><span class="ic">↩</span> 답장</div>
+    <div class="tb-btn"><span class="ic">↩↩</span> 전체 답장</div>
+    <div class="tb-btn"><span class="ic">→</span> 전달</div>
+    <div class="tb-sep"></div>
+    <div class="tb-btn"><span class="ic">🗑</span> 삭제</div>
+    <div class="tb-btn"><span class="ic">📁</span> 이동</div>
+    <div class="tb-btn"><span class="ic">🚩</span> 플래그</div>
+    <div class="tb-btn"><span class="ic">📌</span> 분류</div>
+    <div class="tb-sep"></div>
+    <div class="tb-btn"><span class="ic">📅</span> 일정 만들기</div>
+    <div class="tb-btn"><span class="ic">🔔</span> 후속 조치</div>
+    <div class="tb-btn" style="margin-left:auto"><span class="ic">⟳</span> 보내기/받기 <span id="lastsync" style="color:var(--dim);font-size:11px">마지막 동기화 방금</span></div>
+  </div>
+
+  <div class="main">
+    <aside class="pane folders">
+      <div class="section">즐겨찾기</div>
+      <div class="f"><span>⭐</span> 플래그 지정됨 <span class="count">12</span></div>
+      <div class="f"><span>📥</span> 받은 편지함 <span class="count">847</span></div>
+      <div class="section">박경진@company.co.kr</div>
+      <div class="f active"><span>📥</span> 받은 편지함 <span class="count" id="inbox-count">847</span></div>
+      <div class="f" style="padding-left:32px">├ 임원 공지 <span class="count">14</span></div>
+      <div class="f" style="padding-left:32px">├ 프로젝트 아폴로 <span class="count">128</span></div>
+      <div class="f" style="padding-left:32px">├ 거래처 <span class="count">64</span></div>
+      <div class="f" style="padding-left:32px">└ 뉴스레터 <span class="count">302</span></div>
+      <div class="f"><span>📝</span> 임시 보관함 <span class="count">7</span></div>
+      <div class="f"><span>📤</span> 보낸 편지함 <span class="count">1,240</span></div>
+      <div class="f"><span>🗃</span> 보관함 <span class="count">4,812</span></div>
+      <div class="f"><span>🚫</span> 정크 메일 <span class="count">23</span></div>
+      <div class="f"><span>🗑</span> 삭제된 항목 <span class="count">58</span></div>
+      <div class="section">검색 폴더</div>
+      <div class="f"><span>🔴</span> 읽지 않음 <span class="count" id="unread-count">42</span></div>
+      <div class="f"><span>📎</span> 첨부 있음 <span class="count">184</span></div>
+      <div class="f"><span>🚩</span> 팔로업 필요 <span class="count">9</span></div>
+      <div class="section">그룹</div>
+      <div class="f"><span>👥</span> 마케팅팀 전체 <span class="count">—</span></div>
+      <div class="f"><span>👥</span> Q2-기획-TF <span class="count">—</span></div>
+      <div class="f"><span>👥</span> 경영진-보고 <span class="count">—</span></div>
+    </aside>
+
+    <section class="pane">
+      <div class="list-head">
+        <b>받은 편지함</b>
+        <span>필터: 전체 ▾ &nbsp; 정렬: 날짜(최신순) ▾</span>
+      </div>
+      <div class="mail-list" id="mail-list"></div>
+    </section>
+
+    <section class="pane reader">
+      <div class="rhead">
+        <h1>Re: [긴급] Q2 전사 실적 리뷰 준비 건 — 최종 데이터 검토 부탁드립니다</h1>
+        <div class="meta">
+          <div class="av">JL</div>
+          <div>
+            <div><span class="sender">장인호 상무</span> <span class="email">&lt;ih.jang@company.co.kr&gt;</span></div>
+            <div style="font-size:11.5px">받는 사람: 박경진; +8명 · 참조: 마케팅팀 전체; 재무팀-임원 · 숨은참조: 대표이사실</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-weight:600;color:var(--text)" id="mail-time">오늘 14:22</div>
+            <div style="font-size:11px">🚩 팔로업: 오늘까지</div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <div class="act primary">↩ 답장</div>
+        <div class="act">↩↩ 전체 답장</div>
+        <div class="act">→ 전달</div>
+        <div class="act">🚩 플래그</div>
+        <div class="act">📌 중요</div>
+        <div class="act">🗑 삭제</div>
+        <div class="act" style="margin-left:auto">⋯</div>
+      </div>
+      <div class="content">
+        <p>박 팀장님,</p>
+        <p>오늘 오후에 공유해주신 <b>Q2_실적분석_v14_최종_수정본_진짜최종.xlsx</b> 잘 받아봤습니다. 내일 오전 경영회의 전에 아래 몇 가지만 <b style="color:var(--red)">빠르게</b> 확인 부탁드립니다.</p>
+        <ul>
+          <li>4월 <b>서울본부 SL-02</b> 실적이 작년 동기 대비 18% 하락한 걸로 집계되는데, 이게 단순 계절성인지 아니면 구조적 요인이 있는지 코멘트 한 줄만 달아주세요.</li>
+          <li>피벗 시트 <code>피벗_2026Q2</code> 의 채널별 구성비에서 <b>직판 비중</b>이 Q1 대비 6.2%p 상승했는데, 관련 배경은 별첨으로 붙여주시면 좋겠습니다.</li>
+          <li>달성률 하단의 <b>YoY 계산식</b>이 일부 셀에서 <code>#REF!</code> 나는 건 확인 부탁드립니다 (아마 원본데이터 시트 레인지 때문으로 보임).</li>
+          <li>지역본부 소계에 <b>강원/제주 GJ-01</b>이 빠진 것 같아요. 데이터 원본 한번 다시 보시는 게 좋을 듯합니다.</li>
+        </ul>
+        <p>보고용 <b>요약 슬라이드 3장</b>(헤드라인/월별 추이/리스크)은 오늘 밤 늦더라도 저한테 먼저 회람 부탁드려요. 내일 아침 7시 전에 임원진 검토해야 합니다.</p>
+        <div class="quote">
+          &gt; &gt; 박 팀장님,<br>
+          &gt; &gt; 내일 회의 자료 요청드립니다. &mdash; 대표이사실 비서 김ㅇㅇ
+        </div>
+        <p>감사합니다.<br><br>
+        <b>장인호</b><br>
+        상무 · 마케팅전략본부<br>
+        company co., ltd.<br>
+        M. 010-XXXX-XXXX &nbsp;|&nbsp; ih.jang@company.co.kr</p>
+      </div>
+      <div class="attachments">
+        <div class="att-card"><span class="ic">📊</span><div><div class="name">Q2_실적분석_v14_최종.xlsx</div><div class="size">4.2 MB · 방금 · 미리보기</div></div></div>
+        <div class="att-card"><span class="ic">📄</span><div><div class="name">본부별_리스크_노트.pdf</div><div class="size">860 KB</div></div></div>
+        <div class="att-card"><span class="ic">🖼</span><div><div class="name">월별추이_차트.png</div><div class="size">318 KB</div></div></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="status">
+    <span><span class="dot"></span>온라인 · Exchange 서버 연결됨</span>
+    <span>사서함 사용량: 8.24 GB / 50 GB</span>
+    <span id="items">받은 항목 847 · 읽지 않음 <b id="unread-b">42</b></span>
+    <span class="spacer"></span>
+    <span class="typing" id="typing">이수민님이 입력 중…</span>
+    <span id="syncmsg">마지막 동기화: 방금 · 다음: 60초 후</span>
+  </div>
+</div>
+
+<script>
+const now = new Date();
+const SENDERS = [
+  {n:'장인호 상무', e:'ih.jang', c:'#ffc5a1'},
+  {n:'이수민 차장', e:'sm.lee', c:'#c5d8ff'},
+  {n:'HR공지', e:'hr-notice', c:'#d9ead3'},
+  {n:'최영훈 과장', e:'yh.choi', c:'#b4a7d6'},
+  {n:'재무팀-김선아', e:'sa.kim', c:'#fde7e9'},
+  {n:'IT헬프데스크', e:'helpdesk', c:'#cccccc'},
+  {n:'대표이사실', e:'ceo-office', c:'#fff2cc'},
+  {n:'Slack 알림', e:'notify.slack', c:'#e8deef'},
+  {n:'Jira <자동>', e:'jira', c:'#d9ead3'},
+  {n:'파트너사 A상사', e:'partner.a', c:'#c5d8ff'},
+  {n:'박민지 대리', e:'mj.park', c:'#ffc5a1'},
+  {n:'Zoom', e:'zoom-invite', c:'#c5d8ff'},
+  {n:'법무팀', e:'legal', c:'#fde7e9'},
+  {n:'뉴스클리핑', e:'news-daily', c:'#cccccc'},
+  {n:'정영수 본부장', e:'ys.jung', c:'#ffc5a1'},
+  {n:'윤아라 수석', e:'ar.yoon', c:'#b4a7d6'},
+];
+const SUBJECTS = [
+  '[긴급] Q2 전사 실적 리뷰 준비 건 — 최종 데이터 검토 부탁드립니다',
+  'Re: Re: 내일 10시 회의 자료 공유 (v3 첨부)',
+  '[공지] 2026년 상반기 인사평가 일정 안내',
+  '[승인요청] 3,200만원 품의 기안 — 디지털광고 캠페인',
+  '프로젝트 아폴로 — 4월 4주차 위클리 리포트',
+  '[장애] VPN 접속 장애 공지 (23:00~01:00)',
+  'FWD: 대표이사 지시사항 전달 건',
+  '#prj-apollo 채널에 새 메시지 12개',
+  '[APL-2847] 상태 변경: 진행 중 → 검토 필요',
+  '2026 Q3 MOU 초안 회신 요청',
+  '법인카드 사용 내역 확인 요청 (4월)',
+  '오늘 14:00 스탠드업 미팅 예약',
+  '[법무검토] 파트너십 계약서 v2 피드백',
+  '2026-04-23 조간 뉴스 클리핑',
+  '다음주 본부장 보고 일정 조율',
+  '[해외] LA 오피스 방문 후속 조치',
+];
+const PREVIEWS = [
+  '박 팀장님, 오늘 오후에 공유해주신 자료 잘 받아봤습니다. 아래 몇 가지만 빠르게…',
+  '공유드린 파일 중에 셀 참조가 깨진 부분이 있어서 재전송드립니다. 확인 부탁드려요.',
+  '안녕하세요. 상반기 인사평가 일정을 아래와 같이 안내드립니다. 일정 확인하시고…',
+  '아래 품의안 결재 부탁드립니다. 집행 기한이 이번 주까지라서 서두르셔야…',
+  '이번 주 주요 진행 사항 요약드립니다. 이슈 2건, 리스크 1건 있습니다.',
+  '금일 23시부터 익일 01시까지 VPN 점검이 예정되어 있습니다. 재택근무자 주의…',
+  '대표이사님께서 말씀하신 사항 전달드리니 관련하여 금일 중 회신 부탁드립니다.',
+  '새 메시지가 도착했습니다. @박경진 님이 멘션되었습니다.',
+  '이슈가 "검토 필요" 상태로 변경되었습니다. 담당자: 박경진',
+  'MOU 초안 피드백 정리하여 보내드립니다. 수정 의견 3가지 포함되어 있어요.',
+  '4월 법인카드 사용 내역 중 증빙 미제출 항목이 2건 있습니다. 확인 부탁드립니다.',
+  '오늘 14:00 Zoom 회의에 초대되셨습니다. 참가 링크는 본문에…',
+  '계약서 2조 4항 관련하여 법무팀 검토 의견 보내드립니다. 수정 권고 사항…',
+  '[조간] 업계 주요 뉴스 10건, 당사 관련 3건, 경쟁사 동향 2건.',
+  '다음 주 수요일 본부장 보고 일정으로 조율 중입니다. 가능한 시간대 회신…',
+  '출장 중 논의된 내용 정리하여 전달드립니다. 액션 아이템 5건 포함.',
+];
+
+function timeAgo(m) {
+  if (m < 1) return '방금';
+  if (m < 60) return m + '분 전';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + '시간 전';
+  return Math.floor(h/24) + '일 전';
+}
+
+const mailList = document.getElementById('mail-list');
+function buildMail(i, unread, active) {
+  const s = SENDERS[i % SENDERS.length];
+  const subj = SUBJECTS[i % SUBJECTS.length];
+  const prev = PREVIEWS[i % PREVIEWS.length];
+  const mins = i === 0 ? 0 : i * 7 + Math.floor(Math.random() * 5);
+  const div = document.createElement('div');
+  div.className = 'mail' + (unread ? ' unread' : '') + (active ? ' active' : '');
+  const tags = [];
+  if (Math.random() > 0.75) tags.push('<span class="tag red">긴급</span>');
+  if (Math.random() > 0.7) tags.push('<span class="tag amber">🚩 팔로업</span>');
+  if (Math.random() > 0.65) tags.push('<span class="tag purple">프로젝트 아폴로</span>');
+  if (Math.random() > 0.75) tags.push('<span class="tag green">회신 필요</span>');
+  const attach = Math.random() > 0.5 ? '<span class="attach">📎 ' + (Math.floor(Math.random()*4)+1) + '</span>' : '';
+  div.innerHTML = `
+    <div></div>
+    <div class="body">
+      <div class="row1"><div class="from">${s.n}</div><div class="time">${i===0?'방금':timeAgo(mins)}</div></div>
+      <div class="subj">${subj}</div>
+      <div class="prev">${prev}</div>
+      <div class="tags">${tags.join('')} ${attach}</div>
+    </div>
+  `;
+  return div;
+}
+let activeIdx = 0;
+function renderList(n) {
+  mailList.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const unread = i < 14 && Math.random() > 0.3;
+    mailList.appendChild(buildMail(i, unread, i === activeIdx));
+  }
+}
+renderList(60);
+
+// Live updates: new mail arrives occasionally
+let inboxCount = 847;
+let unread = 42;
+function arrive() {
+  inboxCount++;
+  unread++;
+  const idx = Math.floor(Math.random() * SENDERS.length);
+  const item = buildMail(idx, true, false);
+  item.style.background = '#fff4ce';
+  mailList.insertBefore(item, mailList.firstChild);
+  setTimeout(() => item.style.background = '', 1400);
+  if (mailList.children.length > 60) mailList.removeChild(mailList.lastChild);
+  document.getElementById('inbox-count').textContent = inboxCount.toLocaleString();
+  document.getElementById('unread-count').textContent = unread;
+  document.getElementById('unread-b').textContent = unread;
+  document.getElementById('items').innerHTML = `받은 항목 ${inboxCount.toLocaleString()} · 읽지 않음 <b>${unread}</b>`;
+}
+setInterval(arrive, 4500);
+
+// typing indicator cycles
+const TYPING = [
+  '이수민님이 입력 중…',
+  '장인호 상무님이 답장 작성 중…',
+  '최영훈 과장님이 회신 중…',
+  '파일을 업로드하고 있습니다… (78%)',
+  '첨부 파일 3개 전송 중…',
+  '박민지 대리님이 팔로업 작성 중…',
+  'Exchange 동기화 중… (+4)',
+  '서명 템플릿 불러오는 중…',
+];
+let ti = 0;
+setInterval(() => {
+  ti = (ti + 1) % TYPING.length;
+  document.getElementById('typing').textContent = TYPING[ti];
+}, 2400);
+
+// sync ticker
+let syncSec = 0;
+setInterval(() => {
+  syncSec = (syncSec + 1) % 60;
+  document.getElementById('syncmsg').textContent = `마지막 동기화: ${syncSec}초 전 · 다음: ${60-syncSec}초 후`;
+}, 1000);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

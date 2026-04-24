@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>MediView · PACS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;color:#cfd8dc;font-family:'Segoe UI','Malgun Gothic',sans-serif;font-size:12px;overflow:hidden}
+.app{display:grid;grid-template-rows:32px 36px 1fr 22px;height:100vh}
+.tb{background:#0d1b2a;color:#e0f7fa;display:flex;align-items:center;padding:0 12px;font-size:12px;gap:14px;border-bottom:1px solid #1e3a5f}
+.tb .lg{font-weight:800;letter-spacing:1px;color:#00bcd4}
+.tb .sep{color:#1e3a5f}
+.tools{background:#0a1520;display:flex;align-items:center;padding:0 8px;gap:2px;border-bottom:1px solid #1e3a5f;font-size:11px}
+.tb-btn{padding:6px 10px;color:#b0bec5;cursor:pointer;display:flex;align-items:center;gap:4px;border-radius:2px}
+.tb-btn.a{background:#00bcd4;color:#0a1520;font-weight:700}
+.tb-btn:hover{background:#1e3a5f}
+.tb-btn .ic{font-size:14px}
+.sp{flex:1}
+
+.main{display:grid;grid-template-columns:260px 1fr 320px;overflow:hidden;background:#000}
+.pat{background:#0a1520;border-right:1px solid #1e3a5f;overflow-y:auto;padding:10px;font-size:11.5px}
+.pat h4{color:#00bcd4;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700}
+.p-card{background:#0d1b2a;border:1px solid #1e3a5f;padding:10px;margin-bottom:8px;border-left:3px solid #ff5252}
+.p-card.ok{border-left-color:#4caf50}
+.p-card.wrn{border-left-color:#ffc107}
+.p-card .n{font-weight:700;color:#fff;font-size:13px;margin-bottom:3px}
+.p-card .id{color:#607d8b;font-size:10px;margin-bottom:4px}
+.p-card .r{color:#e0e0e0;font-size:11px;line-height:1.45}
+.p-card .t{color:#00bcd4;font-size:10px;margin-top:4px}
+
+.viewer{display:grid;grid-template-rows:28px 1fr auto;overflow:hidden;background:#000}
+.study-bar{background:#0a1520;border-bottom:1px solid #1e3a5f;display:flex;align-items:center;padding:0 10px;font-size:11px;gap:14px;color:#90a4ae}
+.study-bar b{color:#fff}
+.imgs{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:2px;overflow:hidden}
+.vp{background:#000;position:relative;overflow:hidden;border:1px solid #1e3a5f}
+.vp.active{border-color:#00bcd4}
+.vp .corner{position:absolute;font-size:10px;font-family:'Consolas',monospace;color:#00bcd4;padding:4px;pointer-events:none}
+.vp .tl{top:0;left:0;line-height:1.4}
+.vp .tr{top:0;right:0;text-align:right;line-height:1.4}
+.vp .bl{bottom:0;left:0;line-height:1.4}
+.vp .br{bottom:0;right:0;text-align:right;line-height:1.4}
+
+/* CT head axial */
+.ct{position:absolute;inset:8%;display:flex;align-items:center;justify-content:center}
+.ct-shape{width:100%;height:100%;position:relative}
+.ct-skull{position:absolute;inset:5% 8%;border:8px solid #e0e0e0;border-radius:48% 48% 44% 44%;background:radial-gradient(ellipse 60% 52% at 50% 48%,#565656 0%,#3a3a3a 40%,#252525 70%,#0f0f0f 100%);filter:contrast(1.3) brightness(0.9)}
+.ct-brain{position:absolute;inset:14% 17%;border-radius:46% 46% 42% 42%;background:radial-gradient(ellipse 58% 54% at 50% 50%,#8b8b8b 0%,#6a6a6a 30%,#4a4a4a 60%,#2f2f2f 90%);opacity:0.9}
+.ct-sulci{position:absolute;inset:14% 17%;border-radius:46% 46% 42% 42%;background:repeating-radial-gradient(ellipse at 50% 50%,transparent 0,transparent 8px,rgba(0,0,0,0.35) 8px,rgba(0,0,0,0.35) 10px);mix-blend-mode:multiply}
+.ct-ventricle{position:absolute;top:44%;left:40%;width:20%;height:14%;background:#1a1a1a;border-radius:50%;filter:blur(1px)}
+.ct-midline{position:absolute;top:20%;left:49.5%;width:1%;height:60%;background:#1f1f1f}
+.lesion{position:absolute;top:38%;left:58%;width:10%;height:10%;background:radial-gradient(circle,#ff1744 0%,rgba(255,23,68,0) 70%);filter:blur(2px);animation:pulse 2s ease-in-out infinite}
+.lesion-ring{position:absolute;top:36%;left:56%;width:14%;height:14%;border:1px dashed #ff1744;border-radius:50%}
+@keyframes pulse{0%,100%{opacity:0.85}50%{opacity:0.4}}
+.crosshair{position:absolute;inset:0;pointer-events:none}
+.crosshair::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:#00bcd4;opacity:0.4}
+.crosshair::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:#00bcd4;opacity:0.4}
+
+/* MRI sagittal */
+.mri-sag{position:absolute;inset:6%;background:#000;overflow:hidden}
+.brain-sag{position:absolute;top:10%;left:18%;width:64%;height:70%;background:radial-gradient(ellipse 52% 58% at 45% 50%,#c0c0c0 0%,#8a8a8a 30%,#555 60%,#2a2a2a 90%);border-radius:65% 35% 40% 60% / 60% 50% 50% 40%;filter:contrast(1.25)}
+.brain-sag::before{content:'';position:absolute;inset:10% 12%;background:repeating-linear-gradient(110deg,transparent 0,transparent 5px,rgba(0,0,0,0.3) 5px,rgba(0,0,0,0.3) 7px);border-radius:inherit}
+.cerebellum{position:absolute;bottom:10%;left:58%;width:22%;height:26%;background:radial-gradient(circle,#9a9a9a,#4a4a4a);border-radius:50%;filter:contrast(1.2)}
+.spine{position:absolute;bottom:0;left:55%;width:4px;height:30%;background:linear-gradient(180deg,#777,#222)}
+
+/* US */
+.us{position:absolute;inset:4%;background:radial-gradient(circle at 50% 0%,#1a1a1a 0%,#000 70%)}
+.us-fan{position:absolute;top:8%;left:12%;right:12%;bottom:8%;background:conic-gradient(from 225deg at 50% 0%,transparent 0deg,rgba(255,255,255,0.18) 15deg,rgba(255,255,255,0.4) 45deg,rgba(255,255,255,0.18) 75deg,transparent 90deg);clip-path:polygon(50% 0,100% 100%,0 100%);filter:blur(1.5px)}
+.us-structure{position:absolute;top:35%;left:40%;width:20%;height:20%;border-radius:50%;background:radial-gradient(circle,#1a1a1a,transparent);border:1px solid rgba(255,255,255,0.4)}
+
+/* X-ray chest */
+.xray{position:absolute;inset:4%;background:#000}
+.xray-rib{position:absolute;left:15%;right:15%;height:8px;border:1px solid rgba(255,255,255,0.25);border-bottom:none;border-radius:50% 50% 0 0 / 100% 100% 0 0}
+.xray-lung{position:absolute;top:18%;width:36%;height:56%;background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0.35) 70%,rgba(255,255,255,0.55) 100%);border-radius:50% 50% 45% 55% / 50% 50% 50% 50%}
+.xray-spine{position:absolute;top:12%;left:49.5%;width:1%;height:76%;background:#ddd}
+.xray-heart{position:absolute;top:36%;left:38%;width:26%;height:32%;background:radial-gradient(ellipse,rgba(255,255,255,0.75) 0%,rgba(255,255,255,0.3) 80%,transparent 100%);border-radius:50% 50% 60% 40%}
+
+.thumbs{background:#0a1520;border-top:1px solid #1e3a5f;padding:6px;display:flex;gap:4px;overflow-x:auto}
+.th{width:60px;height:60px;background:#1e3a5f;border:1px solid #2a4a6e;flex-shrink:0;font-size:9px;color:#90a4ae;padding:3px;font-family:'Consolas',monospace;position:relative;overflow:hidden}
+.th.a{border-color:#00bcd4}
+.th::after{content:'';position:absolute;inset:12px 6px 6px;background:radial-gradient(circle,#666,#111);border-radius:50%}
+
+.report{background:#0a1520;border-left:1px solid #1e3a5f;overflow-y:auto;padding:12px;font-size:12px}
+.report h3{color:#00bcd4;font-size:12px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1e3a5f;padding-bottom:6px}
+.kv{display:grid;grid-template-columns:80px 1fr;gap:6px;margin-bottom:4px}
+.kv .k{color:#607d8b;font-size:10.5px;text-transform:uppercase}
+.kv .v{color:#e0e0e0}
+.sec{margin:14px 0;padding:10px;background:#0d1b2a;border:1px solid #1e3a5f}
+.sec h5{color:#00bcd4;font-size:11px;margin-bottom:6px}
+.sec p{color:#cfd8dc;line-height:1.55;font-size:11.5px}
+.sec .find{color:#ffc107;font-weight:700}
+.sec .crit{color:#ff5252;font-weight:700}
+.vitals{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.vt{background:#0d1b2a;border:1px solid #1e3a5f;padding:6px 8px}
+.vt .l{font-size:10px;color:#607d8b;text-transform:uppercase}
+.vt .n{font-size:18px;color:#4caf50;font-weight:700;font-family:'Consolas',monospace}
+.vt.a .n{color:#ff5252}
+.vt.w .n{color:#ffc107}
+.vt .u{font-size:9.5px;color:#90a4ae;margin-left:3px}
+
+.status{background:#0d1b2a;border-top:1px solid #1e3a5f;color:#90a4ae;display:flex;align-items:center;padding:0 12px;font-size:11px;gap:16px;font-family:'Consolas',monospace}
+.status .l{color:#4caf50}
+.status .r{color:#ff5252;margin-left:auto}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="진료기록_2026_04_24.pdf" data-favicon="🏥">
+<div class="app">
+  <div class="tb">
+    <span class="lg">⊕ MediView</span><span class="sep">│</span>
+    <span>PACS Workstation</span><span class="sep">│</span>
+    <span>Seoul National Medical Center · Radiology 4F</span>
+    <span style="margin-left:auto;color:#00bcd4">Dr. 최현우 · 방사선종양학과</span>
+  </div>
+  <div class="tools">
+    <div class="tb-btn"><span class="ic">◧</span> 환자목록</div>
+    <div class="tb-btn a"><span class="ic">⊞</span> 2×2 레이아웃</div>
+    <div class="tb-btn"><span class="ic">⊕</span> 확대</div>
+    <div class="tb-btn"><span class="ic">⊖</span> 축소</div>
+    <div class="tb-btn"><span class="ic">↔</span> 이동</div>
+    <div class="tb-btn"><span class="ic">◐</span> 윈도우 레벨</div>
+    <div class="tb-btn"><span class="ic">📏</span> 거리측정</div>
+    <div class="tb-btn"><span class="ic">∠</span> 각도</div>
+    <div class="tb-btn"><span class="ic">◯</span> ROI</div>
+    <div class="tb-btn"><span class="ic">3D</span> MPR</div>
+    <div class="sp"></div>
+    <div class="tb-btn"><span class="ic">🤖</span> AI 분석</div>
+    <div class="tb-btn"><span class="ic">✎</span> 판독</div>
+    <div class="tb-btn"><span class="ic">📧</span> 협진 요청</div>
+  </div>
+
+  <div class="main">
+    <div class="pat">
+      <h4>판독 대기 &nbsp;<span style="color:#ff5252">▸ 11</span></h4>
+
+      <div class="p-card">
+        <div class="n">김 O 호 &nbsp;<span style="color:#ff5252;font-size:10px">STAT ⚡</span></div>
+        <div class="id">#EMR-20250812-4782 · M / 58y</div>
+        <div class="r">뇌 CT 조영증강 · 갑작스런 두통 및 편측 마비.<br>응급실 접수 08:42</div>
+        <div class="t">→ 현재 판독 중</div>
+      </div>
+      <div class="p-card wrn">
+        <div class="n">박 O 영</div>
+        <div class="id">#EMR-20250812-4778 · F / 64y</div>
+        <div class="r">흉부 X-ray P-A · 기침 3주 · 폐암 추적관찰</div>
+        <div class="t">08:14 접수</div>
+      </div>
+      <div class="p-card">
+        <div class="n">이 O 수</div>
+        <div class="id">#EMR-20250812-4774 · M / 42y</div>
+        <div class="r">요추 MRI · HIVD L4-5 의심 · 외래</div>
+        <div class="t">07:55 접수</div>
+      </div>
+      <div class="p-card ok">
+        <div class="n">정 O 미</div>
+        <div class="id">#EMR-20250812-4771 · F / 36y</div>
+        <div class="r">복부 초음파 · 검진센터 의뢰</div>
+        <div class="t">07:30 접수</div>
+      </div>
+      <div class="p-card">
+        <div class="n">한 O 진</div>
+        <div class="id">#EMR-20250812-4768 · M / 71y</div>
+        <div class="r">흉부 CT HRCT · 간질성 폐질환 F/U</div>
+        <div class="t">07:18 접수</div>
+      </div>
+      <div class="p-card wrn">
+        <div class="n">윤 O 아</div>
+        <div class="id">#EMR-20250812-4765 · F / 29y</div>
+        <div class="r">유방 mammography · screening</div>
+        <div class="t">07:00 접수</div>
+      </div>
+      <div class="p-card">
+        <div class="n">장 O 석</div>
+        <div class="id">#EMR-20250812-4761 · M / 52y</div>
+        <div class="r">두경부 CT · 이비인후과 의뢰</div>
+        <div class="t">06:42 접수</div>
+      </div>
+    </div>
+
+    <div class="viewer">
+      <div class="study-bar">
+        <span>Study: <b>CT Brain w/ Contrast</b></span>
+        <span>Acc# <b>CT20250812-004782</b></span>
+        <span>512×512 · 120kVp · 280mA</span>
+        <span>Series 3/5 · Image 42/124</span>
+        <span style="margin-left:auto;color:#ff5252">⚡ STAT · &lt;30min TAT</span>
+      </div>
+
+      <div class="imgs">
+        <div class="vp active">
+          <div class="corner tl">KIM, OO · M/58<br>PT ID: 4782<br>2025-08-12 09:14</div>
+          <div class="corner tr">CT Axial<br>Thk 2.5mm<br>Slice 42/124</div>
+          <div class="ct"><div class="ct-shape">
+            <div class="ct-skull"></div>
+            <div class="ct-brain"></div>
+            <div class="ct-sulci"></div>
+            <div class="ct-midline"></div>
+            <div class="ct-ventricle"></div>
+            <div class="lesion-ring"></div>
+            <div class="lesion"></div>
+          </div></div>
+          <div class="crosshair"></div>
+          <div class="corner bl">W 80 / L 40<br>Zoom 140%</div>
+          <div class="corner br" style="color:#ff5252">⚠ AI: ICH 검출<br>신뢰도 94.2%<br>우측 기저핵부</div>
+        </div>
+
+        <div class="vp">
+          <div class="corner tl">Sagittal<br>T1 FLAIR</div>
+          <div class="corner tr">MRI Brain<br>Slice 12/48</div>
+          <div class="mri-sag">
+            <div class="brain-sag"></div>
+            <div class="cerebellum"></div>
+            <div class="spine"></div>
+          </div>
+          <div class="corner br">W 2200 / L 1100</div>
+        </div>
+
+        <div class="vp">
+          <div class="corner tl">Chest PA<br>Upright</div>
+          <div class="corner tr">DR · 12bit<br>68kVp</div>
+          <div class="xray">
+            <div class="xray-spine"></div>
+            <div class="xray-lung" style="left:10%"></div>
+            <div class="xray-lung" style="right:10%"></div>
+            <div class="xray-heart"></div>
+            <div class="xray-rib" style="top:22%;transform:scaleX(1.0)"></div>
+            <div class="xray-rib" style="top:32%"></div>
+            <div class="xray-rib" style="top:42%"></div>
+            <div class="xray-rib" style="top:52%"></div>
+            <div class="xray-rib" style="top:62%"></div>
+          </div>
+          <div class="corner br">CTR 0.52</div>
+        </div>
+
+        <div class="vp">
+          <div class="corner tl">US Abdomen<br>Convex 3.5MHz</div>
+          <div class="corner tr">Depth 15cm<br>Gain 62</div>
+          <div class="us">
+            <div class="us-fan"></div>
+            <div class="us-structure"></div>
+          </div>
+          <div class="corner br">GB wall 3.2mm</div>
+        </div>
+      </div>
+
+      <div class="thumbs">
+        <div class="th a">Ax 01<br>42/124</div>
+        <div class="th">Ax 02</div>
+        <div class="th">Ax 03</div>
+        <div class="th">Cor 01</div>
+        <div class="th">Sag 01</div>
+        <div class="th">MIP</div>
+        <div class="th">MPR</div>
+        <div class="th">VRT</div>
+        <div class="th">+12</div>
+      </div>
+    </div>
+
+    <div class="report">
+      <h3>📋 환자 정보 · 판독</h3>
+      <div class="kv"><div class="k">이름</div><div class="v">김 O 호 (M/58)</div></div>
+      <div class="kv"><div class="k">MRN</div><div class="v">10245782</div></div>
+      <div class="kv"><div class="k">주치의</div><div class="v">신경외과 박교수</div></div>
+      <div class="kv"><div class="k">주요 호소</div><div class="v">갑작스런 두통, 좌측 편마비</div></div>
+      <div class="kv"><div class="k">활력징후</div><div class="v">BP 178/102 · HR 88</div></div>
+      <div class="kv"><div class="k">GCS</div><div class="v" style="color:#ffc107">13 (E3V4M6)</div></div>
+
+      <div class="vitals" style="margin-top:10px">
+        <div class="vt a"><div class="l">BP</div><div class="n">178<span class="u">/102</span></div></div>
+        <div class="vt"><div class="l">HR</div><div class="n">88<span class="u">bpm</span></div></div>
+        <div class="vt w"><div class="l">SpO₂</div><div class="n">94<span class="u">%</span></div></div>
+        <div class="vt"><div class="l">RR</div><div class="n">18</div></div>
+      </div>
+
+      <div class="sec">
+        <h5>🤖 AI 판독 (Preliminary)</h5>
+        <p><span class="crit">⚠ CRITICAL FINDING</span><br>
+        우측 기저핵 및 시상부에 약 <strong>2.4×1.8cm</strong> 크기의 고음영 병변 관찰됨.<br>
+        <span class="find">→ 급성 뇌실질내 출혈 (ICH) 의심</span><br>
+        · 주변 부종 동반 (+)<br>
+        · 중간선 편위 3.2mm (경미)<br>
+        · Hounsfield unit: 62~74 HU</p>
+      </div>
+
+      <div class="sec">
+        <h5>판독 소견 (draft)</h5>
+        <p>1. Right basal ganglia/thalamic region에 약 2.4cm 크기의 acute hemorrhage가 확인됨.<br>
+        2. Mild perilesional edema with 3mm midline shift to the left.<br>
+        3. No acute large vessel occlusion on available images.<br>
+        4. 뇌실 압박 없이 보존됨.<br><br>
+        <span class="crit">Impression:</span> Acute right basal ganglia hemorrhage (<strong>~4.3 mL</strong>), likely hypertensive origin given c/o and BP.</p>
+      </div>
+
+      <div class="sec">
+        <h5>의뢰 내용</h5>
+        <p>☎ 신경외과 당직 (010-****-2418) — 09:18 통보 완료<br>
+        CTA 추가 촬영 권고. 수술 평가 필요.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="l">● DICOM 서버 연결됨</span>
+    <span>WL/WW: 40/80 HU</span>
+    <span>픽셀: 0.488 × 0.488mm</span>
+    <span>판독 타이머 · 00:14:22</span>
+    <span class="r">⚠ STAT 2건 대기 · 평균 TAT 12분</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

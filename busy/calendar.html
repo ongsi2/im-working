@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>캘린더 — 박경진 — 2026년 4월</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f6f5f4;
+    --panel: #fff;
+    --border: #e1dfdd;
+    --border-strong: #c8c6c4;
+    --text: #201f1e;
+    --dim: #605e5c;
+    --mute: #8a8886;
+    --accent: #0078d4;
+    --accent-soft: #deecf9;
+    --hover: #f3f2f1;
+    --red: #d13438;
+    --amber: #ca5010;
+    --green: #107c10;
+    --purple: #5c2d91;
+    --teal: #008272;
+    --now: #e81123;
+  }
+  html, body { height: 100%; font-family: 'Segoe UI', -apple-system, 'Malgun Gothic', sans-serif; font-size: 13px; color: var(--text); background: var(--bg); overflow: hidden; }
+  .app { display: grid; grid-template-rows: 30px 44px 1fr 22px; height: 100vh; }
+
+  .tb { background: #0078d4; color: #fff; display: flex; align-items: center; padding: 0 12px; font-size: 12px; gap: 14px; }
+  .tb .user { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: #b4a7d6; color: #40275b; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; }
+
+  .toolbar { background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 14px; gap: 4px; }
+  .tb-btn { padding: 6px 10px; border-radius: 3px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .tb-btn:hover { background: var(--hover); }
+  .tb-btn.primary { background: var(--accent); color: #fff; font-weight: 600; padding: 6px 14px; }
+  .tb-sep { width: 1px; height: 22px; background: var(--border); margin: 0 6px; }
+  .view-sw { display: flex; border: 1px solid var(--border); border-radius: 3px; margin-left: auto; }
+  .view-sw .v { padding: 5px 12px; font-size: 12px; }
+  .view-sw .v.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+  .main { display: grid; grid-template-columns: 240px 1fr 280px; overflow: hidden; }
+  .pane { background: #fff; border-right: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+  .pane:last-child { border-right: none; }
+
+  /* Left sidebar */
+  .mini-cal { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .mini-cal .mtitle { font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 11px; text-align: center; }
+  .mini-grid .dh { color: var(--mute); padding: 2px; }
+  .mini-grid .md { padding: 3px; border-radius: 3px; color: var(--text); }
+  .mini-grid .md.o { color: var(--mute); }
+  .mini-grid .md.today { background: var(--accent); color: #fff; font-weight: 700; }
+  .mini-grid .md.sel { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .mini-grid .md.has::after { content:''; display:block; width:3px;height:3px;border-radius:50%;background:var(--accent);margin:1px auto 0; }
+
+  .cal-list { padding: 8px 0; overflow-y: auto; font-size: 12px; }
+  .cal-list .sec { padding: 6px 14px 4px; color: var(--mute); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+  .cal-list .c { padding: 4px 14px; display: flex; align-items: center; gap: 8px; }
+  .cal-list .c:hover { background: var(--hover); }
+  .cal-list .swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* Week grid */
+  .week-head { display: grid; grid-template-columns: 56px repeat(7, 1fr); border-bottom: 1px solid var(--border); background: #fff; }
+  .wh-cell { padding: 8px 8px 6px; border-right: 1px solid var(--border); font-size: 12px; color: var(--dim); text-align: left; }
+  .wh-cell .day { font-size: 22px; font-weight: 300; color: var(--text); line-height: 1; }
+  .wh-cell.today .day { color: var(--accent); font-weight: 600; }
+  .wh-cell.today { background: var(--accent-soft); }
+  .wh-cell .dlabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+
+  .grid-scroll { flex: 1; overflow-y: auto; background: #fff; position: relative; }
+  .week-grid { display: grid; grid-template-columns: 56px repeat(7, 1fr); }
+  .hour-col { border-right: 1px solid var(--border); }
+  .hour { height: 56px; border-bottom: 1px solid var(--border); position: relative; }
+  .hour-label { font-size: 10px; color: var(--mute); padding: 2px 6px; text-align: right; }
+  .day-col { border-right: 1px solid var(--border); position: relative; }
+  .day-col:last-child { border-right: none; }
+  .half { border-bottom: 1px dashed #f0efee; height: 28px; }
+
+  .ev {
+    position: absolute;
+    left: 2px; right: 2px;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 11px;
+    color: #fff;
+    overflow: hidden;
+    border-left: 3px solid rgba(0,0,0,0.2);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    cursor: default;
+    z-index: 2;
+  }
+  .ev .t { font-weight: 600; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev .sub { font-size: 10px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev .loc { font-size: 10px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev.blue { background: #2b7cd3; }
+  .ev.green { background: #107c10; }
+  .ev.purple { background: #8764b8; }
+  .ev.amber { background: #ca5010; }
+  .ev.red { background: #d13438; }
+  .ev.teal { background: #008272; }
+  .ev.gray { background: #605e5c; }
+  .ev.tentative { background: repeating-linear-gradient(45deg, #2b7cd3, #2b7cd3 4px, #3d8fdf 4px, #3d8fdf 8px); }
+
+  .now-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1.5px;
+    background: var(--now);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .now-line::before {
+    content: ''; position: absolute; left: -5px; top: -4px;
+    width: 10px; height: 10px; border-radius: 50%; background: var(--now);
+  }
+
+  /* Right panel: agenda + invites */
+  .right-pane { padding: 12px 14px; overflow-y: auto; font-size: 12px; }
+  .right-pane h3 { font-size: 13px; font-weight: 600; margin: 10px 0 6px; color: var(--text); }
+  .agenda-item { padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 3px 3px 0; margin-bottom: 6px; font-size: 12px; }
+  .agenda-item.urgent { border-color: var(--red); background: #fde7e9; }
+  .agenda-item .t { font-weight: 600; margin-bottom: 2px; }
+  .agenda-item .m { color: var(--dim); font-size: 11px; }
+  .invite { border: 1px solid var(--border); border-radius: 4px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+  .invite .it { font-weight: 600; font-size: 12.5px; margin-bottom: 4px; }
+  .invite .meta { color: var(--dim); font-size: 11px; margin-bottom: 6px; }
+  .invite .buttons { display: flex; gap: 4px; margin-top: 6px; }
+  .invite .btn { flex: 1; text-align: center; padding: 4px; font-size: 11px; border-radius: 3px; border: 1px solid var(--border); }
+  .invite .btn.yes { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .invite .btn:hover { background: var(--hover); }
+  .invite .btn.yes:hover { background: #006abc; }
+
+  .status { background: #0078d4; color: #fff; display: flex; align-items: center; padding: 0 14px; gap: 16px; font-size: 11px; }
+  .status .spacer { flex: 1; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd068; display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.4} }
+
+  /* Popup: join-in notification */
+  .popup {
+    position: absolute;
+    top: 80px; right: 300px;
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    padding: 14px 16px;
+    width: 320px;
+    z-index: 20;
+    font-size: 12px;
+  }
+  .popup .head { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .popup .bell { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .popup .title { font-weight: 600; font-size: 13px; }
+  .popup .time { font-size: 11px; color: var(--dim); }
+  .popup .subj { font-weight: 600; margin-bottom: 4px; }
+  .popup .loc { color: var(--dim); font-size: 11px; margin-bottom: 10px; }
+  .popup .actions { display: flex; gap: 6px; }
+  .popup .btn { flex: 1; padding: 5px; border-radius: 3px; text-align: center; font-size: 11px; }
+  .popup .btn.join { background: var(--accent); color: #fff; font-weight: 600; }
+  .popup .btn.snooze { border: 1px solid var(--border); }
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="4월 · Calendar" data-favicon="📅">
+<div class="app">
+  <div class="tb">
+    <span style="font-weight:600">📅 캘린더</span>
+    <div class="user"><span style="opacity:0.85">박경진 · 마케팅본부 · 서울</span><div class="avatar">KP</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tb-btn primary">＋ 새 이벤트</div>
+    <div class="tb-sep"></div>
+    <div class="tb-btn">← 이전</div>
+    <div class="tb-btn" style="font-weight:600">오늘</div>
+    <div class="tb-btn">다음 →</div>
+    <div class="tb-sep"></div>
+    <div class="tb-btn" style="font-size:15px;font-weight:600;padding:4px 10px">2026년 4월 20일 – 26일</div>
+    <div class="view-sw">
+      <div class="v">일</div>
+      <div class="v active">주</div>
+      <div class="v">업무 주간</div>
+      <div class="v">월</div>
+      <div class="v">일정</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <aside class="pane">
+      <div class="mini-cal">
+        <div class="mtitle">◂ 2026년 4월 ▸</div>
+        <div class="mini-grid" id="minical"></div>
+      </div>
+      <div class="cal-list">
+        <div class="sec">내 캘린더</div>
+        <div class="c"><span class="swatch" style="background:#2b7cd3"></span>박경진 (업무)</div>
+        <div class="c"><span class="swatch" style="background:#107c10"></span>개인</div>
+        <div class="c"><span class="swatch" style="background:#8764b8"></span>프로젝트 아폴로</div>
+        <div class="c"><span class="swatch" style="background:#ca5010"></span>출장/외근</div>
+        <div class="sec">공유 캘린더</div>
+        <div class="c"><span class="swatch" style="background:#008272"></span>마케팅본부</div>
+        <div class="c"><span class="swatch" style="background:#d13438"></span>임원 회의실</div>
+        <div class="c"><span class="swatch" style="background:#5c2d91"></span>장인호 상무</div>
+        <div class="c"><span class="swatch" style="background:#605e5c"></span>휴일·공휴일</div>
+        <div class="sec">그룹 일정</div>
+        <div class="c"><span class="swatch" style="background:#2b7cd3"></span>Q2 TF</div>
+        <div class="c"><span class="swatch" style="background:#ca5010"></span>경영회의</div>
+        <div class="c"><span class="swatch" style="background:#107c10"></span>1:1 미팅</div>
+      </div>
+    </aside>
+
+    <section class="pane" style="border-right:1px solid var(--border)">
+      <div class="week-head" id="wh"></div>
+      <div class="grid-scroll" id="scroll">
+        <div class="week-grid" id="wg"></div>
+      </div>
+    </section>
+
+    <aside class="pane right-pane">
+      <h3 style="margin-top:0">오늘의 일정</h3>
+      <div class="agenda-item urgent">
+        <div class="t">🔴 Q2 실적 보고 준비 — 장인호 상무</div>
+        <div class="m">15:00 – 15:30 · 회의실 7F-A · 대면</div>
+      </div>
+      <div class="agenda-item">
+        <div class="t">마케팅 위클리 스탠드업</div>
+        <div class="m">14:00 – 14:30 · Zoom · 참석자 12명</div>
+      </div>
+      <div class="agenda-item">
+        <div class="t">파트너사 A상사 킥오프</div>
+        <div class="m">16:00 – 17:00 · 회의실 5F-C</div>
+      </div>
+      <div class="agenda-item">
+        <div class="t">김선아 차장 1:1</div>
+        <div class="m">17:30 – 18:00 · 티팟 #3</div>
+      </div>
+
+      <h3>응답 대기 중 초대</h3>
+      <div class="invite">
+        <div class="it">📎 [긴급] 임원 합동 리뷰 — Q2 프리뷰</div>
+        <div class="meta">금 14:00 – 16:00 · 장인호 상무 · 8명 초대</div>
+        <div style="color:var(--dim);font-size:11px">안건 3건, 첨부파일 4개</div>
+        <div class="buttons">
+          <div class="btn yes">수락</div>
+          <div class="btn">미정</div>
+          <div class="btn">거절</div>
+        </div>
+      </div>
+      <div class="invite">
+        <div class="it">🍽 팀 디너 — Q2 고생했어요</div>
+        <div class="meta">다음 주 목 19:00 · 이수민 차장 · 14명</div>
+        <div class="buttons">
+          <div class="btn yes">수락</div>
+          <div class="btn">미정</div>
+          <div class="btn">거절</div>
+        </div>
+      </div>
+      <div class="invite">
+        <div class="it">📞 파트너사 B 전화회의</div>
+        <div class="meta">다음 주 화 10:00 · 최영훈 과장 · 5명</div>
+        <div class="buttons">
+          <div class="btn">수락</div>
+          <div class="btn yes">미정</div>
+          <div class="btn">거절</div>
+        </div>
+      </div>
+
+      <h3>오늘 남은 할 일</h3>
+      <div style="font-size:12px;color:var(--dim);line-height:1.7">
+        ☐ Q2 실적 요약 3슬라이드<br>
+        ☐ 장 상무 메일 회신<br>
+        ☐ 법무 계약서 v2 피드백<br>
+        ☐ 파트너사 A상사 자료 검토<br>
+        ☑ <span style="text-decoration:line-through;color:var(--mute)">HR 평가서 제출</span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="status">
+    <span><span class="dot"></span>Exchange 연결됨</span>
+    <span id="st-events">이번 주 일정 <b>32건</b> · 오늘 <b>8건</b></span>
+    <span id="st-busy">가용 시간: 오늘 1시간 24분</span>
+    <span class="spacer"></span>
+    <span id="st-sync">동기화 중... 최근: 방금</span>
+  </div>
+</div>
+
+<!-- Meeting join popup -->
+<div class="popup" id="popup">
+  <div class="head">
+    <div class="bell">🔔</div>
+    <div style="flex:1">
+      <div class="title">회의 시작 15분 전</div>
+      <div class="time">Outlook 알림 · 지금</div>
+    </div>
+    <div style="color:var(--mute);cursor:pointer">✕</div>
+  </div>
+  <div class="subj" id="pop-subj">Q2 실적 보고 준비 — 장인호 상무</div>
+  <div class="loc" id="pop-loc">📍 회의실 7F-A · 대면 · 참석자 6명</div>
+  <div class="actions">
+    <div class="btn snooze">10분 후 다시 알림</div>
+    <div class="btn join">참가 ↗</div>
+  </div>
+</div>
+
+<script>
+// ─ mini calendar
+const days = ['일','월','화','수','목','금','토'];
+const mc = document.getElementById('minical');
+days.forEach(d => mc.innerHTML += `<div class="dh">${d}</div>`);
+// April 2026: April 1 is Wednesday (idx 3)
+for (let i = 0; i < 2; i++) mc.innerHTML += `<div class="md o">${30+i}</div>`;
+for (let d = 1; d <= 30; d++) {
+  let cls = 'md';
+  if (d === 23) cls += ' today';
+  if (d >= 20 && d <= 26) cls += ' sel';
+  if ([3,7,10,14,17,20,21,22,23,24,27,28].includes(d)) cls += ' has';
+  mc.innerHTML += `<div class="${cls}">${d}</div>`;
+}
+for (let i = 1; i <= 9; i++) mc.innerHTML += `<div class="md o">${i}</div>`;
+
+// ─ week header
+const wh = document.getElementById('wh');
+const weekDays = [
+  { l: '월', d: 20 },
+  { l: '화', d: 21 },
+  { l: '수', d: 22 },
+  { l: '목', d: 23, today: true },
+  { l: '금', d: 24 },
+  { l: '토', d: 25 },
+  { l: '일', d: 26 },
+];
+wh.innerHTML = '<div class="wh-cell"></div>';
+weekDays.forEach(wd => {
+  wh.innerHTML += `<div class="wh-cell ${wd.today?'today':''}">
+    <div class="dlabel">${wd.l}</div>
+    <div class="day">${wd.d}</div>
+  </div>`;
+});
+
+// ─ hour grid
+const wg = document.getElementById('wg');
+const START = 7, END = 20;
+const HOURS = END - START;
+// hour col
+const hourCol = document.createElement('div');
+hourCol.className = 'hour-col';
+hourCol.style.gridColumn = '1';
+hourCol.style.gridRow = `1 / span ${HOURS}`;
+for (let h = START; h < END; h++) {
+  const hr = document.createElement('div');
+  hr.className = 'hour';
+  hr.innerHTML = `<div class="hour-label">${h<12?'오전':'오후'} ${((h-1)%12)+1}시</div>`;
+  hourCol.appendChild(hr);
+}
+wg.appendChild(hourCol);
+
+// day columns
+for (let c = 0; c < 7; c++) {
+  const dc = document.createElement('div');
+  dc.className = 'day-col';
+  dc.style.gridColumn = (c + 2);
+  dc.style.gridRow = `1 / span ${HOURS}`;
+  for (let h = START; h < END; h++) {
+    const hr = document.createElement('div');
+    hr.className = 'hour';
+    hr.innerHTML = '<div class="half"></div><div class="half"></div>';
+    dc.appendChild(hr);
+  }
+  wg.appendChild(dc);
+}
+
+// ─ events
+// Each event: {day: 0-6, start: hour (decimal), end, title, sub, loc, cls}
+const events = [
+  { d:0, s:9,     e:9.5,   t:'주간 리더십 싱크',     sub:'정 본부장 외 5명',        loc:'회의실 15F-Main',    cls:'blue'},
+  { d:0, s:10,    e:11,    t:'프로젝트 아폴로 킥오프', sub:'최영훈·윤아라·박민지 등',  loc:'7F-C',              cls:'purple'},
+  { d:0, s:11.5,  e:12,    t:'장인호 상무 1:1',      sub:'상무실',                   loc:'Office',            cls:'red'},
+  { d:0, s:13,    e:14,    t:'🥗 점심 — 마케팅팀',   sub:'Grandview Café',          loc:'지하 1F',           cls:'green'},
+  { d:0, s:14,    e:15.5,  t:'채널 전략 워크샵',      sub:'외부 컨설턴트 2명',        loc:'Zoom',              cls:'teal'},
+  { d:0, s:16,    e:17,    t:'재무팀 리뷰',           sub:'김선아 차장',             loc:'5F-A',              cls:'amber'},
+  { d:0, s:17.5,  e:18,    t:'회고 30분',            sub:'',                        loc:'',                 cls:'gray'},
+
+  { d:1, s:8,     e:9,     t:'아침 러닝 🏃',         sub:'선릉역',                  loc:'개인',              cls:'green'},
+  { d:1, s:10,    e:11.5,  t:'Q2 데이터 리뷰',        sub:'이수민·박민지',           loc:'6F-B',              cls:'blue'},
+  { d:1, s:13,    e:14,    t:'법무 미팅 — 계약서',    sub:'법무팀 박 변호사',         loc:'10F',               cls:'red'},
+  { d:1, s:14.5,  e:16,    t:'파트너사 A 사전미팅',   sub:'정영수 본부장 동석',       loc:'Zoom',              cls:'amber'},
+  { d:1, s:16,    e:17,    t:'광고 에이전시 브리핑',  sub:'외부 6명',                loc:'7F-Lounge',         cls:'purple'},
+
+  { d:2, s:9,     e:10,    t:'대표이사 조회',         sub:'전사 공지',               loc:'대강당',            cls:'red'},
+  { d:2, s:10.5,  e:12,    t:'매체 플랜 수립 v2',     sub:'마케팅팀 10명',           loc:'5F-C',              cls:'blue'},
+  { d:2, s:14,    e:15,    t:'임원 초안 리뷰',        sub:'장 상무·정 본부장',       loc:'15F 임원회의실',     cls:'red'},
+  { d:2, s:15.5,  e:16.5,  t:'ㅠㅠ 리포트 수정',      sub:'혼자',                    loc:'자리',              cls:'gray'},
+  { d:2, s:17,    e:18,    t:'신입 온보딩 인터뷰',    sub:'HR 협력',                 loc:'티팟 #1',           cls:'green'},
+
+  // Thursday (today)
+  { d:3, s:8.5,   e:9,     t:'메일 트리아지 📥',     sub:'',                        loc:'자리',              cls:'gray'},
+  { d:3, s:9,     e:10,    t:'스프린트 플래닝',       sub:'아폴로 TF',               loc:'Zoom',              cls:'purple'},
+  { d:3, s:10,    e:11,    t:'김선아 차장 1:1',      sub:'성과 피드백',             loc:'티팟 #3',           cls:'green'},
+  { d:3, s:11.5,  e:13,    t:'임원 보고 초안 작성',   sub:'집중 시간 🧘',            loc:'자리',              cls:'blue'},
+  { d:3, s:13,    e:14,    t:'점심',                sub:'김 대리와',               loc:'구내식당',          cls:'gray'},
+  { d:3, s:14,    e:14.5,  t:'마케팅 위클리 스탠드업', sub:'팀 12명',                 loc:'Zoom',              cls:'blue'},
+  { d:3, s:15,    e:15.5,  t:'🔴 Q2 보고 — 장 상무', sub:'대면 보고',              loc:'7F-A',              cls:'red'},
+  { d:3, s:16,    e:17,    t:'파트너사 A 킥오프',     sub:'외부 4·내부 5',           loc:'5F-C',              cls:'amber'},
+  { d:3, s:17.5,  e:18,    t:'김선아 차장 팔로업',    sub:'',                        loc:'티팟 #3',           cls:'green'},
+  { d:3, s:18,    e:19,    t:'리포트 마감 🔥',       sub:'자기 자신',               loc:'자리',              cls:'red'},
+
+  { d:4, s:10,    e:11.5,  t:'월말 마감 리뷰',        sub:'재무·마케팅 합동',        loc:'6F-A',              cls:'amber'},
+  { d:4, s:14,    e:16,    t:'📎 [긴급] 임원 합동 리뷰', sub:'Q2 프리뷰',             loc:'15F 임원회의실',     cls:'tentative'},
+  { d:4, s:16.5,  e:17.5,  t:'채용 인터뷰 — 시니어',  sub:'HR 협력',                 loc:'티팟 #2',           cls:'green'},
+  { d:4, s:18,    e:19,    t:'주간 회고',            sub:'팀 전체',                 loc:'Zoom',              cls:'blue'},
+
+  { d:5, s:10,    e:12,    t:'세미나: AI 마케팅',    sub:'선택 참석',               loc:'외부',              cls:'purple'},
+  { d:6, s:15,    e:17,    t:'집들이 🏠',           sub:'사적 일정',               loc:'개인',              cls:'green'},
+];
+
+events.forEach(ev => {
+  const col = document.querySelectorAll('.day-col')[ev.d];
+  const top = (ev.s - START) * 56;
+  const h = (ev.e - ev.s) * 56 - 2;
+  const div = document.createElement('div');
+  div.className = 'ev ' + ev.cls;
+  div.style.top = top + 'px';
+  div.style.height = h + 'px';
+  div.innerHTML = `<div class="t">${ev.t}</div>${ev.sub?`<div class="sub">${ev.sub}</div>`:''}${ev.loc?`<div class="loc">📍 ${ev.loc}</div>`:''}`;
+  col.appendChild(div);
+});
+
+// Now-line on Thursday at 14:38
+const thu = document.querySelectorAll('.day-col')[3];
+const nowLine = document.createElement('div');
+nowLine.className = 'now-line';
+const nowTop = (14.63 - START) * 56;
+nowLine.style.top = nowTop + 'px';
+thu.appendChild(nowLine);
+// scroll into view
+setTimeout(() => {
+  document.getElementById('scroll').scrollTop = nowTop - 160;
+}, 50);
+
+// Now-line creeps down
+let nowMin = 14.63;
+setInterval(() => {
+  nowMin += 1/60;
+  nowLine.style.top = ((nowMin - START) * 56) + 'px';
+}, 60000);
+
+// Status jitter
+const STS = [
+  '동기화 중... 최근: 방금',
+  '서버 응답 중... Exchange',
+  '일정 변경 감지 (+2)',
+  '최적 회의 시간 탐색 중 (Scheduling Assistant)',
+  '참석자 가용 여부 새로고침',
+];
+let si = 0;
+setInterval(() => {
+  si = (si+1) % STS.length;
+  document.getElementById('st-sync').textContent = STS[si];
+}, 2400);
+
+// popup rotation
+const POPS = [
+  { s:'Q2 실적 보고 준비 — 장인호 상무', l:'📍 회의실 7F-A · 대면 · 참석자 6명' },
+  { s:'마케팅 위클리 스탠드업', l:'📍 Zoom · 참석자 12명 · 링크 복사됨' },
+  { s:'파트너사 A상사 킥오프', l:'📍 5F-C · 외부 4명 · 내부 5명' },
+  { s:'김선아 차장 1:1', l:'📍 티팟 #3 · 15분 후' },
+];
+let pi = 0;
+setInterval(() => {
+  pi = (pi+1) % POPS.length;
+  document.getElementById('pop-subj').textContent = POPS[pi].s;
+  document.getElementById('pop-loc').textContent = POPS[pi].l;
+}, 3200);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

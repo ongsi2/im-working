@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>TeXStudio · Dissertation · main.tex</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#2b2d30;color:#bcbec4;font-family:'JetBrains Mono','Consolas',monospace;font-size:12.5px;overflow:hidden}
+.app{display:grid;grid-template-rows:28px 30px 1fr 22px;height:100vh}
+.tb{background:#3c3f41;border-bottom:1px solid #1e1f22;color:#bcbec4;display:flex;align-items:center;padding:0 10px;font-size:11.5px;gap:12px;font-family:-apple-system,'Segoe UI',sans-serif}
+.tb b{color:#fff}
+.tb .mod{color:#e88c00}
+
+.menu{background:#3c3f41;border-bottom:1px solid #1e1f22;display:flex;align-items:center;padding:0 4px;gap:1px;font-size:11.5px;font-family:-apple-system,sans-serif}
+.mi{padding:6px 10px;color:#bcbec4;cursor:pointer;border-radius:3px}
+.mi:hover{background:#4e5157}
+.mi.a{background:#2b5ea0;color:#fff}
+.sep{width:1px;height:16px;background:#1e1f22;margin:0 4px}
+.bbtn{padding:3px 9px;background:#4a5361;border:1px solid #5d6571;color:#fff;font-family:inherit;font-size:11px;border-radius:3px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.bbtn.build{background:#2d8f4c;border-color:#3fa060}
+.bbtn.err{background:#b4484a;border-color:#c45860}
+
+.main{display:grid;grid-template-columns:220px 1fr 1fr 240px;overflow:hidden}
+
+/* file tree */
+.tree{background:#2b2d30;border-right:1px solid #1e1f22;overflow-y:auto;font-size:12px}
+.tree h4{background:#3c3f41;padding:5px 10px;color:#bcbec4;font-size:11px;border-bottom:1px solid #1e1f22;font-family:-apple-system,sans-serif}
+.tr{padding:2px 10px 2px 0;cursor:pointer;display:flex;align-items:center;gap:4px}
+.tr:hover{background:#343638}
+.tr.a{background:#2b5ea0;color:#fff}
+.tr .ic{color:#6a90c0;width:16px;text-align:center}
+.tr.tex .ic{color:#6ab064}
+.tr.bib .ic{color:#d0a840}
+.tr.fig .ic{color:#c070a0}
+.i-1{padding-left:12px}.i-2{padding-left:24px}.i-3{padding-left:36px}
+
+/* editor */
+.ed{background:#1e1f22;overflow:hidden;display:flex;flex-direction:column;border-right:1px solid #1a1b1d}
+.ed .tabs{background:#2b2d30;border-bottom:1px solid #1e1f22;display:flex;font-size:11.5px;font-family:-apple-system,sans-serif}
+.ed .tab{padding:6px 12px;color:#9aa0a6;border-right:1px solid #1e1f22;display:flex;align-items:center;gap:6px;cursor:pointer}
+.ed .tab.a{background:#1e1f22;color:#fff}
+.ed .tab .mod{color:#e88c00}
+.ed .tab .cl{color:#6a7080}
+.ed .body{flex:1;overflow-y:auto;display:flex;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.55}
+.ed .gutter{background:#2b2d30;color:#636770;padding:4px 8px 4px 10px;text-align:right;user-select:none;border-right:1px solid #1e1f22;white-space:pre;min-width:44px}
+.ed .code{flex:1;padding:4px 10px;white-space:pre;color:#bcbec4;overflow-x:auto}
+
+/* syntax colors */
+.cm{color:#7a7e85;font-style:italic}  /* comment */
+.kw{color:#cf8e6d}                     /* \\command */
+.en{color:#56a8f5}                     /* environment */
+.ar{color:#a9b7c6}                     /* argument brace */
+.op{color:#cc7832}
+.st{color:#6aab73}                      /* string / math */
+.mt{color:#d5b770}                      /* math */
+.lb{color:#9876aa}                      /* label */
+.sel{background:rgba(60,120,200,0.28)}
+.cur-ln{background:#2f333a}
+.caret{display:inline-block;width:1px;background:#fff;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:0}}
+.sq-err{text-decoration:underline wavy #e85050;text-decoration-skip-ink:none}
+.sq-warn{text-decoration:underline wavy #d0a840;text-decoration-skip-ink:none}
+
+/* pdf preview */
+.pdf-wrap{background:#3c3f41;overflow:hidden;display:flex;flex-direction:column;border-right:1px solid #1a1b1d}
+.pdf-tools{background:#2b2d30;border-bottom:1px solid #1e1f22;padding:4px 8px;font-family:-apple-system,sans-serif;font-size:11px;display:flex;align-items:center;gap:8px;color:#bcbec4}
+.pdf-tools b{color:#fff}
+.pdf-tools .z{background:#4a5361;padding:1px 6px;border-radius:2px}
+.pdf-area{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;background:#4a4d52}
+.page{background:#fdfcf7;color:#121418;width:460px;padding:48px 54px;font-family:'Latin Modern Roman','Times New Roman',serif;font-size:10.5px;line-height:1.45;box-shadow:0 2px 12px rgba(0,0,0,0.4);position:relative}
+.page .pn{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:9px;color:#6a7080}
+.page h1{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px;color:#000}
+.page .au{text-align:center;font-size:11px;margin-bottom:3px}
+.page .aff{text-align:center;font-size:9.5px;font-style:italic;color:#4a5060;margin-bottom:14px}
+.page .dt{text-align:center;font-size:10px;color:#4a5060;margin-bottom:18px}
+.page .ab-h{font-weight:700;text-align:center;margin-bottom:4px;font-size:10.5px}
+.page .ab{font-size:9.5px;text-align:justify;padding:0 24px;margin-bottom:14px}
+.page h2.sec{font-size:13px;font-weight:700;margin-top:10px;margin-bottom:5px;color:#000}
+.page h3.sub{font-size:11px;font-weight:700;margin-top:8px;margin-bottom:3px;color:#000}
+.page p{text-align:justify;margin-bottom:5px;text-indent:14px;font-size:10px}
+.page p:first-of-type{text-indent:0}
+.page .eq{text-align:center;margin:8px 0;font-family:'Cambria Math','Latin Modern Math',serif;font-style:italic;font-size:12px}
+.page .eq .n{float:right;font-style:normal;color:#4a5060;font-size:10px}
+.page .fig{border:1px solid #c8c8c8;padding:8px;margin:10px 0;background:#f0eee4;text-align:center;font-size:9.5px}
+.page .fig svg{max-width:100%;height:120px}
+.page .fig .cap{margin-top:4px;font-size:9px;color:#3a4050}
+.page .fig .cap b{font-weight:700}
+
+/* right panel */
+.right{background:#2b2d30;border-left:1px solid #1e1f22;overflow-y:auto;display:flex;flex-direction:column;font-family:-apple-system,sans-serif;font-size:11.5px}
+.rh{background:#3c3f41;padding:5px 10px;color:#bcbec4;font-size:11px;border-bottom:1px solid #1e1f22;display:flex;align-items:center;gap:4px}
+.rh .cnt{margin-left:auto;font-size:10px;padding:0 6px;border-radius:8px;background:#4a5361;color:#bcbec4}
+.rh .cnt.err{background:#b4484a;color:#fff}
+.rh .cnt.warn{background:#d0a840;color:#000}
+
+.outl{font-family:-apple-system,sans-serif;font-size:11.5px}
+.outl .ol{padding:2px 10px;cursor:pointer;color:#bcbec4;display:flex;align-items:center;gap:4px}
+.outl .ol:hover{background:#343638}
+.outl .ol.sec{font-weight:700;color:#fff;padding-left:10px}
+.outl .ol.sub{padding-left:24px;color:#9aa0a6}
+.outl .ol.ssub{padding-left:38px;color:#7a7e85;font-size:11px}
+.outl .ol.a{background:#2b5ea0;color:#fff}
+
+.logs{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;color:#bcbec4;overflow-y:auto;max-height:180px}
+.logs .e{color:#ff7070}
+.logs .w{color:#e8b000}
+.logs .ok{color:#6aab73}
+.logs .inf{color:#7a7e85}
+
+.bibs{font-size:11px}
+.bibs .bi{padding:4px 10px;border-bottom:1px solid #1e1f22;cursor:pointer}
+.bibs .bi:hover{background:#343638}
+.bibs .bi .k{color:#d0a840;font-family:'JetBrains Mono',monospace}
+.bibs .bi .t{color:#bcbec4;font-size:10.5px;margin-top:1px}
+.bibs .bi .au{color:#7a7e85;font-size:10px}
+
+.sbar{background:#1e1f22;border-top:1px solid #1a1b1d;display:flex;align-items:center;padding:0 10px;color:#9aa0a6;font-size:11px;gap:12px;font-family:-apple-system,sans-serif}
+.sbar .ok{color:#6aab73}
+.sbar .err{color:#ff7070}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="main.tex — Overleaf" data-favicon="📄">
+<div class="app">
+  <div class="tb">
+    <span>📘 <b>TeXstudio 4.7.0</b></span>
+    <span>~/research/dissertation/<b>main.tex</b> <span class="mod">● modified</span></span>
+    <span style="margin-left:auto">Project: <b>On the Convergence of Stochastic Gradient Methods in Non-Convex Optimization</b></span>
+  </div>
+
+  <div class="menu">
+    <div class="mi">File</div><div class="mi">Edit</div><div class="mi">Tools</div><div class="mi">LaTeX</div><div class="mi">Math</div><div class="mi">Wizards</div><div class="mi">Bibliography</div><div class="mi">Macros</div><div class="mi">Options</div><div class="mi">Help</div>
+    <div class="sep"></div>
+    <button class="bbtn build">▶ Build &amp; View</button>
+    <button class="bbtn">◐ pdflatex</button>
+    <button class="bbtn">📚 biber</button>
+    <button class="bbtn">🔍 SyncTeX</button>
+    <div class="sep"></div>
+    <button class="bbtn err">✗ 2 errors · 11 warnings</button>
+    <span style="margin-left:auto;color:#9aa0a6;font-family:-apple-system,sans-serif;font-size:11px">XeLaTeX · biber · utf-8 · memoir · 260 pages</span>
+  </div>
+
+  <div class="main">
+    <div class="tree">
+      <h4>📁 Structure</h4>
+      <div class="tr" style="font-weight:700;color:#fff">📂 dissertation/</div>
+      <div class="tr tex i-1 a"><span class="ic">𝐓</span>main.tex</div>
+      <div class="tr tex i-1"><span class="ic">𝐓</span>preamble.tex</div>
+      <div class="tr tex i-1"><span class="ic">𝐓</span>macros.sty</div>
+      <div class="tr i-1">📂 chapters/</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>00-abstract.tex</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>01-introduction.tex</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>02-background.tex</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>03-convergence.tex</div>
+      <div class="tr tex i-2" style="color:#e88c00"><span class="ic">𝐓</span>04-experiments.tex ●</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>05-discussion.tex</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>06-conclusion.tex</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>A-proofs.tex</div>
+      <div class="tr tex i-2"><span class="ic">𝐓</span>B-additional-exp.tex</div>
+      <div class="tr i-1">📂 figures/</div>
+      <div class="tr fig i-2"><span class="ic">▨</span>convergence.pdf</div>
+      <div class="tr fig i-2"><span class="ic">▨</span>loss-landscape.png</div>
+      <div class="tr fig i-2"><span class="ic">▨</span>batch-ablation.pdf</div>
+      <div class="tr fig i-2"><span class="ic">▨</span>lr-schedule.pdf</div>
+      <div class="tr fig i-2"><span class="ic">▨</span>architecture.pdf</div>
+      <div class="tr i-1">📂 data/</div>
+      <div class="tr bib i-2"><span class="ic">📖</span>references.bib</div>
+      <div class="tr bib i-2"><span class="ic">📖</span>extra-refs.bib</div>
+      <div class="tr i-1">📄 Makefile</div>
+      <div class="tr i-1" style="color:#6aab73">📄 main.pdf (4.2MB)</div>
+      <div class="tr i-1" style="color:#7a7e85">📄 main.log</div>
+      <div class="tr i-1" style="color:#7a7e85">📄 main.aux</div>
+      <div class="tr i-1" style="color:#7a7e85">📄 main.bbl</div>
+      <div class="tr i-1" style="color:#7a7e85">📄 main.toc</div>
+    </div>
+
+    <div class="ed">
+      <div class="tabs">
+        <div class="tab a">𝐓 main.tex <span class="mod">●</span> <span class="cl">×</span></div>
+        <div class="tab">𝐓 03-convergence.tex <span class="cl">×</span></div>
+        <div class="tab">𝐓 04-experiments.tex <span class="mod">●</span> <span class="cl">×</span></div>
+        <div class="tab">📖 references.bib <span class="cl">×</span></div>
+      </div>
+      <div class="body">
+        <div class="gutter">  84
+  85
+  86
+  87
+  88
+  89
+  90
+  91
+  92
+  93
+  94
+  95
+  96
+  97
+  98
+  99
+ 100
+ 101
+ 102
+ 103
+ 104
+ 105
+ 106
+ 107
+ 108
+ 109
+ 110
+ 111
+ 112
+ 113
+ 114
+ 115
+ 116
+ 117
+ 118
+ 119
+ 120
+ 121
+ 122
+ 123
+ 124
+ 125
+ 126
+ 127
+ 128
+ 129
+ 130
+ 131
+ 132
+ 133
+ 134</div>
+<div class="code"><span class="cm">% ===== Chapter 3: Convergence Analysis =========================</span>
+<span class="kw">\chapter</span><span class="ar">{</span>Convergence of Adaptive SGD<span class="ar">}</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">ch:convergence</span><span class="ar">}</span>
+
+<span class="kw">\section</span><span class="ar">{</span>Problem Setting<span class="ar">}</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">sec:setting</span><span class="ar">}</span>
+
+We consider the non-convex stochastic optimization problem
+<span class="kw">\begin</span><span class="ar">{</span><span class="en">equation</span><span class="ar">}</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">eq:problem</span><span class="ar">}</span>
+    <span class="mt">\min_{x \in \mathbb{R}^d} \; f(x) \;=\; \mathbb{E}_{\xi \sim \mathcal{D}}\bigl[F(x;\xi)\bigr],</span>
+<span class="kw">\end</span><span class="ar">{</span><span class="en">equation</span><span class="ar">}</span>
+where <span class="mt">$f : \mathbb{R}^d \to \mathbb{R}$</span> is <span class="kw">\emph</span><span class="ar">{</span>possibly non-convex<span class="ar">}</span>, <span class="mt">$L$</span>-smooth, and
+bounded below by <span class="mt">$f^\star &gt; -\infty$</span>. The stochastic oracle returns unbiased
+gradients <span class="mt">$g(x;\xi)$</span> satisfying <span class="mt">$\mathbb{E}[g(x;\xi)] = \nabla f(x)$</span>.
+
+<span class="kw">\begin</span><span class="ar">{</span><span class="en">assumption</span><span class="ar">}</span><span class="ar">[</span>Bounded variance<span class="ar">]</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">asm:var</span><span class="ar">}</span>
+For all <span class="mt">$x \in \mathbb{R}^d$</span>, there exists <span class="mt">$\sigma &gt; 0$</span> such that
+<span class="mt">$\mathbb{E}\bigl[\lVert g(x;\xi) - \nabla f(x) \rVert^2\bigr] \le \sigma^2.$</span>
+<span class="kw">\end</span><span class="ar">{</span><span class="en">assumption</span><span class="ar">}</span>
+
+<span class="kw">\section</span><span class="ar">{</span>Main Result<span class="ar">}</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">sec:main</span><span class="ar">}</span>
+
+<span class="kw">\begin</span><span class="ar">{</span><span class="en">theorem</span><span class="ar">}</span><span class="ar">[</span>Convergence rate of <span class="kw">\textsc</span><span class="ar">{</span>AdaNova<span class="ar">}</span><span class="ar">]</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">thm:main</span><span class="ar">}</span>
+Let Assumptions <span class="kw">\ref</span><span class="ar">{</span>asm:smooth<span class="ar">}</span>--<span class="kw">\ref</span><span class="ar">{</span>asm:var<span class="ar">}</span> hold. Fix <span class="mt">$\eta_t = \eta / \sqrt{t}$</span> for
+<span class="mt">$t \ge 1$</span>, <span class="mt">$\beta_1 \in [0,1)$</span>, and <span class="mt">$\beta_2 \in [\beta_1, 1)$</span>. Then the iterates of
+Algorithm~<span class="kw">\ref</span><span class="ar">{</span>alg:adanova<span class="ar">}</span> satisfy <span class="sq-warn">$\min_{t \le T}\mathbb{E}\lVert \nabla f(x_t) \rVert^2 \le$</span>
+<span class="kw">\begin</span><span class="ar">{</span><span class="en">equation</span><span class="ar">}</span><span class="kw">\label</span><span class="ar">{</span><span class="lb">eq:rate</span><span class="ar">}</span>
+    <span class="mt">\mathcal{O}\!\left(\frac{f(x_0) - f^\star}{\eta\sqrt{T}} + \frac{L\eta \sigma^2 \log T}{\sqrt{T}}\right).</span>
+<span class="kw">\end</span><span class="ar">{</span><span class="en">equation</span><span class="ar">}</span>
+In particular, choosing <span class="mt">$\eta = \Theta(1/\sqrt{L})$</span> yields the optimal <span class="mt">$\mathcal{O}(T^{-1/2})$</span>
+convergence up to logarithmic factors.
+<span class="kw">\end</span><span class="ar">{</span><span class="en">theorem</span><span class="ar">}</span>
+
+<span class="cm">% TODO: tighten the log-factor, cite Zhang &amp; Tu 2023</span>
+The proof, deferred to Appendix~<span class="kw">\ref</span><span class="ar">{</span>app:proofs<span class="ar">}</span>, follows the descent-lemma
+template of <span class="kw">\citet</span><span class="ar">{</span><span class="sq-err">ghadimi2013stochastic</span><span class="ar">}</span> combined with a novel
+<span class="kw">\emph</span><span class="ar">{</span>variance-coupled step-size<span class="ar">}</span> bound<span class="caret">▎</span> that exploits
+Assumption~<span class="kw">\ref</span><span class="ar">{</span>asm:var<span class="ar">}</span> to control the second-moment estimator.
+
+<span class="kw">\begin</span><span class="ar">{</span><span class="en">figure</span><span class="ar">}</span><span class="ar">[</span>t<span class="ar">]</span>
+    <span class="kw">\centering</span>
+    <span class="kw">\includegraphics</span><span class="ar">[</span>width=0.82<span class="kw">\linewidth</span><span class="ar">]{</span>figures/convergence.pdf<span class="ar">}</span>
+    <span class="kw">\caption</span><span class="ar">{</span>Convergence of <span class="kw">\textsc</span><span class="ar">{</span>AdaNova<span class="ar">}</span> vs.\ baselines on CIFAR-100.<span class="ar">}</span>
+    <span class="kw">\label</span><span class="ar">{</span><span class="lb">fig:conv</span><span class="ar">}</span>
+<span class="kw">\end</span><span class="ar">{</span><span class="en">figure</span><span class="ar">}</span></div>
+      </div>
+    </div>
+
+    <div class="pdf-wrap">
+      <div class="pdf-tools">
+        <span>📄 main.pdf</span>
+        <span style="margin-left:8px">page <b>84</b> / 260</span>
+        <span class="z">–</span><span class="z">100%</span><span class="z">+</span>
+        <span style="margin-left:auto">SyncTeX ▶ line 124</span>
+      </div>
+      <div class="pdf-area">
+        <div class="page">
+          <h2 class="sec">3. Convergence of Adaptive SGD</h2>
+          <h3 class="sub">3.1 Problem Setting</h3>
+          <p>We consider the non-convex stochastic optimization problem</p>
+          <div class="eq">min<sub><i>x</i>∈ℝ<sup><i>d</i></sup></sub> &nbsp; <i>f</i>(<i>x</i>) = 𝔼<sub><i>ξ∼𝒟</i></sub> [<i>F</i>(<i>x</i>; <i>ξ</i>)], <span class="n">(3.1)</span></div>
+          <p>where <i>f</i>: ℝ<sup>d</sup> → ℝ is possibly non-convex, <i>L</i>-smooth, and bounded below by <i>f</i><sup>★</sup> &gt; -∞. The stochastic oracle returns unbiased gradients <i>g</i>(<i>x</i>; <i>ξ</i>) satisfying 𝔼[<i>g</i>(<i>x</i>;<i>ξ</i>)] = ∇<i>f</i>(<i>x</i>).</p>
+          <p style="border-left:3px solid #8a98b0;padding:4px 8px;background:#f0eee4;margin:6px 0;text-indent:0"><b>Assumption 3.1 (Bounded variance).</b> For all <i>x</i> ∈ ℝ<sup>d</sup>, there exists <i>σ</i> &gt; 0 such that 𝔼[‖<i>g</i>(<i>x</i>;<i>ξ</i>) − ∇<i>f</i>(<i>x</i>)‖²] ≤ <i>σ</i>².</p>
+          <h3 class="sub">3.2 Main Result</h3>
+          <p style="border-left:3px solid #8a6098;padding:4px 8px;background:#f6f0ee;margin:6px 0;text-indent:0"><b>Theorem 3.2 (Convergence rate of AdaNova).</b> Let Assumptions 3.1–3.2 hold. Fix <i>η<sub>t</sub></i> = <i>η</i> / √<i>t</i> for <i>t</i> ≥ 1, <i>β</i><sub>1</sub> ∈ [0,1), and <i>β</i><sub>2</sub> ∈ [<i>β</i><sub>1</sub>, 1). Then the iterates of Algorithm 1 satisfy</p>
+          <div class="eq">min<sub><i>t≤T</i></sub> 𝔼‖∇<i>f</i>(<i>x<sub>t</sub></i>)‖² ≤ 𝒪( <i>f</i>(<i>x</i><sub>0</sub>)−<i>f</i><sup>★</sup> / <i>η</i>√<i>T</i> &nbsp;+&nbsp; <i>Lησ</i>²&thinsp;log <i>T</i> / √<i>T</i> ) <span class="n">(3.2)</span></div>
+          <p>In particular, choosing <i>η</i> = Θ(1/√<i>L</i>) yields the optimal 𝒪(<i>T</i><sup>−1/2</sup>) convergence up to logarithmic factors.</p>
+          <div class="fig">
+            <svg viewBox="0 0 340 120"><rect width="340" height="120" fill="#fff"/>
+              <line x1="40" y1="100" x2="320" y2="100" stroke="#333"/>
+              <line x1="40" y1="12" x2="40" y2="100" stroke="#333"/>
+              <polyline points="40,20 60,28 90,42 130,56 180,70 230,80 280,86 320,90" fill="none" stroke="#2060c0" stroke-width="1.5"/>
+              <polyline points="40,30 60,44 90,60 130,74 180,84 230,90 280,93 320,95" fill="none" stroke="#c04020" stroke-width="1.5" stroke-dasharray="3,2"/>
+              <polyline points="40,40 60,56 90,72 130,84 180,92 230,95 280,97 320,98" fill="none" stroke="#60a040" stroke-width="1.5" stroke-dasharray="1,2"/>
+              <text x="180" y="115" font-size="9" text-anchor="middle" fill="#333">Iteration t (×10³)</text>
+              <text x="16" y="56" font-size="9" fill="#333" transform="rotate(-90 16 56)">loss</text>
+              <g font-size="8" fill="#333">
+                <rect x="250" y="18" width="8" height="2" fill="#2060c0"/><text x="262" y="22">AdaNova</text>
+                <rect x="250" y="28" width="8" height="2" fill="#c04020"/><text x="262" y="32">Adam</text>
+                <rect x="250" y="38" width="8" height="2" fill="#60a040"/><text x="262" y="42">SGD+M</text>
+              </g>
+            </svg>
+            <div class="cap"><b>Figure 3.1:</b> Convergence of AdaNova vs. baselines on CIFAR-100.</div>
+          </div>
+          <p>The proof, deferred to Appendix A, follows the descent-lemma template of Ghadimi and Lan (2013) combined with a novel <i>variance-coupled step-size</i> bound that exploits Assumption 3.1 to control the second-moment estimator.</p>
+          <div class="pn">84</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="rh">📑 Document Outline <span class="cnt">8/42</span></div>
+      <div class="outl">
+        <div class="ol sec">1 Introduction</div>
+        <div class="ol sub">1.1 Motivation</div>
+        <div class="ol sub">1.2 Contributions</div>
+        <div class="ol sec">2 Background</div>
+        <div class="ol sub">2.1 Stochastic optimization</div>
+        <div class="ol sub">2.2 Adaptive methods</div>
+        <div class="ol sec">3 Convergence of Adaptive SGD</div>
+        <div class="ol sub a">3.1 Problem Setting</div>
+        <div class="ol sub a">3.2 Main Result</div>
+        <div class="ol ssub">Theorem 3.2</div>
+        <div class="ol ssub">Figure 3.1</div>
+        <div class="ol sub">3.3 Variance-coupled step-size</div>
+        <div class="ol sub">3.4 Discussion</div>
+        <div class="ol sec">4 Experiments</div>
+        <div class="ol sub">4.1 Image classification</div>
+        <div class="ol sub">4.2 Language modeling</div>
+        <div class="ol sub">4.3 Ablations</div>
+        <div class="ol sec">5 Discussion &amp; Limitations</div>
+        <div class="ol sec">6 Conclusion</div>
+        <div class="ol sec">A. Deferred Proofs</div>
+        <div class="ol sec">B. Additional Experiments</div>
+        <div class="ol sec">Bibliography (142)</div>
+      </div>
+
+      <div class="rh" style="margin-top:4px">⚠ Issues <span class="cnt err">2</span><span class="cnt warn">11</span></div>
+      <div class="logs">
+        <div class="e">✗ Undefined citation 'ghadimi2013stochastic' on line 124</div>
+        <div class="e">✗ Missing \end{algorithm} on line 248 (04-experiments.tex)</div>
+        <div class="w">⚠ Overfull \hbox (18.4pt) in paragraph at line 94</div>
+        <div class="w">⚠ Overfull \hbox (6.2pt) at line 142</div>
+        <div class="w">⚠ Underfull \vbox on page 88</div>
+        <div class="w">⚠ Reference 'asm:smooth' on line 106 undefined</div>
+        <div class="w">⚠ Font shape `OT1/cmr/bx/sc' undefined</div>
+        <div class="w">⚠ Label 'eq:rate' multiply defined</div>
+        <div class="w">⚠ Package hyperref: Token not allowed in PDF string</div>
+        <div class="w">⚠ (4 more warnings hidden)</div>
+        <div class="inf">ℹ biber: 142 entries, 4 unused</div>
+        <div class="ok">✓ Output written: main.pdf (4.23 MB, 260 pages)</div>
+      </div>
+
+      <div class="rh" style="margin-top:4px">📖 references.bib <span class="cnt">142</span></div>
+      <div class="bibs">
+        <div class="bi"><div class="k">@article{kingma2015adam}</div><div class="t">Adam: A Method for Stochastic Optimization</div><div class="au">Kingma &amp; Ba · ICLR 2015 · cited 84×</div></div>
+        <div class="bi"><div class="k">@article{reddi2018amsgrad}</div><div class="t">On the Convergence of Adam and Beyond</div><div class="au">Reddi, Kale, Kumar · ICLR 2018 · 42×</div></div>
+        <div class="bi" style="background:#4a2028"><div class="k" style="color:#ff7070">@article{ghadimi2013stochastic}</div><div class="t">Stochastic First- and Zeroth-Order Methods for Nonconvex Optimization</div><div class="au" style="color:#ffa0a0">✗ not found in .bib</div></div>
+        <div class="bi"><div class="k">@book{nesterov2004intro}</div><div class="t">Introductory Lectures on Convex Optimization</div><div class="au">Nesterov · Springer 2004</div></div>
+        <div class="bi"><div class="k">@inproceedings{zhang2023tu}</div><div class="t">Tightening log factors in adaptive SGD</div><div class="au">Zhang &amp; Tu · NeurIPS 2023</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <span>Line 124 · Col 48 · UTF-8 · LF</span>
+    <span class="ok">● latexmk watching</span>
+    <span>XeLaTeX 3.141592653-2.6-0.999994</span>
+    <span>Last build 8.4s ago</span>
+    <span>4,842 words · 28 figures · 11 theorems</span>
+    <span class="err">● 2 errors</span>
+    <span style="margin-left:auto">Git: diss-ch3 · ahead 4 · modified 3</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

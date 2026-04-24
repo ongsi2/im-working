@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>BrandKit_Q2 — Design Canvas</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#1e1e1e; --panel:#2d2d2d; --panel2:#252525; --border:#3e3e3e;
+    --text:#cccccc; --dim:#888; --mute:#666;
+    --accent:#0d99ff; --accent-soft:#0d99ff20;
+    --purple:#9747ff; --green:#14ae5c; --red:#f24822; --amber:#ffa629;
+  }
+  html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Inter','Segoe UI',sans-serif; font-size:11px; overflow:hidden; }
+  .app { display:grid; grid-template-rows:40px 1fr 24px; height:100vh; }
+  .tb { background:#191919; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 12px; gap:14px; font-size:12px; }
+  .tb .logo { width:24px;height:24px;background:linear-gradient(135deg,#f24822,#a259ff,#0acf83);border-radius:4px; }
+  .tb .tool { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:3px; color:var(--text); }
+  .tb .tool.active { background:var(--accent); color:#fff; }
+  .tb .tool:hover { background:var(--panel); }
+  .tb .title { margin-left:12px; font-weight:500; }
+  .tb .dim { color:var(--dim); }
+  .spacer { flex:1; }
+  .avatar { width:24px;height:24px;border-radius:50%;border:2px solid var(--bg); background:#ffc5a1; color:#40275b; display:flex;align-items:center;justify-content:center; font-size:10px; font-weight:600; }
+  .avs { display:flex; }
+  .avs .avatar+.avatar { margin-left:-6px; }
+  .play-btn { background:var(--accent); color:#fff; padding:6px 14px; border-radius:4px; font-weight:500; font-size:11px; }
+
+  .main { display:grid; grid-template-columns:240px 1fr 260px; overflow:hidden; }
+  .left { background:var(--panel); border-right:1px solid var(--border); overflow-y:auto; }
+  .right { background:var(--panel); border-left:1px solid var(--border); overflow-y:auto; padding:8px 0; }
+  .section-tabs { display:flex; border-bottom:1px solid var(--border); font-size:11px; }
+  .section-tabs .t { padding:8px 12px; color:var(--dim); }
+  .section-tabs .t.active { color:var(--text); border-bottom:2px solid var(--accent); }
+
+  .layer { display:flex; align-items:center; gap:6px; padding:4px 8px; font-size:11px; border-left:2px solid transparent; }
+  .layer:hover { background:#383838; }
+  .layer.selected { background:var(--accent-soft); border-left-color:var(--accent); color:#fff; }
+  .layer .ic { color:var(--dim); font-size:11px; width:14px; }
+  .layer .nested { margin-left:12px; }
+  .layer-grp { font-weight:500; }
+
+  .canvas { background:#2c2c2c; position:relative; overflow:hidden; }
+  .ruler-h { position:absolute; top:0; left:40px; right:0; height:20px; background:var(--panel); border-bottom:1px solid var(--border); z-index:5; }
+  .ruler-v { position:absolute; top:20px; left:0; width:40px; bottom:40px; background:var(--panel); border-right:1px solid var(--border); z-index:5; }
+  .ruler-h::before,.ruler-v::before { content:''; display:block; width:100%; height:100%;
+    background-image: repeating-linear-gradient(90deg,transparent 0 49px, var(--dim) 49px 50px);
+  }
+  .ruler-v::before { background-image: repeating-linear-gradient(0deg,transparent 0 49px, var(--dim) 49px 50px); }
+
+  .artboards {
+    position:absolute;
+    top:40px; left:60px;
+    display:flex;
+    gap:60px;
+    align-items:flex-start;
+    transform:scale(0.72) translate(40px, 20px);
+    transform-origin:top left;
+  }
+  .ab { background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.35); position:relative; color:#000; }
+  .ab .ab-label { position:absolute; top:-20px; left:0; color:var(--accent); font-size:12px; font-weight:600; }
+  .ab .ab-size { position:absolute; top:-20px; right:0; color:var(--dim); font-size:11px; }
+
+  /* Artboard 1 — landing */
+  .ab1 { width:540px; height:720px; font-family:'Inter',sans-serif; }
+  .ab1 .hero { height:440px; background:linear-gradient(135deg,#1a1530 0%,#6d0b8c 60%,#f24822 100%); position:relative; overflow:hidden; padding:32px 40px; color:#fff; }
+  .ab1 .nav { display:flex; justify-content:space-between; font-size:12px; margin-bottom:80px; }
+  .ab1 .nav .logo { font-weight:700; font-size:16px; }
+  .ab1 .nav .links { display:flex; gap:20px; opacity:0.85; }
+  .ab1 .hero h1 { font-size:40px; line-height:1.1; font-weight:700; margin-bottom:20px; }
+  .ab1 .hero p { opacity:0.85; font-size:13px; line-height:1.6; max-width:360px; margin-bottom:24px; }
+  .ab1 .hero .cta { background:#fff; color:#1a1530; padding:10px 20px; font-weight:600; font-size:13px; display:inline-block; border-radius:4px; }
+  .ab1 .hero .orb { position:absolute; right:-80px; top:80px; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle at 30% 30%,#fff6,transparent 70%); }
+  .ab1 .features { padding:40px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .ab1 .feat h3 { font-size:16px; margin-bottom:6px; color:#1a1530; }
+  .ab1 .feat p { font-size:11px; color:#666; line-height:1.5; }
+  .ab1 .feat .ic { width:32px; height:32px; background:#f0ebf7; border-radius:6px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:#6d0b8c; font-weight:700; }
+
+  /* Artboard 2 — colors */
+  .ab2 { width:540px; height:720px; padding:40px; font-family:'Inter',sans-serif; }
+  .ab2 h2 { font-size:22px; margin-bottom:4px; color:#1a1530; }
+  .ab2 .sub { color:#888; font-size:12px; margin-bottom:24px; }
+  .ab2 .swatches { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
+  .ab2 .sw { height:80px; border-radius:6px; padding:8px 10px; color:#fff; font-size:10px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .ab2 .sw .n { font-weight:600; font-size:11px; }
+  .ab2 .sw .c { opacity:0.8; font-family:monospace; font-size:9.5px; }
+  .ab2 h3 { font-size:14px; margin-bottom:10px; color:#1a1530; }
+  .ab2 .type-row { padding:10px 0; border-top:1px solid #eee; color:#1a1530; }
+  .ab2 .t1 { font-size:36px; font-weight:700; line-height:1; }
+  .ab2 .t2 { font-size:22px; font-weight:600; }
+  .ab2 .t3 { font-size:15px; font-weight:500; }
+  .ab2 .t4 { font-size:12px; color:#666; line-height:1.5; margin-top:4px; }
+  .ab2 .type-meta { font-size:9px; color:#aaa; margin-top:2px; font-family:monospace; }
+
+  /* Artboard 3 — components */
+  .ab3 { width:540px; height:720px; padding:40px; font-family:'Inter',sans-serif; background:#f9f9fb; }
+  .ab3 h2 { font-size:22px; margin-bottom:24px; color:#1a1530; }
+  .ab3 .comp { background:#fff; border-radius:8px; padding:16px; margin-bottom:14px; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+  .ab3 .comp .label { font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+  .ab3 .btn { display:inline-block; padding:8px 16px; border-radius:4px; font-size:12px; font-weight:500; margin-right:6px; }
+  .ab3 .btn.primary { background:#6d0b8c; color:#fff; }
+  .ab3 .btn.secondary { background:#f0ebf7; color:#6d0b8c; }
+  .ab3 .btn.outline { background:#fff; color:#6d0b8c; border:1px solid #6d0b8c; }
+  .ab3 .card { border:1px solid #eee; border-radius:6px; overflow:hidden; }
+  .ab3 .card .img { height:80px; background:linear-gradient(135deg,#6d0b8c,#f24822); }
+  .ab3 .card .body { padding:12px; }
+  .ab3 .card h4 { font-size:13px; margin-bottom:4px; color:#1a1530; }
+  .ab3 .card p { font-size:10.5px; color:#666; line-height:1.5; }
+  .ab3 .input-row { display:flex; gap:8px; }
+  .ab3 .input { flex:1; padding:8px 10px; border:1px solid #ddd; border-radius:4px; font-size:11px; color:#999; }
+  .ab3 .input.focused { border-color:#6d0b8c; box-shadow:0 0 0 3px #6d0b8c22; }
+
+  /* Right panel: properties */
+  .right h3 { padding:8px 12px; font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:0.4px; }
+  .prop-row { padding:3px 12px; display:grid; grid-template-columns:50px 1fr 1fr; gap:6px; align-items:center; font-size:11px; }
+  .prop-row .k { color:var(--dim); }
+  .prop-row .v { background:#383838; border:1px solid transparent; padding:3px 6px; border-radius:2px; color:var(--text); }
+  .prop-row .v:hover { border-color:var(--border); }
+  .prop-section { border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:4px; }
+  .prop-section .head { padding:10px 12px 6px; display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:500; }
+  .color-chip { display:flex; gap:6px; align-items:center; padding:3px 12px; font-size:11px; }
+  .color-chip .sw { width:16px; height:16px; border-radius:2px; }
+  .color-chip .hex { font-family:monospace; color:var(--text); }
+  .color-chip .op { color:var(--dim); margin-left:auto; font-family:monospace; font-size:10px; }
+
+  /* status */
+  .status { background:#191919; border-top:1px solid var(--border); display:flex; align-items:center; padding:0 12px; gap:16px; font-size:10.5px; color:var(--dim); }
+  .status b { color:var(--text); }
+  .status .spacer { flex:1; }
+
+  /* cursor on canvas */
+  .cursor { position:absolute; z-index:40; font-size:11px; pointer-events:none; transform:translate(-6px,-4px); }
+  .cursor .arrow { width:0; height:0; border-style:solid; border-width:0 0 14px 10px; border-color:transparent; }
+  .cursor.c1 .arrow { border-bottom-color:#14ae5c; transform:rotate(-45deg); }
+  .cursor.c2 .arrow { border-bottom-color:#ffa629; transform:rotate(-45deg); }
+  .cursor .tag { display:inline-block; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-top:2px; }
+  .cursor.c1 .tag { background:#14ae5c; }
+  .cursor.c2 .tag { background:#ffa629; }
+  @keyframes drift1 {
+    0% { top:200px; left:380px; } 25% { top:220px; left:420px; }
+    50% { top:300px; left:460px; } 75% { top:260px; left:400px; }
+    100% { top:200px; left:380px; }
+  }
+  @keyframes drift2 {
+    0% { top:480px; left:620px; } 30% { top:510px; left:700px; }
+    60% { top:540px; left:660px; } 100% { top:480px; left:620px; }
+  }
+
+  /* selection on canvas */
+  .sel-box {
+    position:absolute; border:1.5px solid var(--accent); pointer-events:none; z-index:30;
+  }
+  .sel-box::after {
+    content: attr(data-size); position:absolute; bottom:-18px; left:0; background:var(--accent); color:#fff; font-size:10px; padding:1px 4px; border-radius:2px; font-family:monospace;
+  }
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="brand-system — Figma" data-favicon="🎨">
+<div class="app">
+  <div class="tb">
+    <div class="logo"></div>
+    <div class="tool active">▸</div>
+    <div class="tool">+</div>
+    <div class="tool">▢</div>
+    <div class="tool">○</div>
+    <div class="tool">✎</div>
+    <div class="tool">T</div>
+    <div class="tool">◇</div>
+    <div class="tool">🖼</div>
+    <div style="border-left:1px solid var(--border); height:20px; margin:0 6px"></div>
+    <span class="title">Drafts <span class="dim">/</span> BrandKit_Q2 <span class="dim">/</span> <b>Landing_v12_final</b></span>
+    <span class="dim">• 자동 저장됨</span>
+    <div class="spacer"></div>
+    <div class="avs">
+      <div class="avatar" style="background:#14ae5c;color:#fff">KP</div>
+      <div class="avatar" style="background:#ffa629;color:#fff">SW</div>
+      <div class="avatar" style="background:#9747ff;color:#fff">JL</div>
+      <div class="avatar" style="background:#0d99ff;color:#fff">+2</div>
+    </div>
+    <div class="tool">💬</div>
+    <div class="tool">🔗 공유</div>
+    <div class="play-btn">▶ 프로토타입 재생</div>
+  </div>
+
+  <div class="main">
+    <aside class="left">
+      <div class="section-tabs">
+        <div class="t active">파일</div>
+        <div class="t">에셋</div>
+      </div>
+      <div style="padding:6px 0">
+        <div class="layer layer-grp"><span class="ic">▾</span><span>📄 Page 1</span></div>
+        <div class="layer nested"><span class="ic">▾</span><span>◆ Artboard / Landing</span></div>
+        <div class="layer nested" style="padding-left:28px"><span class="ic">▸</span><span>Hero Section</span></div>
+        <div class="layer nested" style="padding-left:28px"><span class="ic">▾</span><span>▢ Nav</span></div>
+        <div class="layer nested" style="padding-left:44px"><span class="ic">T</span><span>Logo</span></div>
+        <div class="layer nested" style="padding-left:44px"><span class="ic">⊟</span><span>Links</span></div>
+        <div class="layer nested selected" style="padding-left:28px"><span class="ic">T</span><span>Heading / H1</span></div>
+        <div class="layer nested" style="padding-left:28px"><span class="ic">T</span><span>Body Paragraph</span></div>
+        <div class="layer nested" style="padding-left:28px"><span class="ic">▢</span><span>CTA Button</span></div>
+        <div class="layer nested" style="padding-left:28px"><span class="ic">○</span><span>Orb Decoration</span></div>
+        <div class="layer nested"><span class="ic">▸</span><span>Features Grid</span></div>
+        <div class="layer nested"><span class="ic">▸</span><span>Footer</span></div>
+        <div class="layer layer-grp"><span class="ic">▾</span><span>📄 Page 2 · Colors</span></div>
+        <div class="layer nested"><span class="ic">▸</span><span>◆ Artboard / Style Guide</span></div>
+        <div class="layer layer-grp"><span class="ic">▾</span><span>📄 Page 3 · Components</span></div>
+        <div class="layer nested"><span class="ic">▸</span><span>◆ Artboard / UI Kit</span></div>
+        <div class="layer layer-grp"><span class="ic">▸</span><span>📄 Archive (v1~v11)</span></div>
+      </div>
+    </aside>
+
+    <section class="canvas">
+      <div class="ruler-h"></div>
+      <div class="ruler-v"></div>
+      <div class="artboards">
+        <!-- Artboard 1 -->
+        <div class="ab ab1">
+          <div class="ab-label">Landing / Hero</div>
+          <div class="ab-size">540 × 720</div>
+          <div class="hero">
+            <div class="nav">
+              <div class="logo">◆ novafield</div>
+              <div class="links"><span>Product</span><span>Pricing</span><span>Customers</span><span>Sign in</span></div>
+            </div>
+            <h1>Make every<br>hour count.</h1>
+            <p>팀의 일을 실시간으로 이해하고, 우선순위를 자동으로 조율하는 운영 OS. 별도 학습 없이 내일부터 사용하세요.</p>
+            <div class="cta">무료로 시작하기 →</div>
+            <div class="orb"></div>
+          </div>
+          <div class="features">
+            <div class="feat"><div class="ic">✦</div><h3>자동 우선순위</h3><p>AI가 모든 업무를 읽고 팀의 컨텍스트에 맞춰 자동으로 정렬합니다.</p></div>
+            <div class="feat"><div class="ic">⌘</div><h3>실시간 협업</h3><p>문서, 티켓, 미팅 메모가 하나의 워크스페이스에서 흐릅니다.</p></div>
+            <div class="feat"><div class="ic">⚡</div><h3>10배 빠른 설정</h3><p>기존 툴을 한 번 연결하면 나머지는 알아서 동작합니다.</p></div>
+            <div class="feat"><div class="ic">◎</div><h3>엔터프라이즈 보안</h3><p>SOC2 Type II · ISO 27001 · 모든 데이터 전송 암호화.</p></div>
+          </div>
+        </div>
+
+        <!-- Artboard 2 -->
+        <div class="ab ab2">
+          <div class="ab-label">Style Guide / Brand</div>
+          <div class="ab-size">540 × 720</div>
+          <h2>Brand Foundations</h2>
+          <div class="sub">novafield · visual system v2.4 · 2026-04-23</div>
+
+          <h3>Primary Palette</h3>
+          <div class="swatches">
+            <div class="sw" style="background:#1a1530"><div class="n">Midnight</div><div class="c">#1A1530</div></div>
+            <div class="sw" style="background:#6d0b8c"><div class="n">Plum</div><div class="c">#6D0B8C</div></div>
+            <div class="sw" style="background:#f24822"><div class="n">Ember</div><div class="c">#F24822</div></div>
+            <div class="sw" style="background:#ffa629;color:#1a1530"><div class="n">Amber</div><div class="c">#FFA629</div></div>
+            <div class="sw" style="background:#14ae5c"><div class="n">Forest</div><div class="c">#14AE5C</div></div>
+            <div class="sw" style="background:#f9f9fb;color:#1a1530;border:1px solid #eee"><div class="n">Cloud</div><div class="c">#F9F9FB</div></div>
+          </div>
+
+          <h3>Type Scale · Inter</h3>
+          <div class="type-row"><div class="t1">Display 40</div><div class="type-meta">40 / 44 · Bold</div></div>
+          <div class="type-row"><div class="t2">Heading 22</div><div class="type-meta">22 / 28 · Semibold</div></div>
+          <div class="type-row"><div class="t3">Subheading 15</div><div class="type-meta">15 / 22 · Medium</div></div>
+          <div class="type-row"><div class="t4">Body 12 — 단락 본문은 어떤 길이에서도 리듬을 유지하도록 행간을 넉넉히 잡습니다. 시스템 전체에서 Inter 4종만 사용.</div><div class="type-meta">12 / 18 · Regular</div></div>
+        </div>
+
+        <!-- Artboard 3 -->
+        <div class="ab ab3">
+          <div class="ab-label">UI Kit / Components</div>
+          <div class="ab-size">540 × 720</div>
+          <h2>Components v2.4</h2>
+
+          <div class="comp">
+            <div class="label">Buttons</div>
+            <div class="btn primary">Primary</div>
+            <div class="btn secondary">Secondary</div>
+            <div class="btn outline">Outline</div>
+          </div>
+
+          <div class="comp">
+            <div class="label">Input · Focused state</div>
+            <div class="input-row">
+              <div class="input focused">검색어를 입력하세요…<span style="animation:blink 1s step-end infinite">|</span></div>
+              <div class="btn primary" style="margin-right:0">검색</div>
+            </div>
+          </div>
+
+          <div class="comp">
+            <div class="label">Card · Hero variant</div>
+            <div class="card">
+              <div class="img"></div>
+              <div class="body">
+                <h4>캠페인 성과 대시보드</h4>
+                <p>실시간으로 모든 채널 성과를 한 눈에. 주간 리포트는 자동으로 팀에 공유됩니다.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp">
+            <div class="label">Badges</div>
+            <span style="background:#14ae5c20;color:#14ae5c;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px">● LIVE</span>
+            <span style="background:#ffa62920;color:#b8700e;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px">BETA</span>
+            <span style="background:#6d0b8c20;color:#6d0b8c;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600">NEW</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selection box on Artboard 1 heading -->
+      <div class="sel-box" style="top:100px;left:110px;width:240px;height:62px" data-size="236 × 58"></div>
+
+      <!-- Collaborator cursors -->
+      <div class="cursor c1" style="animation:drift1 8s infinite ease-in-out">
+        <div class="arrow"></div>
+        <div class="tag">박경진</div>
+      </div>
+      <div class="cursor c2" style="animation:drift2 11s infinite ease-in-out">
+        <div class="arrow"></div>
+        <div class="tag">이수민</div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="prop-section">
+        <div class="head">
+          <span>Design <span class="dim">— Heading / H1</span></span>
+        </div>
+        <div class="prop-row"><span class="k">X</span><span class="v">40</span><span class="v">Y 160</span></div>
+        <div class="prop-row"><span class="k">W</span><span class="v">360</span><span class="v">H 88</span></div>
+        <div class="prop-row"><span class="k">Rotation</span><span class="v">0°</span><span class="v">-</span></div>
+      </div>
+
+      <div class="prop-section">
+        <div class="head"><span>Layout</span><span class="dim">⊟</span></div>
+        <div class="prop-row"><span class="k">Padding</span><span class="v">32</span><span class="v">—</span></div>
+        <div class="prop-row"><span class="k">Gap</span><span class="v">20</span><span class="v">Auto</span></div>
+      </div>
+
+      <div class="prop-section">
+        <div class="head"><span>Typography</span><span class="dim">＋</span></div>
+        <div class="prop-row"><span class="k">Font</span><span class="v" style="grid-column:span 2">Inter</span></div>
+        <div class="prop-row"><span class="k">Size</span><span class="v">40</span><span class="v">Bold 700</span></div>
+        <div class="prop-row"><span class="k">Line</span><span class="v">1.1</span><span class="v">-2%</span></div>
+        <div class="prop-row"><span class="k">Align</span><span class="v">Left</span><span class="v">Top</span></div>
+      </div>
+
+      <div class="prop-section">
+        <div class="head"><span>Fill</span><span class="dim">＋</span></div>
+        <div class="color-chip"><span class="sw" style="background:#ffffff"></span><span class="hex">FFFFFF</span><span class="op">100%</span></div>
+      </div>
+
+      <div class="prop-section">
+        <div class="head"><span>Stroke</span><span class="dim">＋</span></div>
+        <div style="padding:3px 12px;color:var(--dim);font-size:11px">없음</div>
+      </div>
+
+      <div class="prop-section">
+        <div class="head"><span>Effects</span><span class="dim">＋</span></div>
+        <div class="color-chip"><span class="sw" style="background:#0000001a"></span><span class="hex">Drop shadow</span><span class="op">0 2 12</span></div>
+      </div>
+
+      <div class="prop-section" style="border-bottom:none">
+        <div class="head"><span>Export</span><span class="dim">＋</span></div>
+        <div class="prop-row"><span class="k">1×</span><span class="v">PNG</span><span class="v">@heading.png</span></div>
+        <div class="prop-row"><span class="k">2×</span><span class="v">PNG</span><span class="v">@heading@2x.png</span></div>
+        <div class="prop-row"><span class="k">SVG</span><span class="v">SVG</span><span class="v">Outlined</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="status">
+    <span>선택: <b>Heading / H1</b></span>
+    <span>W:236 H:58</span>
+    <span>72%</span>
+    <span id="st-msg">자동 저장됨 · 방금</span>
+    <span class="spacer"></span>
+    <span id="st-col">이수민님이 CTA Button 편집 중</span>
+    <span>v12 · 25 changes</span>
+  </div>
+</div>
+<script>
+const M=['자동 저장됨 · 방금','변경사항 동기화됨 (+4)','버전 v12.3 저장됨','협업자 참여: 최영훈','브랜치 저장됨: feat/hero-v3'];
+let i=0; setInterval(()=>{i=(i+1)%M.length; document.getElementById('st-msg').textContent=M[i];}, 2400);
+const C=['이수민님이 CTA Button 편집 중','박경진님이 Style Guide 수정 중','장인호 상무가 보는 중','이수민님이 컴포넌트 추가 (+2)','최영훈님이 프레임 이동 중'];
+let j=0; setInterval(()=>{j=(j+1)%C.length; document.getElementById('st-col').textContent=C[j];}, 2000);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

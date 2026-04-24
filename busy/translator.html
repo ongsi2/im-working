@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>TransLingua · Master_Agreement_KO→EN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#eef0f4;color:#1a2130;font-family:-apple-system,'Segoe UI','Malgun Gothic',sans-serif;font-size:12.5px;overflow:hidden}
+.app{display:grid;grid-template-rows:32px 36px 1fr 22px;height:100vh}
+.tb{background:linear-gradient(180deg,#1a4089,#0f2d6a);color:#fff;display:flex;align-items:center;padding:0 12px;font-size:12px;gap:14px}
+.tb .lg{font-weight:800;letter-spacing:1.5px;color:#7ec4ff}
+.tb b{color:#fff}
+
+.tools{background:#f6f8fa;border-bottom:1px solid #c8d0dc;display:flex;align-items:center;padding:0 10px;gap:2px;font-size:11.5px}
+.tbtn{padding:5px 9px;color:#1a2130;cursor:pointer;border-radius:3px;display:flex;align-items:center;gap:4px}
+.tbtn:hover{background:#e0e6f0}
+.tbtn.a{background:#1a4089;color:#fff}
+.sep{width:1px;height:16px;background:#c8d0dc;margin:0 4px}
+
+.main{display:grid;grid-template-columns:220px 1fr 320px;overflow:hidden;background:#eef0f4}
+
+.nav{background:#fff;border-right:1px solid #c8d0dc;overflow-y:auto;font-size:12px}
+.nav h4{background:#f6f8fa;padding:8px 12px;color:#4a5a7a;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #c8d0dc}
+.proj{padding:8px 10px;border-bottom:1px solid #eaeef5}
+.proj .n{font-weight:700;color:#1a2130;font-size:12px;margin-bottom:2px}
+.proj .m{font-size:10.5px;color:#6a7a94}
+.proj .bar{height:3px;background:#e0e6f0;margin-top:5px;border-radius:2px;overflow:hidden}
+.proj .bar i{display:block;height:100%;background:#1a4089}
+.proj.a{background:#e8f0ff;border-left:3px solid #1a4089}
+
+.seg-table{overflow-y:auto;background:#fff}
+.seg-hdr{display:grid;grid-template-columns:44px 1fr 1fr 80px;background:#f6f8fa;border-bottom:2px solid #c8d0dc;padding:6px 0;font-size:10.5px;color:#4a5a7a;text-transform:uppercase;letter-spacing:1px;position:sticky;top:0;z-index:2}
+.seg-hdr div{padding:0 10px}
+.seg{display:grid;grid-template-columns:44px 1fr 1fr 80px;border-bottom:1px solid #eaeef5;min-height:52px;background:#fff}
+.seg:hover{background:#f6f8fa}
+.seg.sel{background:#e8f0ff;border-left:3px solid #1a4089}
+.seg.sel .idx{background:#1a4089;color:#fff}
+.seg .idx{padding:6px;background:#f6f8fa;color:#6a7a94;font-family:'Consolas',monospace;font-size:11px;text-align:center;border-right:1px solid #eaeef5;display:flex;flex-direction:column;align-items:center;gap:2px}
+.seg .idx .s{font-size:9px;margin-top:2px}
+.seg .src{padding:8px 10px;color:#1a2130;line-height:1.55;border-right:1px solid #eaeef5;font-family:'Noto Serif KR',serif;font-size:12.5px}
+.seg .tgt{padding:8px 10px;color:#1a2130;line-height:1.55;border-right:1px solid #eaeef5;font-family:'Georgia',serif;font-size:12.5px;position:relative}
+.seg .tgt.empty{background:#fff4d0}
+.seg .status{padding:6px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9.5px;color:#4a5a7a}
+.status-ic{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff}
+.status-ic.ok{background:#2da458}
+.status-ic.rev{background:#d08020}
+.status-ic.mt{background:#8a7aaa}
+.status-ic.todo{background:#c0c0c0}
+.status-ic.lock{background:#1a4089}
+
+.term{background:#fffbe6;border-bottom:1px dashed #d0a840;padding:1px 3px;border-radius:2px}
+.term-en{background:#e0f5e8;border-bottom:1px dashed #4a9068;padding:1px 3px;border-radius:2px}
+.qa-warn{text-decoration:underline wavy #cf222e;text-decoration-skip-ink:none}
+
+.right{background:#f6f8fa;border-left:1px solid #c8d0dc;overflow-y:auto;display:flex;flex-direction:column}
+.pnl{padding:10px 12px;border-bottom:1px solid #c8d0dc;background:#fff;margin-bottom:1px}
+.pnl h5{color:#1a4089;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.pnl h5 .cnt{margin-left:auto;background:#e0e6f0;padding:1px 6px;border-radius:8px;color:#4a5a7a;font-size:10px}
+
+.tm-hit{background:#f8fbff;border:1px solid #d0dcef;border-left:3px solid;padding:6px 8px;margin-bottom:5px;font-size:11.5px;line-height:1.45}
+.tm-hit.p100{border-left-color:#2da458}
+.tm-hit.p92{border-left-color:#7abf30}
+.tm-hit.p78{border-left-color:#d08020}
+.tm-hit .pct{float:right;font-weight:700}
+.tm-hit .pct.p100{color:#2da458}
+.tm-hit .pct.p92{color:#7abf30}
+.tm-hit .pct.p78{color:#d08020}
+.tm-hit .ko{color:#4a5a7a;font-size:11px;margin-bottom:2px}
+.tm-hit .en{color:#1a2130;font-weight:500}
+.tm-hit .meta{color:#8a97a8;font-size:10px;margin-top:3px}
+
+.gloss{font-size:11.5px}
+.gl{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;padding:4px 0;border-bottom:1px dashed #dde2ea}
+.gl .k{color:#1a2130;font-weight:600}
+.gl .v{color:#1a4089;font-weight:500}
+.gl .tag{background:#e8f0ff;color:#1a4089;padding:0 5px;border-radius:3px;font-size:9px;font-weight:700;align-self:center}
+.gl .tag.dnt{background:#fde0e0;color:#8a1a1a}
+
+.qa{font-size:11.5px}
+.qa .q{padding:5px 0;border-bottom:1px dashed #dde2ea;display:grid;grid-template-columns:auto 1fr auto;gap:6px}
+.qa .q .sv{font-size:9px;font-weight:800;padding:1px 5px;border-radius:2px;align-self:start}
+.qa .q.e .sv{background:#cf222e;color:#fff}
+.qa .q.w .sv{background:#d08020;color:#fff}
+.qa .q .m{color:#1a2130;line-height:1.45}
+.qa .q .m b{color:#cf222e}
+.qa .q .seg{color:#6a7a94;font-size:10px;align-self:start;white-space:nowrap}
+
+.mt-box{background:#f0e8fa;border:1px solid #c0a8e0;padding:8px 10px;border-left:3px solid #8a5ac8;font-size:11.5px;line-height:1.5;border-radius:2px}
+.mt-box .lbl{color:#8a5ac8;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+
+.status-bar{background:#1a4089;color:#c8d8f0;display:flex;align-items:center;padding:0 12px;font-size:11px;gap:16px}
+.status-bar b{color:#fff}
+.status-bar .w{color:#ffd060}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="CAT Tool — ZH→KO" data-favicon="🈯">
+<div class="app">
+  <div class="tb">
+    <span class="lg">⊡ TransLingua CAT</span>
+    <span><b>Master_Service_Agreement</b>_Novafield_KO→EN.sdlxliff</span>
+    <span>● 편집 중 · 자동저장 14s 전</span>
+    <span style="margin-left:auto">Translator: 정서연 · DeepL Pro · memoQ 11.4</span>
+  </div>
+
+  <div class="tools">
+    <div class="tbtn">📁 Open</div>
+    <div class="tbtn">💾 Save</div>
+    <div class="sep"></div>
+    <div class="tbtn">◀ Prev</div>
+    <div class="tbtn">▶ Next</div>
+    <div class="tbtn a">✓ Confirm &nbsp;&nbsp;<span style="color:#7ec4ff;font-size:10px">Ctrl+↵</span></div>
+    <div class="sep"></div>
+    <div class="tbtn">⚡ Pretranslate</div>
+    <div class="tbtn">🤖 MT (DeepL)</div>
+    <div class="tbtn">📖 Concordance &nbsp;F3</div>
+    <div class="sep"></div>
+    <div class="tbtn">▤ TM lookup</div>
+    <div class="tbtn">📕 Termbase</div>
+    <div class="tbtn">✓ QA Check</div>
+    <span style="margin-left:auto;color:#4a5a7a">진행률 &nbsp;<b style="color:#1a2130">68.4%</b> &nbsp;·&nbsp; Words 28,412 / 41,520</span>
+  </div>
+
+  <div class="main">
+    <div class="nav">
+      <h4>📁 Projects</h4>
+      <div class="proj"><div class="n">Novafield Annual Report</div><div class="m">KO→EN · 82,410 words · due 10/18</div><div class="bar"><i style="width:92%"></i></div></div>
+      <div class="proj a"><div class="n">Master Service Agreement</div><div class="m">KO→EN · 41,520 words · due 10/12</div><div class="bar"><i style="width:68%"></i></div></div>
+      <div class="proj"><div class="n">Product Manual v3.2</div><div class="m">EN→JA · 18,248 words · due 10/25</div><div class="bar"><i style="width:34%"></i></div></div>
+      <div class="proj"><div class="n">Investor Deck Q3</div><div class="m">KO→EN · 4,820 words · due 10/14</div><div class="bar"><i style="width:18%"></i></div></div>
+      <div class="proj"><div class="n">HR Handbook</div><div class="m">KO→EN · 24,108 words · due 11/02</div><div class="bar"><i style="width:0%"></i></div></div>
+
+      <h4 style="margin-top:14px">🗂 Segment Filter</h4>
+      <div style="padding:8px 12px;font-size:11px;line-height:1.8">
+        <div>Status: <b>All</b></div>
+        <div>☑ Not translated</div>
+        <div>☑ Draft</div>
+        <div>☑ Reviewed</div>
+        <div>☐ Locked</div>
+        <div style="margin-top:6px;color:#6a7a94">Show: <b>Next 50</b></div>
+      </div>
+    </div>
+
+    <div class="seg-table">
+      <div class="seg-hdr">
+        <div>#</div><div>원문 (KO) · 한국어</div><div>번역문 (EN) · English</div><div>Status</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">142<span class="s">92%</span></div>
+        <div class="src">본 <span class="term">계약서</span>는 <span class="term">당사자</span>의 상호 합의에 따라 체결된다.</div>
+        <div class="tgt">This <span class="term-en">Agreement</span> is entered into by mutual consent of the <span class="term-en">Parties</span>.</div>
+        <div class="status"><div class="status-ic ok">✓</div>Reviewed</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">143<span class="s">100%</span></div>
+        <div class="src"><span class="term">매도인</span>은 <span class="term">매수인</span>에게 본 계약에 명시된 조건에 따라 대상 주식을 매도하는 데 동의한다.</div>
+        <div class="tgt">The <span class="term-en">Seller</span> agrees to sell to the <span class="term-en">Buyer</span> the Target Shares upon the terms set forth in this Agreement.</div>
+        <div class="status"><div class="status-ic lock">⚷</div>Locked</div>
+      </div>
+
+      <div class="seg sel">
+        <div class="idx">144<span class="s">78%</span></div>
+        <div class="src"><span class="term">매매대금</span>은 <span class="term qa-warn">금 일천삼백오십억 원</span>(₩135,000,000,000)으로 하며, 제2.3조에 따른 <span class="term">가격 조정</span>을 반영하여 최종 확정한다.</div>
+        <div class="tgt">The <span class="term-en">Purchase Price</span> shall be <span class="qa-warn">One Hundred Thirty-Five Billion Korean Won</span> (KRW 135,000,000,000), subject to final adjustment pursuant to the <span class="term-en">Price Adjustment</span> set forth in Section 2.3.<br><span style="color:#8a5ac8;font-size:10px;font-style:italic">▌ cursor</span></div>
+        <div class="status"><div class="status-ic rev">✎</div>Draft</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">145<span class="s">--</span></div>
+        <div class="src"><span class="term">매수인</span>은 거래종결일에 <span class="term">매매대금</span>을 매도인이 지정하는 은행계좌로 현금 전액 송금함으로써 지급한다.</div>
+        <div class="tgt empty" style="color:#a0a8b8;font-style:italic">— translate here —</div>
+        <div class="status"><div class="status-ic todo">?</div>New</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">146<span class="s">64%</span></div>
+        <div class="src">매도인과 매수인은 본 대금 중 금 이백억 원(₩20,000,000,000)을 <span class="term">에스크로</span> 계정에 예치하여 24개월간 유보한다.</div>
+        <div class="tgt" style="color:#6a5a98;font-style:italic">The Seller and Buyer shall place KRW 20,000,000,000 of the Purchase Price into an Escrow account, to be held for 24 months. &nbsp;<span style="color:#8a5ac8;font-size:10px">🤖 DeepL</span></div>
+        <div class="status"><div class="status-ic mt">M</div>MT</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">147<span class="s">88%</span></div>
+        <div class="src"><span class="term">에스크로</span> 대금은 제7조에 따른 매도인의 <span class="term">면책의무</span>, 제4조 <span class="term">진술 및 보증</span> 위반 청구 일체의 지급을 담보한다.</div>
+        <div class="tgt">The Escrow Amount shall secure payment of all claims for the Seller's <span class="term-en">indemnification obligations</span> under Section 7 and breaches of the <span class="term-en">Representations and Warranties</span> under Section 4.</div>
+        <div class="status"><div class="status-ic rev">✎</div>Draft</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">148<span class="s">72%</span></div>
+        <div class="src"><span class="term">매매대금</span>은 거래종결일 현재 대상회사의 <span class="term">순운전자본</span>, 초과 현금 및 <span class="term">순차입금</span>의 실제 금액을 기준으로 조정된다.</div>
+        <div class="tgt">The Purchase Price shall be adjusted based on the actual amounts of <span class="term-en">Net Working Capital</span>, excess cash, and <span class="term-en">Net Debt</span> of the Target Company as of the Closing Date.</div>
+        <div class="status"><div class="status-ic rev">✎</div>Draft</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">149<span class="s">--</span></div>
+        <div class="src">기준 NWC는 대상회사의 최근 12개월 평균 순운전자본으로 하며, 계산 내역은 별첨 C에 첨부한다.</div>
+        <div class="tgt empty" style="color:#a0a8b8;font-style:italic">— translate here —</div>
+        <div class="status"><div class="status-ic todo">?</div>New</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">150<span class="s">100%</span></div>
+        <div class="src"><span class="term">매도인</span>은 매수인에게 본 계약의 체결일 및 거래종결일 현재 다음 사항이 진실하고 정확함을 <span class="term">진술하고 보증한다</span>.</div>
+        <div class="tgt">The <span class="term-en">Seller</span> hereby <span class="term-en">represents and warrants</span> to the Buyer that the following are true and accurate as of both the Execution Date and the Closing Date.</div>
+        <div class="status"><div class="status-ic lock">⚷</div>Locked</div>
+      </div>
+
+      <div class="seg">
+        <div class="idx">151<span class="s">45%</span></div>
+        <div class="src">대상주식에는 별첨 B의 제4.1(a)항에 기재된 담보권을 제외하고, 어떠한 <span class="term">담보권</span>, 질권, <span class="term">선취특권</span>도 설정되어 있지 아니하다.</div>
+        <div class="tgt">No <span class="term-en">encumbrance</span>, pledge, or <span class="term-en">lien</span> has been created on the Target Shares, except for the encumbrance set forth in Section 4.1(a) of Exhibit B.</div>
+        <div class="status"><div class="status-ic rev">✎</div>Draft</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="pnl">
+        <h5>▤ Translation Memory <span class="cnt">4 hits</span></h5>
+        <div class="tm-hit p100">
+          <span class="pct p100">100%</span>
+          <div class="ko">매매대금은 금 일천이백억 원(₩120,000,000,000)으로 하며…</div>
+          <div class="en">The Purchase Price shall be One Hundred Twenty Billion Korean Won (KRW 120,000,000,000)…</div>
+          <div class="meta">TM: Novafield_legal_2024 · used 18× · 2024-11-02</div>
+        </div>
+        <div class="tm-hit p92">
+          <span class="pct p92">92%</span>
+          <div class="ko">매매대금은 금 일천오백억 원으로 하며, 제3.2조에 따른 조정을…</div>
+          <div class="en">The Purchase Price shall be One Hundred Fifty Billion Won, subject to adjustment under Section 3.2…</div>
+          <div class="meta">TM: MA_template_v3 · 2023-08-14</div>
+        </div>
+        <div class="tm-hit p78">
+          <span class="pct p78">78%</span>
+          <div class="ko">본 계약서의 대금은 금 ○○○억 원으로 하며 조정이 가능하다</div>
+          <div class="en">The consideration under this Agreement shall be KRW XXX, subject to adjustment.</div>
+          <div class="meta">TM: generic_commercial · 2022-04-28</div>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>📕 Termbase (Glossary) <span class="cnt">14 matches</span></h5>
+        <div class="gloss">
+          <div class="gl"><div class="k">매매대금</div><div class="v">Purchase Price</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">가격 조정</div><div class="v">Price Adjustment</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">매도인</div><div class="v">Seller</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">매수인</div><div class="v">Buyer</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">에스크로</div><div class="v">Escrow</div><div class="tag">FIN</div></div>
+          <div class="gl"><div class="k">면책의무</div><div class="v">indemnification obligation</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">진술 및 보증</div><div class="v">Representations and Warranties</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">순운전자본</div><div class="v">Net Working Capital</div><div class="tag">FIN</div></div>
+          <div class="gl"><div class="k">순차입금</div><div class="v">Net Debt</div><div class="tag">FIN</div></div>
+          <div class="gl"><div class="k">담보권</div><div class="v">encumbrance</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">선취특권</div><div class="v">lien</div><div class="tag">LEGAL</div></div>
+          <div class="gl"><div class="k">Novafield</div><div class="v">Novafield</div><div class="tag dnt">DNT</div></div>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>🤖 MT Suggestions (DeepL Pro)</h5>
+        <div class="mt-box">
+          <div class="lbl">Current segment · confidence 87%</div>
+          The Purchase Price shall be <strong>One Hundred Thirty-Five Billion Korean Won</strong> (KRW 135,000,000,000), and shall be finally determined reflecting the Price Adjustment under Article 2.3.
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>✓ QA Issues <span class="cnt" style="background:#cf222e;color:#fff">7</span></h5>
+        <div class="qa">
+          <div class="q e"><span class="sv">ERR</span><div class="m">Number mismatch: source <b>₩135,000,000,000</b>, target missing final zero</div><span class="seg">#144</span></div>
+          <div class="q e"><span class="sv">ERR</span><div class="m">Term inconsistency: "매도인" translated as <b>"Vendor"</b> (expected "Seller")</div><span class="seg">#108</span></div>
+          <div class="q w"><span class="sv">WRN</span><div class="m">Untranslated segment</div><span class="seg">#145</span></div>
+          <div class="q w"><span class="sv">WRN</span><div class="m">Untranslated segment</div><span class="seg">#149</span></div>
+          <div class="q w"><span class="sv">WRN</span><div class="m">Double space in translation</div><span class="seg">#132</span></div>
+          <div class="q w"><span class="sv">WRN</span><div class="m">Punctuation end mismatch (. vs 。)</div><span class="seg">#118</span></div>
+          <div class="q w"><span class="sv">WRN</span><div class="m">Sentence length +38% vs source</div><span class="seg">#94</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span>●&nbsp;TM Novafield_legal_2024 · 284K TUs</span>
+    <span>● Termbase Legal_KO_EN · 4,820 entries</span>
+    <span>Seg 144/422 · <b>68.4%</b> complete</span>
+    <span>Reviewed 124 · Draft 164 · New 134</span>
+    <span class="w">⚠ 7 QA issues</span>
+    <span style="margin-left:auto">Concordance · F3 &nbsp;|&nbsp; Pre-translate · Alt+T</span>
+    <span>UTF-8 LF</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

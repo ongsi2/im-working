@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>workspace · #prj-apollo</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#1a1d21; --sidebar:#19171d; --panel:#222529; --hover:#27292d;
+    --border:#2c2d30; --text:#d1d2d3; --dim:#ababad; --mute:#787878;
+    --accent:#1164a3; --mention:#f2c744; --green:#2bac76; --red:#e01e5a; --purple:#6f42c1;
+    --unread:#ecb22e;
+  }
+  html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Segoe UI','Malgun Gothic',-apple-system,sans-serif; font-size:14px; overflow:hidden; }
+  .app { display:grid; grid-template-rows:38px 1fr 22px; height:100vh; }
+  .tb { background:#350d36; color:#fff; display:flex; align-items:center; padding:0 12px; gap:12px; font-size:12px; }
+  .tb .search { background:rgba(255,255,255,0.12); padding:4px 12px; border-radius:6px; flex:1; max-width:720px; margin:0 auto; font-size:13px; color:rgba(255,255,255,0.9); }
+  .avatar { width:24px;height:24px;border-radius:4px;background:#1164a3;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px; }
+
+  .main { display:grid; grid-template-columns:240px 1fr 280px; overflow:hidden; background:var(--bg); }
+  .sidebar { background:var(--sidebar); overflow-y:auto; padding:8px 0; font-size:14px; }
+  .ws-head { padding:8px 14px 12px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:6px; }
+  .ws-head .n { font-weight:800; font-size:16px; color:#fff; }
+  .ws-head .s { font-size:11px; color:#1dbb8a; margin-top:2px; }
+  .ws-head .s::before { content:'●'; margin-right:4px; }
+  .sec { padding:8px 14px 4px; font-size:12.5px; color:var(--dim); display:flex; align-items:center; gap:6px; }
+  .sec .a { margin-left:auto; color:var(--mute); font-size:13px; }
+  .ch { padding:3px 14px; display:flex; align-items:center; gap:8px; color:var(--dim); font-size:14px; line-height:1.6; }
+  .ch:hover { background:var(--hover); }
+  .ch.active { background:var(--accent); color:#fff; font-weight:600; }
+  .ch.unread { color:#fff; font-weight:700; }
+  .ch .h { color:var(--mute); font-weight:400; width:14px; text-align:center; }
+  .ch .badge { margin-left:auto; background:var(--red); color:#fff; font-size:11px; padding:1px 6px; border-radius:9px; font-weight:700; }
+
+  /* center: messages */
+  .center { display:flex; flex-direction:column; overflow:hidden; }
+  .center .head { border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; gap:14px; }
+  .center .head .t { font-weight:700; font-size:15px; }
+  .center .head .meta { color:var(--dim); font-size:12px; }
+  .center .head .topic { color:var(--dim); font-size:13px; flex:1; border-left:1px solid var(--border); padding-left:14px; margin-left:6px; }
+  .tabs { display:flex; border-bottom:1px solid var(--border); padding:0 16px; gap:20px; font-size:13px; }
+  .tabs .tab { padding:8px 2px; color:var(--dim); }
+  .tabs .tab.active { color:var(--text); border-bottom:2px solid var(--text); font-weight:600; }
+
+  .msgs { flex:1; overflow-y:auto; padding:10px 0; }
+  .day-sep { text-align:center; font-size:12px; color:var(--dim); margin:16px 0 8px; position:relative; }
+  .day-sep::before { content:''; position:absolute; left:20px; right:20px; top:50%; border-top:1px solid var(--border); z-index:0; }
+  .day-sep span { background:var(--bg); position:relative; padding:0 10px; z-index:1; border:1px solid var(--border); border-radius:12px; font-weight:600; }
+
+  .msg { display:grid; grid-template-columns:44px 1fr; gap:8px; padding:6px 18px; position:relative; }
+  .msg:hover { background:#222527; }
+  .msg .av { width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff; }
+  .msg .body { min-width:0; }
+  .msg .line1 { display:flex; align-items:baseline; gap:8px; }
+  .msg .name { font-weight:700; color:#fff; }
+  .msg .time { font-size:11px; color:var(--dim); }
+  .msg .txt { color:var(--text); line-height:1.5; margin-top:2px; word-break:break-word; }
+  .msg.cont { padding-top:2px; padding-bottom:2px; }
+  .msg.cont .av { visibility:hidden; height:0; }
+  .msg.cont .time-gutter { font-size:10px; color:var(--mute); position:absolute; left:18px; top:4px; opacity:0; }
+  .msg.cont:hover .time-gutter { opacity:1; }
+  .mention { background:#454327; color:#f2c744; padding:0 3px; border-radius:3px; font-weight:600; }
+  .chan { color:#1d9bd1; font-weight:500; }
+  .code { font-family:'Consolas',monospace; background:#1e2024; border:1px solid var(--border); padding:1px 5px; border-radius:3px; font-size:12px; color:#e8912d; }
+  .block { background:#1e2024; border:1px solid var(--border); border-radius:4px; padding:10px 14px; margin-top:6px; font-family:'Consolas',monospace; font-size:12px; color:#d1d2d3; white-space:pre; overflow-x:auto; }
+  .quote { border-left:4px solid var(--mute); padding:2px 0 2px 12px; margin-top:6px; color:var(--dim); font-size:13px; }
+  .react { display:inline-flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+  .react .r { background:#2c2d30; border:1px solid var(--border); padding:2px 7px; border-radius:12px; font-size:12px; color:var(--text); }
+  .react .r.mine { background:#1a4d8c; border-color:#1164a3; }
+  .attach { margin-top:6px; background:#1e2024; border:1px solid var(--border); border-radius:4px; padding:10px; display:flex; gap:10px; align-items:center; max-width:440px; }
+  .attach .ic { font-size:24px; }
+  .attach .name { font-weight:600; color:#1d9bd1; }
+  .attach .meta { font-size:11.5px; color:var(--dim); }
+  .thread-btn { margin-top:4px; font-size:13px; color:#1d9bd1; font-weight:600; display:inline-flex; gap:6px; align-items:center; }
+
+  /* composer */
+  .composer { padding:10px 16px 14px; border-top:1px solid var(--border); }
+  .composer .box { border:1px solid var(--border-hi, #4a4a4d); border-radius:8px; background:var(--bg); padding:8px 10px; }
+  .composer .tools { display:flex; gap:8px; padding-top:6px; color:var(--dim); font-size:13px; }
+  .composer .input { color:var(--mute); padding:6px 2px; font-size:14px; }
+  .composer .input .caret { display:inline-block; width:1px; background:var(--text); height:14px; vertical-align:-2px; animation:blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+
+  /* Right pane: threads */
+  .right { background:var(--panel); border-left:1px solid var(--border); overflow-y:auto; }
+  .right .rhead { padding:10px 14px; border-bottom:1px solid var(--border); font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+  .right .rhead .sub { font-size:12px; color:var(--dim); font-weight:400; }
+  .right .tmsg { padding:10px 14px; font-size:13px; border-bottom:1px solid var(--border); }
+  .right .tmsg .name { font-weight:700; font-size:13px; }
+  .right .tmsg .time { font-size:11px; color:var(--dim); margin-left:6px; }
+  .right .tmsg .txt { color:var(--text); margin-top:4px; line-height:1.5; }
+  .right .tmsg .av { width:28px;height:28px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;margin-right:8px;vertical-align:middle; }
+
+  .status { background:#1a1d21; border-top:1px solid var(--border); color:var(--dim); display:flex; align-items:center; padding:0 14px; gap:18px; font-size:11px; }
+  .status .spacer { flex:1; }
+  .status .dot { width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:p 2s infinite; }
+  @keyframes p { 50% { opacity:0.4; } }
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="(7) #growth — Slack" data-favicon="💬">
+<div class="app">
+  <div class="tb">
+    <span style="opacity:0.7">← →</span>
+    <span style="opacity:0.7">⟳</span>
+    <div class="search">🔍 novafield Workspace에서 검색</div>
+    <span style="opacity:0.5">⏱ 나중에 보기</span>
+    <div class="avatar">KP</div>
+  </div>
+
+  <div class="main">
+    <aside class="sidebar">
+      <div class="ws-head">
+        <div class="n">novafield</div>
+        <div class="s">활성 · 428명</div>
+      </div>
+      <div class="sec"><span>▾</span>즐겨찾기</div>
+      <div class="ch"><span class="h">＃</span>general</div>
+      <div class="ch"><span class="h">＃</span>announcements</div>
+      <div class="ch"><span class="h">🔒</span>exec-sync <span class="badge">3</span></div>
+
+      <div class="sec"><span>▾</span>채널<span class="a">＋</span></div>
+      <div class="ch active"><span class="h">＃</span>prj-apollo</div>
+      <div class="ch unread"><span class="h">＃</span>prj-apollo-eng <span class="badge">12</span></div>
+      <div class="ch unread"><span class="h">＃</span>design-crit <span class="badge">4</span></div>
+      <div class="ch"><span class="h">＃</span>marketing-ops</div>
+      <div class="ch"><span class="h">＃</span>random</div>
+      <div class="ch unread"><span class="h">＃</span>incidents <span class="badge">1</span></div>
+      <div class="ch"><span class="h">＃</span>growth</div>
+      <div class="ch"><span class="h">＃</span>partners-a-sangsa</div>
+      <div class="ch unread"><span class="h">＃</span>q2-tf <span class="badge">8</span></div>
+      <div class="ch"><span class="h">＃</span>office-seoul</div>
+      <div class="ch"><span class="h">＃</span>off-topic</div>
+      <div class="ch"><span class="h">＋</span>채널 추가</div>
+
+      <div class="sec"><span>▾</span>다이렉트 메시지<span class="a">＋</span></div>
+      <div class="ch unread"><span class="h" style="color:var(--green)">●</span>장인호 (상무) <span class="badge">2</span></div>
+      <div class="ch"><span class="h" style="color:var(--green)">●</span>이수민</div>
+      <div class="ch"><span class="h" style="color:#e8b923">●</span>최영훈 <span style="color:var(--mute);font-size:11px">· 자리비움</span></div>
+      <div class="ch unread"><span class="h" style="color:var(--green)">●</span>윤아라, 박민지 <span class="badge">1</span></div>
+      <div class="ch"><span class="h" style="color:var(--mute)">●</span>김선아</div>
+      <div class="ch"><span class="h" style="color:var(--mute)">●</span>정영수 (본부장)</div>
+
+      <div class="sec"><span>▾</span>앱</div>
+      <div class="ch"><span class="h">🤖</span>Jira</div>
+      <div class="ch"><span class="h">🤖</span>GitHub</div>
+      <div class="ch"><span class="h">🤖</span>Zoom</div>
+    </aside>
+
+    <section class="center">
+      <div class="head">
+        <span class="t">＃ prj-apollo</span>
+        <span class="meta">👥 42</span>
+        <span class="topic">📌 Project Apollo — Q2 신규 캠페인 런칭 TF. 공식 문서는 Notion 링크 참고. 모든 결정사항은 여기서 🙏</span>
+        <span class="meta">⚙</span>
+      </div>
+      <div class="tabs">
+        <div class="tab active">메시지</div>
+        <div class="tab">파일</div>
+        <div class="tab">핀 고정됨 <span style="color:var(--dim)">3</span></div>
+        <div class="tab">멤버</div>
+      </div>
+
+      <div class="msgs" id="msgs">
+        <div class="day-sep"><span>오늘</span></div>
+
+        <div class="msg">
+          <div class="av" style="background:#8b572a">JL</div>
+          <div class="body">
+            <div class="line1"><span class="name">장인호 상무</span> <span class="time">오전 9:12</span></div>
+            <div class="txt">@channel 좋은 아침입니다 🌤 오늘 오후 3시 Q2 리뷰 자료 최종본 공유 예정이에요. 각자 담당 섹션 최종 크로스체크 부탁드립니다.</div>
+            <div class="react"><span class="r">👀 14</span><span class="r">🙏 8</span><span class="r mine">👍 3</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#1164a3">SM</div>
+          <div class="body">
+            <div class="line1"><span class="name">이수민</span> <span class="time">오전 9:24</span></div>
+            <div class="txt">제 파트(채널별 기여도) 업데이트 완료했습니다. v14에 머지 부탁드려요 <span class="mention">@박경진</span></div>
+            <div class="attach">
+              <div class="ic">📊</div>
+              <div>
+                <div class="name">channel_attribution_Q2_v3.xlsx</div>
+                <div class="meta">스프레드시트 · 2.1 MB · 방금</div>
+              </div>
+            </div>
+            <div class="react"><span class="r">✅ 4</span><span class="r">🔥 2</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#2bac76">KP</div>
+          <div class="body">
+            <div class="line1"><span class="name">박경진 (나)</span> <span class="time">오전 9:31</span></div>
+            <div class="txt">받았습니다 🙏 머지 중이에요. 혹시 SL-02 하락 관련 코멘트 다셨나요?</div>
+          </div>
+        </div>
+
+        <div class="msg cont">
+          <div class="av"></div>
+          <div class="body">
+            <div class="txt">→ 참고: 전사 달성률 104.2% / 경기·인천 112.5%로 1위 유력. 서울본부는 <span class="code">YoY -18%</span> 때문에 코멘트 한 줄 필요해요.</div>
+            <div class="react"><span class="r">👀 6</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#e01e5a">YH</div>
+          <div class="body">
+            <div class="line1"><span class="name">최영훈 과장</span> <span class="time">오전 9:47</span></div>
+            <div class="txt">디자인팀 확인 요청 — 표지 슬라이드 로고 정렬 이슈 있는 것 같아요. <span class="mention">@윤아라</span></div>
+            <div class="quote">
+              <b>윤아라</b> · 어제 오후 6:02<br>
+              표지 로고 위치 확정했습니다. 가이드 문서 업데이트해놓을게요.
+            </div>
+            <div class="react"><span class="r">👀 3</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#6f42c1">AR</div>
+          <div class="body">
+            <div class="line1"><span class="name">윤아라 수석</span> <span class="time">오전 10:02</span></div>
+            <div class="txt">아 그거 정렬 5px 차이나는 거죠? 지금 고치고 다시 공유하겠습니다. 🛠</div>
+            <div class="thread-btn">💬 답글 6 · 마지막 답글 14분 전</div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#666;border-radius:6px">GH</div>
+          <div class="body">
+            <div class="line1"><span class="name">GitHub</span> <span style="background:#2c2d30;color:var(--dim);font-size:10px;padding:1px 5px;border-radius:3px;margin-left:2px">APP</span> <span class="time">오전 10:15</span></div>
+            <div class="txt" style="color:var(--dim)"><b style="color:#1d9bd1">novafield/apollo-web</b> · PR opened by <b>@mj-park</b></div>
+            <div class="block">#1284  feat(campaign): add Q2 landing hero variants
+─────────────────────────────────────────────────
+  +842 additions  −128 deletions  · 14 files changed
+  reviewers: @kp-park @sm-lee
+  checks:  ● CI passing  ● e2e running  ● lint ok</div>
+            <div class="react"><span class="r">👀 4</span><span class="r mine">🚀 1</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#d97706">MJ</div>
+          <div class="body">
+            <div class="line1"><span class="name">박민지 대리</span> <span class="time">오전 10:18</span></div>
+            <div class="txt">리뷰 부탁드려요 <span class="mention">@박경진</span> <span class="mention">@이수민</span> 기존 컴포넌트만 재활용해서 새 파일 거의 없어요. CSS만 몇 줄 🙏</div>
+            <div class="react"><span class="r">👀 5</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#666;border-radius:6px">JI</div>
+          <div class="body">
+            <div class="line1"><span class="name">Jira</span> <span style="background:#2c2d30;color:var(--dim);font-size:10px;padding:1px 5px;border-radius:3px;margin-left:2px">APP</span> <span class="time">오전 10:31</span></div>
+            <div class="txt" style="color:var(--dim)"><b style="color:#1d9bd1">APL-2847</b> moved: <b>In Progress → In Review</b></div>
+            <div class="attach" style="border-left:4px solid #5243aa">
+              <div class="ic">🎯</div>
+              <div style="flex:1">
+                <div class="name">[APL-2847] Q2 랜딩 페이지 히어로 섹션 A/B 테스트</div>
+                <div class="meta">Story · 8pt · 담당: @mj-park · 검토자: @kp-park, @sm-lee · 스프린트 14</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#1dbb8a">JS</div>
+          <div class="body">
+            <div class="line1"><span class="name">김선아 차장</span> <span class="time">오전 11:02</span></div>
+            <div class="txt">재무팀입니다. Q2 마감 건으로 몇 가지 확인이 필요해요 <span class="mention">@박경진</span> — 비목 3번, 4번에 전월이월분이 섞여있는 것 같습니다. 오후에 30분만 통화 가능할까요? 📞</div>
+            <div class="react"><span class="r">🙏 2</span></div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#2bac76">KP</div>
+          <div class="body">
+            <div class="line1"><span class="name">박경진 (나)</span> <span class="time">오전 11:04</span></div>
+            <div class="txt">네 가능합니다 🙆‍♂️ 오후 2시 괜찮으세요? 캘린더 초대 보냈습니다.</div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#666;border-radius:6px">ZM</div>
+          <div class="body">
+            <div class="line1"><span class="name">Zoom</span> <span style="background:#2c2d30;color:var(--dim);font-size:10px;padding:1px 5px;border-radius:3px;margin-left:2px">APP</span> <span class="time">오전 11:04</span></div>
+            <div class="txt" style="color:var(--dim)">미팅 예약됨 · <b style="color:var(--text)">Q2 재무 확인</b> · 오후 2:00–2:30</div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="av" style="background:#1164a3">SM</div>
+          <div class="body">
+            <div class="line1"><span class="name">이수민</span> <span class="time" id="lastmsg-time">오전 11:48</span></div>
+            <div class="txt" id="lastmsg">파트너사 A상사 킥오프 준비 어느 정도 됐습니다. 회의실은 5F-C, 자료는 공유 드라이브에 올려뒀어요 <span class="mention">@채널</span></div>
+            <div class="react"><span class="r">🙌 7</span><span class="r">🔥 4</span><span class="r mine">🚀 2</span></div>
+            <div class="thread-btn">💬 답글 3 · 지금</div>
+          </div>
+        </div>
+
+        <div id="live"></div>
+      </div>
+
+      <div class="composer">
+        <div class="box">
+          <div class="input">메시지 전송 <span style="color:var(--mute)">＃prj-apollo</span>…<span class="caret"></span></div>
+          <div class="tools">
+            <span>B</span><span style="font-style:italic">I</span><span style="text-decoration:underline">U</span>
+            <span style="margin-left:10px">&lt;/&gt;</span><span>— —</span><span>☑</span><span>＠</span>
+            <span style="margin-left:auto">📎 Aa 🙂 📹 🎤 ▶</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="rhead">
+        <span>스레드 <div class="sub">＃prj-apollo · 표지 슬라이드 로고 정렬</div></span>
+        <span style="color:var(--dim)">✕</span>
+      </div>
+      <div class="tmsg" style="background:#27292d">
+        <span class="av" style="background:#e01e5a">YH</span>
+        <span class="name">최영훈 과장</span><span class="time">오전 9:47</span>
+        <div class="txt" style="margin-left:36px">디자인팀 확인 요청 — 표지 슬라이드 로고 정렬 이슈 있는 것 같아요. <span class="mention">@윤아라</span></div>
+      </div>
+      <div style="padding:6px 14px;color:var(--dim);font-size:12px;border-bottom:1px solid var(--border)">6개의 답글</div>
+      <div class="tmsg">
+        <span class="av" style="background:#6f42c1">AR</span><span class="name">윤아라</span><span class="time">오전 10:02</span>
+        <div class="txt" style="margin-left:36px">지금 확인해볼게요 🔍</div>
+      </div>
+      <div class="tmsg">
+        <span class="av" style="background:#6f42c1">AR</span><span class="name">윤아라</span><span class="time">오전 10:08</span>
+        <div class="txt" style="margin-left:36px">네 맞아요 5px 차이났어요. Figma 기준으로는 맞는데 PPT 넘어가면서 밀린 것 같네요.</div>
+      </div>
+      <div class="tmsg">
+        <span class="av" style="background:#e01e5a">YH</span><span class="name">최영훈</span><span class="time">오전 10:10</span>
+        <div class="txt" style="margin-left:36px">아 그럼 PPT 쪽에서 나중에 일괄로 고치는 게 낫겠네요. 표지만 그런 건지 다른 슬라이드도 확인 가능할까요?</div>
+      </div>
+      <div class="tmsg">
+        <span class="av" style="background:#6f42c1">AR</span><span class="name">윤아라</span><span class="time">오전 10:22</span>
+        <div class="txt" style="margin-left:36px">확인했어요. 표지, 섹션 구분 슬라이드(3, 7, 11) 이렇게 4군데만 영향 있습니다. 15분 내로 수정본 올릴게요 🛠</div>
+      </div>
+      <div class="tmsg">
+        <span class="av" style="background:#8b572a">JL</span><span class="name">장인호 상무</span><span class="time">오전 10:31</span>
+        <div class="txt" style="margin-left:36px">감사합니다 🙏 최종본 저한테도 공유 부탁드려요.</div>
+      </div>
+      <div class="tmsg" style="background:#222527">
+        <span class="av" style="background:#6f42c1">AR</span><span class="name">윤아라</span><span class="time" id="thread-last">오전 11:48</span>
+        <div class="txt" style="margin-left:36px" id="thread-last-txt">수정본 올렸습니다 <span class="mention">@장인호 상무</span> <span class="mention">@최영훈</span> 버전 v14.2에 반영 완료 ✅</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="status">
+    <span><span class="dot"></span>연결됨 · <b style="color:var(--text)">428명 온라인</b> · 서울</span>
+    <span>＃prj-apollo 구독자 <b style="color:var(--text)">42</b></span>
+    <span id="st-msg">이수민님이 입력 중…</span>
+    <span class="spacer"></span>
+    <span>WebSocket ✓ · 알림 ✓ · DND 종료 18:00</span>
+  </div>
+</div>
+<script>
+const NEW=[
+  {av:'1164a3',n:'이수민',m:'방금 윤아라 수석 수정본 확인했습니다. 완벽해요 👏'},
+  {av:'e01e5a',n:'최영훈',m:'오 좋아요! 그럼 3시 전에 PDF로 내보낼 수 있을 것 같네요.'},
+  {av:'d97706',n:'박민지',m:'저 리뷰 대기 중인데 누가 먼저 봐주실 수 있나요 🙏'},
+  {av:'8b572a',n:'장인호 상무',m:'좋습니다. 오후 3시 임원회의실에서 뵙겠습니다 👍'},
+  {av:'1dbb8a',n:'김선아',m:'재무 확인 미팅 2시 그대로 진행하면 될까요?'},
+  {av:'6f42c1',n:'윤아라',m:'파트너사 A상사 자료 디자인 피드백 한 번 더 받고 싶어요 <span class="mention">@박경진</span>'},
+];
+const live=document.getElementById('live');
+const typingMsgs=['이수민님이 입력 중…','윤아라, 최영훈이 입력 중…','장인호 상무님이 입력 중…','박민지님이 입력 중…','3명이 입력 중…'];
+const sMsg=document.getElementById('st-msg');
+let ti=0; setInterval(()=>{ti=(ti+1)%typingMsgs.length; sMsg.textContent=typingMsgs[ti];},2200);
+
+function pad(n){return String(n).padStart(2,'0');}
+function nowT(){const d=new Date();let h=d.getHours();const ap=h<12?'오전':'오후';h=h%12||12;return `${ap} ${h}:${pad(d.getMinutes())}`;}
+
+let i=0;
+setInterval(()=>{
+  const n = NEW[i%NEW.length]; i++;
+  const el=document.createElement('div');
+  el.className='msg';
+  el.innerHTML=`<div class="av" style="background:#${n.av}">${n.n[0]}${n.n[1]||''}</div>
+    <div class="body"><div class="line1"><span class="name">${n.n}</span> <span class="time">${nowT()}</span></div>
+    <div class="txt">${n.m}</div></div>`;
+  live.appendChild(el);
+  el.scrollIntoView({block:'end'});
+  while (live.children.length > 4) live.removeChild(live.firstChild);
+},4200);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

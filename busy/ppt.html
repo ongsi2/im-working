@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>2026_Q2_전사전략리뷰_v7.pptx — 프레젠테이션</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #eeedec;
+    --panel: #fff;
+    --border: #d1cfcd;
+    --border-soft: #e1dfdd;
+    --text: #201f1e;
+    --dim: #605e5c;
+    --mute: #8a8886;
+    --accent: #b7472a;
+    --accent-soft: #f9e8e2;
+    --hover: #f3f2f1;
+  }
+  html, body { height:100%; font-family:'Segoe UI', -apple-system, 'Malgun Gothic', sans-serif; font-size:12px; color:var(--text); background:var(--bg); overflow:hidden; }
+  .app { display:grid; grid-template-rows:30px 28px 88px 1fr 24px; height:100vh; }
+  .tb { background:var(--accent); color:#fff; display:flex; align-items:center; padding:0 12px; gap:16px; font-size:12px; }
+  .tb .doc { flex:1; text-align:center; font-weight:500; }
+  .tb .doc .s { opacity:0.7; margin-left:8px; font-size:11px; }
+  .avatar { width:22px; height:22px; border-radius:50%; background:#ffc5a1; color:#8a4100; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:10px; }
+  .menu { background:#fff; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; padding:0 8px; gap:2px; }
+  .menu .m { padding:4px 10px; border-radius:3px; }
+  .menu .m.active { background:var(--hover); font-weight:600; }
+  .ribbon { background:#fff; border-bottom:1px solid var(--border); display:flex; padding:4px 8px; gap:1px; }
+  .rg { display:flex; flex-direction:column; padding:2px 8px; border-right:1px solid var(--border-soft); min-width:64px; align-items:center; }
+  .rg .items { display:flex; gap:2px; flex:1; }
+  .rb { display:flex; flex-direction:column; align-items:center; padding:3px 6px; border-radius:3px; gap:3px; min-width:44px; }
+  .rb:hover { background:var(--hover); }
+  .rb .ic { width:26px; height:26px; background:var(--hover); border:1px solid var(--border-soft); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .rb .t { font-size:10px; color:var(--text); }
+  .rg .lbl { font-size:10px; color:var(--dim); margin-top:2px; }
+
+  .main { display:grid; grid-template-columns:180px 1fr 280px; overflow:hidden; background:var(--bg); }
+  .thumbs { background:#e1dfdd; border-right:1px solid var(--border); overflow-y:auto; padding:8px; }
+  .thumb { background:#fff; border:1px solid var(--border); margin-bottom:8px; padding:6px; cursor:default; position:relative; }
+  .thumb.active { border-color:var(--accent); border-width:2px; padding:5px; box-shadow:0 0 0 1px var(--accent); }
+  .thumb .num { position:absolute; left:-22px; top:2px; font-size:10px; color:var(--dim); width:18px; text-align:right; }
+  .thumb .mini { height:90px; background:#f9f9f9; border:1px solid var(--border-soft); display:flex; align-items:center; justify-content:center; color:var(--mute); font-size:9px; overflow:hidden; padding:4px; }
+
+  .stage { background:var(--bg); position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .slide { width:880px; height:495px; background:#fff; box-shadow:0 2px 20px rgba(0,0,0,0.12); position:relative; overflow:hidden; }
+  .slide .title { position:absolute; top:30px; left:50px; right:50px; font-size:28px; font-weight:700; color:#333; border-bottom:3px solid var(--accent); padding-bottom:8px; }
+  .slide .subtitle { position:absolute; top:82px; left:50px; font-size:14px; color:var(--dim); }
+  .slide .footer { position:absolute; bottom:20px; left:50px; right:50px; display:flex; justify-content:space-between; font-size:10px; color:var(--mute); border-top:1px solid #eee; padding-top:8px; }
+
+  /* Chart area */
+  .chart-placeholder { position:absolute; left:50px; top:120px; width:520px; height:320px; }
+  .text-box { position:absolute; right:50px; top:120px; width:260px; height:320px; padding:14px; background:#f9f5f4; border-left:4px solid var(--accent); font-size:13px; line-height:1.6; color:var(--text); }
+  .text-box h3 { font-size:15px; color:var(--accent); margin-bottom:8px; font-weight:700; }
+  .text-box ul { margin-left:16px; }
+  .text-box li { margin-bottom:6px; }
+
+  /* selection handles */
+  .selected { outline:2px dashed var(--accent); outline-offset:2px; position:relative; }
+  .handle { position:absolute; width:8px; height:8px; background:#fff; border:1.5px solid var(--accent); border-radius:50%; }
+  .h-tl { top:-4px; left:-4px; } .h-tr { top:-4px; right:-4px; } .h-bl { bottom:-4px; left:-4px; } .h-br { bottom:-4px; right:-4px; }
+  .h-t { top:-4px; left:50%; transform:translateX(-50%); } .h-b { bottom:-4px; left:50%; transform:translateX(-50%); }
+  .h-l { left:-4px; top:50%; transform:translateY(-50%); } .h-r { right:-4px; top:50%; transform:translateY(-50%); }
+
+  .right { background:#fff; border-left:1px solid var(--border); overflow-y:auto; padding:12px 14px; font-size:12px; }
+  .right h3 { font-size:13px; font-weight:700; margin-bottom:8px; }
+  .right .prop { display:grid; grid-template-columns:80px 1fr; gap:4px; margin-bottom:4px; align-items:center; }
+  .right .prop .k { color:var(--dim); font-size:11px; }
+  .right .prop .v { border:1px solid var(--border); padding:2px 6px; font-size:11px; }
+  .right hr { border:none; border-top:1px solid var(--border-soft); margin:12px 0; }
+  .comment-box { background:#fff9c4; border:1px solid #bf9000; padding:8px; font-size:11px; margin-bottom:6px; }
+  .comment-box .a { font-weight:600; color:var(--accent); margin-bottom:3px; }
+
+  .status { background:var(--accent); color:#fff; display:flex; align-items:center; padding:0 14px; gap:18px; font-size:11px; }
+  .status .spacer { flex:1; }
+
+  /* animation pane */
+  .anim-row { display:flex; gap:6px; padding:4px; border-bottom:1px solid var(--border-soft); font-size:11px; align-items:center; }
+  .anim-row .n { background:var(--accent); color:#fff; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:9px; border-radius:50%; }
+  .anim-row .bar { flex:1; height:8px; background:#ffe0d6; border-radius:1px; position:relative; }
+  .anim-row .bar::before { content:''; position:absolute; left:10%; width:40%; top:0; bottom:0; background:var(--accent); border-radius:1px; }
+
+  .caret { display:inline-block; width:2px; height:14px; background:var(--text); vertical-align:-2px; animation:blink 1s step-end infinite; margin-left:1px; }
+  @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="Q2_Board_Deck_v14.pptx" data-favicon="📊">
+<div class="app">
+  <div class="tb">
+    <span style="font-weight:600">▦ 프레젠테이션</span>
+    <div class="doc">2026_Q2_전사전략리뷰_v7_임원보고용_final_수정본.pptx <span class="s">• 자동 저장됨</span></div>
+    <span style="opacity:0.85">공유됨 · 4명 편집 중</span>
+    <div class="avatar">JL</div><div class="avatar" style="background:#c5d8ff;color:#1a4480">SW</div><div class="avatar" style="background:#d9ead3;color:#38761d">YH</div>
+  </div>
+
+  <div class="menu">
+    <span class="m">파일</span><span class="m active">홈</span><span class="m">삽입</span><span class="m">디자인</span><span class="m">전환</span><span class="m">애니메이션</span><span class="m">슬라이드 쇼</span><span class="m">검토</span><span class="m">보기</span>
+    <span style="margin-left:auto;margin-right:8px;color:var(--dim);font-size:11px">🔍 알려주세요</span>
+  </div>
+
+  <div class="ribbon">
+    <div class="rg"><div class="items"><div class="rb"><div class="ic" style="width:34px;height:44px;font-size:16px">📋</div><div class="t">붙여<br>넣기</div></div></div><div class="lbl">클립보드</div></div>
+    <div class="rg" style="min-width:140px"><div class="items">
+      <div class="rb"><div class="ic">＋</div><div class="t">새<br>슬라이드</div></div>
+      <div class="rb"><div class="ic">▤</div><div class="t">레이아웃</div></div>
+      <div class="rb"><div class="ic">⟲</div><div class="t">원래대로</div></div>
+    </div><div class="lbl">슬라이드</div></div>
+    <div class="rg" style="min-width:200px"><div class="items">
+      <div class="rb"><div class="ic" style="font-weight:700">B</div><div class="t">굵게</div></div>
+      <div class="rb"><div class="ic" style="font-style:italic">I</div><div class="t">기울임</div></div>
+      <div class="rb"><div class="ic" style="text-decoration:underline">U</div><div class="t">밑줄</div></div>
+      <div class="rb"><div class="ic" style="color:var(--accent)">A</div><div class="t">색상</div></div>
+      <div class="rb"><div class="ic">Aa</div><div class="t">글꼴</div></div>
+    </div><div class="lbl">글꼴</div></div>
+    <div class="rg" style="min-width:180px"><div class="items">
+      <div class="rb"><div class="ic">▭</div><div class="t">도형</div></div>
+      <div class="rb"><div class="ic">📊</div><div class="t">차트</div></div>
+      <div class="rb"><div class="ic">⊞</div><div class="t">표</div></div>
+      <div class="rb"><div class="ic">🖼</div><div class="t">그림</div></div>
+    </div><div class="lbl">삽입</div></div>
+    <div class="rg" style="min-width:120px"><div class="items">
+      <div class="rb"><div class="ic">▶</div><div class="t">처음<br>부터</div></div>
+      <div class="rb"><div class="ic">⏵</div><div class="t">현재<br>부터</div></div>
+    </div><div class="lbl">슬라이드 쇼</div></div>
+    <div class="rg" style="min-width:100px;border-right:none"><div class="items">
+      <div class="rb"><div class="ic" style="background:var(--accent-soft)">✨</div><div class="t">디자이너</div></div>
+    </div><div class="lbl">디자이너</div></div>
+  </div>
+
+  <div class="main">
+    <aside class="thumbs">
+      <div class="thumb"><div class="num">1</div><div class="mini" style="background:linear-gradient(135deg,#b7472a,#7a2f1b);color:#fff;font-size:10px">표지</div></div>
+      <div class="thumb"><div class="num">2</div><div class="mini">목차 · Agenda</div></div>
+      <div class="thumb"><div class="num">3</div><div class="mini">1. 시장 환경</div></div>
+      <div class="thumb"><div class="num">4</div><div class="mini">2. Q2 실적 개요</div></div>
+      <div class="thumb active"><div class="num">5</div><div class="mini" style="background:#f9f5f4">3. 본부별 성과 ← 편집 중</div></div>
+      <div class="thumb"><div class="num">6</div><div class="mini">4. 제품군 분석</div></div>
+      <div class="thumb"><div class="num">7</div><div class="mini">5. 채널별 기여도</div></div>
+      <div class="thumb"><div class="num">8</div><div class="mini">6. 리스크 / 이슈</div></div>
+      <div class="thumb"><div class="num">9</div><div class="mini">7. Q3 전략 방향</div></div>
+      <div class="thumb"><div class="num">10</div><div class="mini">8. Key Initiatives</div></div>
+      <div class="thumb"><div class="num">11</div><div class="mini">9. 예산 / 리소스</div></div>
+      <div class="thumb"><div class="num">12</div><div class="mini">10. 요약 / Q&amp;A</div></div>
+      <div class="thumb"><div class="num">13</div><div class="mini" style="color:#bbb">Appendix — 데이터</div></div>
+      <div class="thumb"><div class="num">14</div><div class="mini" style="color:#bbb">Appendix — 용어</div></div>
+    </aside>
+
+    <section class="stage">
+      <div class="slide">
+        <div class="title selected">
+          본부별 Q2 영업실적 리뷰
+          <span class="caret"></span>
+          <div class="handle h-tl"></div><div class="handle h-tr"></div><div class="handle h-bl"></div><div class="handle h-br"></div>
+          <div class="handle h-t"></div><div class="handle h-b"></div><div class="handle h-l"></div><div class="handle h-r"></div>
+        </div>
+        <div class="subtitle">— 6개 본부 · 14개 지사 · 2026년 4월 기준</div>
+
+        <div class="chart-placeholder">
+          <svg viewBox="0 0 520 320" style="width:100%;height:100%">
+            <!-- axes -->
+            <line x1="60" y1="260" x2="510" y2="260" stroke="#888" stroke-width="1"/>
+            <line x1="60" y1="20" x2="60" y2="260" stroke="#888" stroke-width="1"/>
+            <!-- grid -->
+            <g stroke="#eee">
+              <line x1="60" y1="200" x2="510" y2="200"/>
+              <line x1="60" y1="140" x2="510" y2="140"/>
+              <line x1="60" y1="80" x2="510" y2="80"/>
+              <line x1="60" y1="20" x2="510" y2="20"/>
+            </g>
+            <!-- y labels -->
+            <g font-size="10" fill="#666" text-anchor="end">
+              <text x="55" y="264">0</text><text x="55" y="204">500</text><text x="55" y="144">1,000</text><text x="55" y="84">1,500</text><text x="55" y="24">2,000</text>
+            </g>
+            <!-- bars: 6 regions, actual + target -->
+            <g>
+              <rect x="80" y="130" width="28" height="130" fill="#b7472a"/><rect x="110" y="148" width="28" height="112" fill="#e9c5b8"/>
+              <rect x="150" y="80" width="28" height="180" fill="#b7472a"/><rect x="180" y="100" width="28" height="160" fill="#e9c5b8"/>
+              <rect x="220" y="150" width="28" height="110" fill="#b7472a"/><rect x="250" y="140" width="28" height="120" fill="#e9c5b8"/>
+              <rect x="290" y="190" width="28" height="70" fill="#b7472a"/><rect x="320" y="180" width="28" height="80" fill="#e9c5b8"/>
+              <rect x="360" y="170" width="28" height="90" fill="#b7472a"/><rect x="390" y="160" width="28" height="100" fill="#e9c5b8"/>
+              <rect x="430" y="220" width="28" height="40" fill="#b7472a"/><rect x="460" y="210" width="28" height="50" fill="#e9c5b8"/>
+            </g>
+            <!-- x labels -->
+            <g font-size="10" fill="#333" text-anchor="middle">
+              <text x="112" y="276">서울</text>
+              <text x="182" y="276">경기/인천</text>
+              <text x="252" y="276">부산/영남</text>
+              <text x="322" y="276">호남</text>
+              <text x="392" y="276">충청</text>
+              <text x="462" y="276">강원/제주</text>
+            </g>
+            <!-- trend line -->
+            <polyline points="110,120 180,90 250,140 320,175 390,165 460,215" fill="none" stroke="#666" stroke-dasharray="4,3" stroke-width="1.5"/>
+            <g>
+              <circle cx="110" cy="120" r="3" fill="#fff" stroke="#666" stroke-width="1.5"/>
+              <circle cx="180" cy="90" r="3" fill="#fff" stroke="#666" stroke-width="1.5"/>
+              <circle cx="250" cy="140" r="3" fill="#fff" stroke="#666" stroke-width="1.5"/>
+              <circle cx="320" cy="175" r="3" fill="#fff" stroke="#666" stroke-width="1.5"/>
+              <circle cx="390" cy="165" r="3" fill="#fff" stroke="#666" stroke-width="1.5"/>
+              <circle cx="460" cy="215" r="3" fill="#fff" stroke="#666" stroke-width="1.5"/>
+            </g>
+            <!-- legend -->
+            <rect x="320" y="8" width="12" height="8" fill="#b7472a"/><text x="336" y="16" font-size="10" fill="#333">실적</text>
+            <rect x="370" y="8" width="12" height="8" fill="#e9c5b8"/><text x="386" y="16" font-size="10" fill="#333">목표</text>
+            <line x1="420" y1="12" x2="436" y2="12" stroke="#666" stroke-dasharray="4,3" stroke-width="1.5"/><text x="440" y="16" font-size="10" fill="#333">YoY</text>
+          </svg>
+        </div>
+
+        <div class="text-box">
+          <h3>Key Takeaways</h3>
+          <ul>
+            <li><b>경기/인천 본부</b>가 목표 대비 112.5%로 전사 1위 달성</li>
+            <li>서울본부는 SL-02의 <span style="color:var(--accent)">-18% YoY</span> 영향으로 성장 둔화</li>
+            <li>강원/제주는 인력 부족 구조적 이슈 지속 — 후속 액션 필요</li>
+            <li>전사 달성률: <b>104.2%</b></li>
+          </ul>
+        </div>
+
+        <div class="footer">
+          <span>2026 Q2 전사전략리뷰 | 마케팅전략본부</span>
+          <span>5 / 14</span>
+          <span>2026-04-23</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <h3>서식</h3>
+      <div class="prop"><span class="k">글꼴</span><span class="v">Pretendard</span></div>
+      <div class="prop"><span class="k">크기</span><span class="v">28pt</span></div>
+      <div class="prop"><span class="k">색상</span><span class="v">#333333</span></div>
+      <div class="prop"><span class="k">정렬</span><span class="v">왼쪽</span></div>
+      <div class="prop"><span class="k">여백</span><span class="v">30 / 50 / 20 / 50</span></div>
+      <hr>
+      <h3>애니메이션 창</h3>
+      <div class="anim-row"><span class="n">1</span>제목 · 나타내기 (페이드)<div class="bar"></div></div>
+      <div class="anim-row"><span class="n">2</span>차트 · 올라오기<div class="bar"></div></div>
+      <div class="anim-row"><span class="n">3</span>텍스트상자 · 닦아내기<div class="bar"></div></div>
+      <div class="anim-row"><span class="n">4</span>추세선 · 그리기<div class="bar"></div></div>
+      <hr>
+      <h3>댓글 (3)</h3>
+      <div class="comment-box">
+        <div class="a">장인호 상무 · 14:22</div>
+        차트 제목이 없어요. "본부별 4월 실적 vs 목표"로 넣어주세요.
+      </div>
+      <div class="comment-box">
+        <div class="a">이수민 차장 · 14:18</div>
+        SL-02 하락 원인 한 줄 코멘트로 부연 설명 추가 요청드립니다.
+      </div>
+      <div class="comment-box">
+        <div class="a">윤아라 수석 · 13:52</div>
+        강원/제주 바 색상을 amber로 구분하면 어떨까요? <span style="color:var(--accent)">@박경진</span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="status">
+    <span>슬라이드 <b>5</b> / 14</span>
+    <span>한국어</span>
+    <span id="st-msg">자동 저장됨 · 방금</span>
+    <span>맞춤법 검사: 완료</span>
+    <span class="spacer"></span>
+    <span id="st-editing">이수민님이 슬라이드 8 편집 중</span>
+    <span>130%</span>
+  </div>
+</div>
+
+<script>
+const MSGS=['자동 저장됨 · 방금','변경 내용 동기화 중…','OneDrive에 저장됨','버전 기록 업데이트됨','공동 작성자와 병합 중…'];
+let i=0; setInterval(()=>{i=(i+1)%MSGS.length; document.getElementById('st-msg').textContent=MSGS[i];}, 2800);
+const EDS=['이수민님이 슬라이드 8 편집 중','장인호 상무가 슬라이드 11 보는 중','윤아라 수석이 댓글 남김','최영훈 과장이 슬라이드 2 편집 중','3명이 동시에 편집 중'];
+let j=0; setInterval(()=>{j=(j+1)%EDS.length; document.getElementById('st-editing').textContent=EDS[j];}, 2200);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

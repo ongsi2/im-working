@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Crypto Exchange — Pro Trading</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0a0e17;--panel:#0f141f;--panel2:#141a27;--border:#1f2937;
+    --text:#d4dae5;--dim:#6b7a95;--dimmer:#4a5468;
+    --up:#0ecb81;--down:#f6465d;--amber:#f0b90b;--blue:#3498ff;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',sans-serif;font-size:12px;overflow:hidden;}
+  .app{display:grid;grid-template-rows:48px 1fr 26px;height:100vh;}
+  .tb{background:#0f141f;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:22px;font-size:13px;}
+  .logo{color:var(--amber);font-weight:800;font-size:18px;letter-spacing:-0.3px;}
+  .tb .nav{color:var(--dim);}
+  .tb .nav.active{color:var(--text);font-weight:600;}
+  .tb .spacer{flex:1;}
+  .tb .bal{color:var(--dim);}
+  .tb .bal b{color:var(--text);font-family:'Consolas',monospace;}
+
+  .main{display:grid;grid-template-columns:260px 1fr 300px 300px;grid-template-rows:56px 1fr 1fr;gap:1px;background:var(--border);overflow:hidden;}
+  .p{background:var(--panel);overflow:hidden;display:flex;flex-direction:column;}
+
+  /* market header */
+  .mhead{grid-column:1 / span 4;grid-row:1;display:flex;align-items:center;padding:0 20px;gap:24px;background:var(--panel);}
+  .mhead .pair{display:flex;align-items:center;gap:8px;}
+  .mhead .pair .sym{font-size:16px;font-weight:700;}
+  .mhead .pair .star{color:var(--amber);}
+  .mhead .last{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .mhead .chg{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .mhead .stat{font-size:10.5px;color:var(--dim);line-height:1.4;}
+  .mhead .stat b{display:block;color:var(--text);font-size:12px;font-variant-numeric:tabular-nums;}
+  .up{color:var(--up);}
+  .down{color:var(--down);}
+
+  /* left: markets list */
+  .markets{grid-column:1;grid-row:2 / span 2;display:flex;flex-direction:column;}
+  .mtabs{display:flex;border-bottom:1px solid var(--border);}
+  .mtabs .t{padding:8px 12px;font-size:11px;color:var(--dim);}
+  .mtabs .t.active{color:var(--amber);border-bottom:2px solid var(--amber);}
+  .msearch{padding:8px 12px;border-bottom:1px solid var(--border);}
+  .msearch input{width:100%;background:#0a0e17;border:1px solid var(--border);padding:5px 8px;color:var(--text);font-size:11px;border-radius:2px;}
+  .mbtns{display:flex;padding:6px 10px;gap:6px;border-bottom:1px solid var(--border);font-size:11px;color:var(--dim);}
+  .mbtns .b.active{color:var(--amber);font-weight:700;}
+  .mrow{display:grid;grid-template-columns:1fr 1fr 1fr;padding:5px 12px;font-size:11px;align-items:center;font-variant-numeric:tabular-nums;}
+  .mrow:hover{background:#151b28;}
+  .mrow.active{background:#1a2030;}
+  .mrow .sym b{color:var(--text);font-weight:600;}
+  .mrow .sym .quote{color:var(--dim);font-size:10px;}
+  .mrow .px{text-align:right;}
+  .mrow .ch{text-align:right;}
+  .mlist{flex:1;overflow-y:auto;}
+  .mhead-row{display:grid;grid-template-columns:1fr 1fr 1fr;padding:5px 12px;font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid var(--border);}
+  .mhead-row span:not(:first-child){text-align:right;}
+
+  /* chart */
+  .chart{grid-column:2;grid-row:2;}
+  .chart .bar{display:flex;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);align-items:center;}
+  .chart .bar .i{padding:3px 8px;font-size:11px;color:var(--dim);border-radius:2px;}
+  .chart .bar .i.active{background:rgba(240,185,11,0.15);color:var(--amber);font-weight:700;}
+  .chart .area{flex:1;position:relative;overflow:hidden;padding:10px;}
+  svg.candle{width:100%;height:100%;}
+
+  /* orderbook */
+  .book{grid-column:3;grid-row:2 / span 2;font-family:'Consolas',monospace;font-size:11px;display:flex;flex-direction:column;}
+  .book .bh{padding:6px 10px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;font-size:11px;}
+  .book .bh .seg{color:var(--dim);}
+  .book .bh .seg.active{color:var(--text);}
+  .book .cols{display:grid;grid-template-columns:1fr 1fr 1fr;padding:4px 10px;color:var(--dim);font-size:10px;border-bottom:1px solid var(--border);}
+  .book .cols span:not(:first-child){text-align:right;}
+  .book .list{flex:1;overflow:hidden;}
+  .brow{display:grid;grid-template-columns:1fr 1fr 1fr;padding:1.5px 10px;position:relative;font-variant-numeric:tabular-nums;}
+  .brow .px{z-index:2;text-align:left;}
+  .brow .sz{z-index:2;text-align:right;color:var(--text);}
+  .brow .sum{z-index:2;text-align:right;color:var(--dim);}
+  .brow .bar{position:absolute;right:0;top:0;bottom:0;z-index:1;}
+  .brow.ask .px{color:var(--down);} .brow.ask .bar{background:rgba(246,70,93,0.12);}
+  .brow.bid .px{color:var(--up);} .brow.bid .bar{background:rgba(14,203,129,0.12);left:0;right:auto;}
+  .bmid{background:#0a0e17;padding:5px 10px;display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .bmid .m{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .bmid .spread{font-size:10px;color:var(--dim);}
+
+  /* trades */
+  .trades{grid-column:4;grid-row:2 / span 2;display:flex;flex-direction:column;}
+  .trades .th{padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text);font-weight:600;display:flex;gap:12px;}
+  .trades .th .t{color:var(--dim);font-weight:400;}
+  .trades .th .t.active{color:var(--text);font-weight:600;}
+  .trades .cols{display:grid;grid-template-columns:1fr 1fr 1fr;padding:3px 12px;color:var(--dim);font-size:10px;}
+  .trades .cols span:not(:first-child){text-align:right;}
+  .trades .list{flex:1;overflow:hidden;font-family:'Consolas',monospace;font-size:11px;}
+  .trow{display:grid;grid-template-columns:1fr 1fr 1fr;padding:1.5px 12px;font-variant-numeric:tabular-nums;}
+  .trow .px{font-weight:600;}
+  .trow .sz{text-align:right;}
+  .trow .t{text-align:right;color:var(--dim);font-size:10px;}
+  .trow.buy .px{color:var(--up);}
+  .trow.sell .px{color:var(--down);}
+  .trow.new{animation:flashin 0.4s;}
+  @keyframes flashin{from{background:rgba(240,185,11,0.15);} to{background:transparent;}}
+
+  /* bottom panel: order form + positions */
+  .orderform{grid-column:2;grid-row:3;padding:12px;}
+  .orderform .tt{display:flex;gap:14px;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px;}
+  .orderform .tt .tab{color:var(--dim);font-size:12px;}
+  .orderform .tt .tab.active{color:var(--text);font-weight:700;}
+  .orderform .bs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+  .orderform .bs .b{padding:6px;text-align:center;border-radius:3px;font-weight:700;font-size:12px;}
+  .orderform .bs .b.buy{background:rgba(14,203,129,0.18);color:var(--up);border:1px solid rgba(14,203,129,0.3);}
+  .orderform .bs .b.buy.active{background:var(--up);color:#fff;border-color:var(--up);}
+  .orderform .bs .b.sell{background:rgba(246,70,93,0.12);color:var(--down);border:1px solid rgba(246,70,93,0.2);}
+  .orderform .row{display:grid;grid-template-columns:1fr 1.5fr;gap:6px;margin-bottom:6px;align-items:center;font-size:11px;}
+  .orderform .row label{color:var(--dim);}
+  .orderform .inp{background:#0a0e17;border:1px solid var(--border);padding:5px 8px;border-radius:2px;color:var(--text);font-family:'Consolas',monospace;display:flex;justify-content:space-between;}
+  .orderform .inp .u{color:var(--dim);}
+  .orderform .pctrow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0;}
+  .orderform .pctrow .p{background:#1a2030;padding:4px;text-align:center;font-size:10.5px;color:var(--dim);border-radius:2px;}
+  .orderform .pctrow .p.active{background:rgba(240,185,11,0.15);color:var(--amber);}
+  .orderform .btn-submit{background:var(--up);color:#fff;padding:10px;text-align:center;border-radius:3px;font-weight:700;margin-top:8px;}
+
+  /* positions */
+  .pos{grid-column:4;grid-row:3;display:none;}
+
+  .status{background:#0f141f;border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:18px;font-size:10.5px;color:var(--dim);}
+  .status b{color:var(--text);}
+  .status .spacer{flex:1;}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block;margin-right:5px;animation:p 2s infinite;}
+  @keyframes p{50%{opacity:0.4;}}
+
+  .flash-up{animation:fup 0.4s;}
+  .flash-down{animation:fdn 0.4s;}
+  @keyframes fup{from{color:#fff;background:rgba(14,203,129,0.3);}}
+  @keyframes fdn{from{color:#fff;background:rgba(246,70,93,0.3);}}
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="BTC/USDT — Binance Pro" data-favicon="🪙">
+<div class="app">
+  <div class="tb">
+    <span class="logo">◈ NOVA/X</span>
+    <span class="nav active">거래</span>
+    <span class="nav">파생상품</span>
+    <span class="nav">마진</span>
+    <span class="nav">수익</span>
+    <span class="nav">Web3</span>
+    <span class="nav">NFT</span>
+    <span class="spacer"></span>
+    <span class="bal">월 거래량: <b>$2.84M</b></span>
+    <span class="bal">VIP 3</span>
+    <span class="bal">자산: <b id="bal">$184,284.22</b></span>
+    <span class="bal">🔔</span>
+    <span class="bal">⚙</span>
+    <span class="bal" style="background:var(--amber);color:#000;padding:4px 10px;border-radius:3px;font-weight:700">입금</span>
+  </div>
+
+  <div class="main">
+    <div class="p mhead">
+      <div class="pair"><span class="star">★</span><span class="sym">BTC/USDT</span><span style="color:var(--dim);font-size:10px">永续</span></div>
+      <div>
+        <div class="last" id="last-px">68,420.15</div>
+        <div class="chg up">+1,284.60 (+1.91%)</div>
+      </div>
+      <div class="stat">24H High<b id="hi">69,112.00</b></div>
+      <div class="stat">24H Low<b id="lo">66,842.00</b></div>
+      <div class="stat">24H Volume (BTC)<b>42,184.28</b></div>
+      <div class="stat">24H Volume (USDT)<b>$2.86B</b></div>
+      <div class="stat">Funding (next 3:42:18)<b class="up" id="fund">+0.0082%</b></div>
+      <div class="stat">Open Interest<b>$12.84B</b></div>
+    </div>
+
+    <aside class="p markets">
+      <div class="mtabs"><div class="t active">⭐ 즐겨찾기</div><div class="t">BTC</div><div class="t">USDT</div><div class="t">KRW</div><div class="t">신규</div></div>
+      <div class="msearch"><input placeholder="검색…"></div>
+      <div class="mbtns"><span class="b active">현물</span><span class="b">선물</span><span class="b">옵션</span></div>
+      <div class="mhead-row"><span>Pair</span><span>Last</span><span>24h %</span></div>
+      <div class="mlist" id="mlist"></div>
+    </aside>
+
+    <section class="p chart">
+      <div class="bar">
+        <div class="i">1m</div><div class="i">5m</div><div class="i active">15m</div><div class="i">1h</div><div class="i">4h</div><div class="i">1D</div><div class="i">1W</div>
+        <div style="flex:1"></div>
+        <div class="i">📊 지표</div><div class="i">✎ 드로잉</div><div class="i">⚙</div>
+      </div>
+      <div class="area">
+        <svg class="candle" id="candle" viewBox="0 0 900 400" preserveAspectRatio="none"></svg>
+      </div>
+    </section>
+
+    <aside class="p book">
+      <div class="bh">
+        <span class="seg active">📚 호가</span><span class="seg">📈 심도</span>
+        <span style="margin-left:auto;color:var(--dim);font-size:10px">BTC ▾ 0.01 ▾</span>
+      </div>
+      <div class="cols"><span>Price(USDT)</span><span>Amount(BTC)</span><span>Total</span></div>
+      <div class="list" id="asks"></div>
+      <div class="bmid">
+        <span class="m up" id="bk-mid">68,420.15</span>
+        <span class="spread">≈ ₩92,912,208 <br>Spread 0.012%</span>
+      </div>
+      <div class="list" id="bids"></div>
+    </aside>
+
+    <aside class="p trades">
+      <div class="th"><span>체결</span><span class="t">거래내역</span></div>
+      <div class="cols"><span>Price</span><span>Amount(BTC)</span><span>Time</span></div>
+      <div class="list" id="trades"></div>
+    </aside>
+
+    <section class="p orderform">
+      <div class="tt">
+        <span class="tab active">Limit</span>
+        <span class="tab">Market</span>
+        <span class="tab">Stop-Limit</span>
+        <span class="tab">Trailing Stop</span>
+        <span class="tab">OCO</span>
+        <span style="margin-left:auto;color:var(--dim);font-size:11px">⚙ Post Only · TIF: GTC ▾</span>
+      </div>
+      <div class="bs">
+        <div class="b buy active">매수 BTC</div>
+        <div class="b sell">매도 BTC</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div class="row"><label>Available</label><div class="inp"><span>12,482.44</span><span class="u">USDT</span></div></div>
+          <div class="row"><label>가격</label><div class="inp"><span>68,410.00</span><span class="u">USDT</span></div></div>
+          <div class="row"><label>수량</label><div class="inp"><span>0.0824</span><span class="u">BTC</span></div></div>
+          <div class="pctrow"><span class="p">25%</span><span class="p active">50%</span><span class="p">75%</span><span class="p">100%</span></div>
+          <div class="row"><label>Total</label><div class="inp"><span>5,637.01</span><span class="u">USDT</span></div></div>
+          <div class="btn-submit">Buy BTC</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--dim);margin-bottom:6px;font-weight:600">미체결 주문 (3)</div>
+          <table style="width:100%;font-size:10.5px;font-variant-numeric:tabular-nums">
+            <thead><tr style="color:var(--dim);border-bottom:1px solid var(--border)"><th style="text-align:left;padding:4px 0">Pair</th><th style="text-align:left">Side</th><th style="text-align:right">Price</th><th style="text-align:right">Amt</th><th style="text-align:right">Filled</th></tr></thead>
+            <tbody>
+              <tr><td style="padding:3px 0">BTC/USDT</td><td class="up">BUY</td><td style="text-align:right">67,800.00</td><td style="text-align:right">0.5000</td><td style="text-align:right">0%</td></tr>
+              <tr><td>ETH/USDT</td><td class="down">SELL</td><td style="text-align:right">3,520.00</td><td style="text-align:right">2.400</td><td style="text-align:right">38%</td></tr>
+              <tr><td>SOL/USDT</td><td class="up">BUY</td><td style="text-align:right">162.50</td><td style="text-align:right">42.00</td><td style="text-align:right">0%</td></tr>
+            </tbody>
+          </table>
+          <div style="font-size:11px;color:var(--dim);margin:10px 0 4px;font-weight:600">최근 체결 (24h)</div>
+          <div style="font-size:10.5px;font-family:'Consolas',monospace;line-height:1.6">
+            <div><span class="up">BUY</span> 0.124 BTC @ 68,124.00 <span style="color:var(--dim);float:right">09:42</span></div>
+            <div><span class="up">BUY</span> 0.842 ETH @ 3,484.50 <span style="color:var(--dim);float:right">08:18</span></div>
+            <div><span class="down">SELL</span> 12.00 SOL @ 164.20 <span style="color:var(--dim);float:right">어제 23:12</span></div>
+            <div><span class="up">BUY</span> 0.250 BTC @ 67,820.00 <span style="color:var(--dim);float:right">어제 21:48</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="status">
+    <span><span class="dot"></span>WebSocket 연결됨 <b>L2+trades</b></span>
+    <span>레이턴시 <b id="lat">12ms</b></span>
+    <span id="msg">주문 체결: BUY 0.082 BTC @ 68,408.50</span>
+    <span class="spacer"></span>
+    <span>Fear &amp; Greed <b style="color:var(--up)">74 · Greed</b></span>
+    <span>BTC Dominance <b>54.2%</b></span>
+    <span>다음 Funding 3:42:18</span>
+  </div>
+</div>
+
+<script>
+const rand=(a,b)=>Math.random()*(b-a)+a;
+const irand=(a,b)=>Math.floor(rand(a,b+1));
+const fmt=(n,d=2)=>n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pad=(n,w=2)=>String(n).padStart(w,'0');
+
+// markets list
+const MKT=[
+  ['BTC','USDT',68420.15,1.91],
+  ['ETH','USDT',3482.44,2.12],
+  ['SOL','USDT',164.22,-0.84],
+  ['BNB','USDT',612.14,0.42],
+  ['XRP','USDT',0.5284,-1.24],
+  ['ADA','USDT',0.4624,3.42],
+  ['AVAX','USDT',36.82,-2.18],
+  ['DOGE','USDT',0.1524,4.82],
+  ['TON','USDT',6.842,1.24],
+  ['DOT','USDT',7.248,-0.82],
+  ['LINK','USDT',14.82,2.44],
+  ['TRX','USDT',0.1184,0.12],
+  ['NEAR','USDT',6.482,1.84],
+  ['MATIC','USDT',0.7248,-1.42],
+  ['ATOM','USDT',8.842,0.84],
+  ['APT','USDT',9.124,3.12],
+  ['ICP','USDT',14.24,-0.42],
+  ['FIL','USDT',6.42,2.44],
+  ['INJ','USDT',28.4,4.82],
+  ['OP','USDT',2.484,-2.14],
+  ['ARB','USDT',1.184,1.12],
+  ['SUI','USDT',1.442,3.84],
+];
+const mlist=document.getElementById('mlist');
+function renderMkt(){
+  mlist.innerHTML='';
+  MKT.forEach((m,i)=>{
+    const row=document.createElement('div');
+    row.className='mrow'+(i===0?' active':'');
+    row.innerHTML=`<span class="sym"><b>${m[0]}</b><span class="quote">/${m[1]}</span></span><span class="px">${fmt(m[2],m[2]<1?4:2)}</span><span class="ch ${m[3]>=0?'up':'down'}">${m[3]>=0?'+':''}${m[3].toFixed(2)}%</span>`;
+    mlist.appendChild(row);
+  });
+}
+renderMkt();
+setInterval(()=>{
+  MKT.forEach(m=>{m[2]*=(1+rand(-0.003,0.003));m[3]+=rand(-0.15,0.15);});
+  renderMkt();
+},1400);
+
+// Candles
+let candles=[];
+let lp=67500;
+function seed(){
+  candles=[];
+  let p=66800;
+  for(let i=0;i<80;i++){
+    const o=p,c=p+rand(-500,500),h=Math.max(o,c)+rand(0,200),l=Math.min(o,c)-rand(0,200);
+    candles.push({o,c,h,l,v:rand(20,90)});
+    p=c;
+  }
+  lp=p;
+}
+seed();
+const candleSvg=document.getElementById('candle');
+function drawChart(){
+  const W=900,H=400,n=candles.length,cw=W/n;
+  const max=Math.max(...candles.map(c=>c.h))*1.003;
+  const min=Math.min(...candles.map(c=>c.l))*0.997;
+  const sp=max-min, y=v=>((max-v)/sp)*(H*0.72);
+  let h='';
+  for(let i=0;i<=5;i++){
+    const yy=(H*0.72)*i/5;
+    h+=`<line x1="0" y1="${yy}" x2="${W}" y2="${yy}" stroke="#1f2937" stroke-dasharray="2,3"/>`;
+    h+=`<text x="${W-4}" y="${yy+10}" fill="#6b7a95" font-size="9" text-anchor="end">${fmt(max-sp*i/5)}</text>`;
+  }
+  candles.forEach((c,i)=>{
+    const x=i*cw+cw/2, up=c.c>=c.o, col=up?'#0ecb81':'#f6465d';
+    h+=`<line x1="${x}" y1="${y(c.h)}" x2="${x}" y2="${y(c.l)}" stroke="${col}" stroke-width="1"/>`;
+    const bh=Math.max(1,Math.abs(y(c.c)-y(c.o)));
+    h+=`<rect x="${x-cw*0.35}" y="${y(Math.max(c.o,c.c))}" width="${cw*0.7}" height="${bh}" fill="${col}"/>`;
+    const vh=c.v*1.1;
+    h+=`<rect x="${x-cw*0.35}" y="${H-vh}" width="${cw*0.7}" height="${vh}" fill="${col}" opacity="0.3"/>`;
+  });
+  // EMA
+  let e=candles[0].c;const k=2/21;const ema=[];
+  candles.forEach(c=>{e=c.c*k+e*(1-k);ema.push(e);});
+  h+=`<path d="${ema.map((v,i)=>`${i?'L':'M'}${i*cw+cw/2},${y(v)}`).join('')}" fill="none" stroke="#f0b90b" stroke-width="1.2"/>`;
+  // price line
+  h+=`<line x1="0" y1="${y(lp)}" x2="${W}" y2="${y(lp)}" stroke="#3498ff" stroke-dasharray="3,3" stroke-width="0.8"/>`;
+  h+=`<rect x="${W-80}" y="${y(lp)-8}" width="76" height="16" fill="#3498ff"/><text x="${W-42}" y="${y(lp)+4}" fill="#fff" font-size="10" font-weight="700" text-anchor="middle">${fmt(lp)}</text>`;
+  candleSvg.innerHTML=h;
+}
+drawChart();
+setInterval(()=>{
+  const l=candles[candles.length-1];
+  l.c+=rand(-120,120);
+  l.h=Math.max(l.h,l.c);l.l=Math.min(l.l,l.c);
+  lp=l.c;
+  if(Math.random()>0.85){candles.push({o:l.c,c:l.c,h:l.c,l:l.c,v:rand(20,80)});candles.shift();}
+  drawChart();
+  document.getElementById('last-px').textContent=fmt(lp);
+  document.getElementById('bk-mid').textContent=fmt(lp);
+},650);
+
+// Order book
+const asksEl=document.getElementById('asks'),bidsEl=document.getElementById('bids');
+function renderBook(){
+  const mid=lp;
+  let ah='';
+  const asks=[];for(let i=14;i>=1;i--)asks.push({p:mid+i*3.5,sz:rand(0.05,3.8)});
+  let mx=Math.max(...asks.map(a=>a.sz));
+  asks.forEach(a=>{const bw=(a.sz/mx)*100;ah+=`<div class="brow ask"><span class="px">${fmt(a.p)}</span><span class="sz">${a.sz.toFixed(4)}</span><span class="sum">${fmt(a.sz*a.p)}</span><div class="bar" style="width:${bw}%"></div></div>`;});
+  asksEl.innerHTML=ah;
+  let bh='';
+  const bids=[];for(let i=1;i<=14;i++)bids.push({p:mid-i*3.5,sz:rand(0.05,3.8)});
+  mx=Math.max(...bids.map(b=>b.sz));
+  bids.forEach(b=>{const bw=(b.sz/mx)*100;bh+=`<div class="brow bid"><span class="px">${fmt(b.p)}</span><span class="sz">${b.sz.toFixed(4)}</span><span class="sum">${fmt(b.sz*b.p)}</span><div class="bar" style="width:${bw}%"></div></div>`;});
+  bidsEl.innerHTML=bh;
+}
+renderBook();setInterval(renderBook,750);
+
+// Trades
+const tradesEl=document.getElementById('trades');
+function pushTrade(){
+  const buy=Math.random()>0.5;
+  const p=lp+rand(-1.5,1.5);
+  const sz=rand(0.005,1.2);
+  const d=new Date();
+  const el=document.createElement('div');
+  el.className='trow new '+(buy?'buy':'sell');
+  el.innerHTML=`<span class="px">${fmt(p)}</span><span class="sz">${sz.toFixed(4)}</span><span class="t">${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</span>`;
+  tradesEl.insertBefore(el,tradesEl.firstChild);
+  while(tradesEl.children.length>40)tradesEl.removeChild(tradesEl.lastChild);
+}
+for(let i=0;i<20;i++)pushTrade();
+setInterval(pushTrade,400);
+
+const MSGS=[
+  '주문 체결: BUY 0.082 BTC @ 68,408.50',
+  '주문 접수: SELL 2.400 ETH @ 3,520.00 (Limit)',
+  'Funding rate 업데이트: +0.0082%',
+  'Stop 트리거: SELL 12 SOL @ 162.50',
+  '시장가 주문 부분 체결: 0.124/0.250 BTC',
+  '리밸런싱 완료 · 포트폴리오 비중 정상화',
+];
+let si=0;setInterval(()=>{si=(si+1)%MSGS.length;document.getElementById('msg').textContent=MSGS[si];document.getElementById('lat').textContent=irand(6,28)+'ms';},1800);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

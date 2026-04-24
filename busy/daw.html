@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>SONAR · Q2_Brand_Anthem_Master.sonar</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1d1d1d;color:#d0d0d0;font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:11px;overflow:hidden}
+.app{display:grid;grid-template-rows:28px 44px 160px 1fr 22px;height:100vh}
+.tb{background:linear-gradient(180deg,#3a3a3a,#2a2a2a);color:#d0d0d0;display:flex;align-items:center;padding:0 12px;font-size:11px;gap:14px;border-bottom:1px solid #000}
+.tb .lg{font-weight:800;letter-spacing:1.5px;color:#ff9100}
+.transport{background:linear-gradient(180deg,#333,#252525);border-bottom:1px solid #000;display:flex;align-items:center;padding:0 12px;gap:10px;font-family:'Menlo','Consolas',monospace}
+.tb-btn{width:32px;height:28px;background:linear-gradient(180deg,#555,#333);border:1px solid #1a1a1a;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#eee;cursor:pointer}
+.tb-btn.r{color:#ff2d2d}
+.tb-btn.p{color:#4caf50;background:linear-gradient(180deg,#6a6a6a,#4a4a4a)}
+.lcd{background:#0a0a0a;border:1px solid #000;border-radius:3px;padding:4px 10px;color:#ff9100;font-size:16px;letter-spacing:1px;font-weight:700;text-shadow:0 0 6px rgba(255,145,0,0.6);min-width:120px;text-align:center}
+.lcd .s{font-size:9px;color:#888;display:block;margin-bottom:-2px;letter-spacing:2px}
+.lcd.bpm{color:#4caf50;text-shadow:0 0 6px rgba(76,175,80,0.6)}
+.lcd.meter{color:#8bc34a}
+
+.meters{background:#1a1a1a;border-bottom:1px solid #000;padding:10px 12px;display:flex;gap:1px;overflow-x:auto}
+.trk{min-width:72px;background:linear-gradient(180deg,#2a2a2a,#1f1f1f);border-right:1px solid #0a0a0a;padding:6px;display:flex;flex-direction:column;gap:4px}
+.trk .name{font-size:10px;color:#eee;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk .row{display:flex;gap:3px}
+.trk .btn{width:18px;height:14px;border-radius:2px;background:#2a2a2a;border:1px solid #000;color:#666;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.trk .btn.m{background:#8b4a00;color:#fff}
+.trk .btn.s{background:#c2a200;color:#fff}
+.trk .btn.r{background:#c43030;color:#fff}
+.trk .meter{height:48px;background:linear-gradient(180deg,#0a0a0a,#1a1a1a);border:1px solid #000;position:relative;display:flex;gap:1px;padding:1px}
+.trk .meter .bar{flex:1;background:linear-gradient(180deg,#c43030 0%,#c43030 5%,#c2a200 5%,#c2a200 20%,#4caf50 20%,#4caf50 100%);position:relative}
+.trk .meter .bar::after{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:#1a1a1a;transition:height 0.1s}
+.trk .meter .bar.l::after{height:var(--ml,50%)}
+.trk .meter .bar.r::after{height:var(--mr,60%)}
+.trk .knob{width:28px;height:28px;background:radial-gradient(circle at 30% 30%,#666,#222);border-radius:50%;border:1px solid #000;position:relative;margin:0 auto}
+.trk .knob::after{content:'';position:absolute;top:2px;left:50%;width:2px;height:10px;background:#ff9100;transform-origin:bottom center;transform:translateX(-50%) rotate(var(--rot,20deg))}
+.trk .ch{font-size:8px;text-align:center;color:#888}
+.trk.bus{background:linear-gradient(180deg,#2f2018,#1d1410)}
+.trk.bus .name{color:#ff9100}
+
+/* TIMELINE */
+.timeline{background:#252525;overflow:hidden;display:grid;grid-template-columns:180px 1fr;border-top:1px solid #000}
+.tr-headers{background:#1d1d1d;border-right:1px solid #000;overflow-y:auto}
+.tr-head{height:52px;border-bottom:1px solid #0a0a0a;padding:4px 8px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.tr-head .n{font-size:11px;font-weight:700;color:#eee}
+.tr-head .c{display:flex;gap:3px;font-size:9px;color:#999}
+.tr-head .c span{background:#2a2a2a;padding:1px 4px;border-radius:2px}
+.tr-head .c span.m{background:#8b4a00;color:#fff}
+.tr-head .c span.r{background:#c43030;color:#fff}
+.tr-head.drum{border-left:3px solid #e74c3c}
+.tr-head.bass{border-left:3px solid #9b59b6}
+.tr-head.synth{border-left:3px solid #3498db}
+.tr-head.gtr{border-left:3px solid #e67e22}
+.tr-head.vox{border-left:3px solid #1abc9c}
+.tr-head.fx{border-left:3px solid #95a5a6}
+
+.tl-wrap{position:relative;overflow-x:auto;overflow-y:auto;background:#181818}
+.ruler{height:20px;background:linear-gradient(180deg,#2a2a2a,#1a1a1a);border-bottom:1px solid #000;position:sticky;top:0;display:flex;font-size:9px;color:#888;font-family:'Menlo',monospace;z-index:3;min-width:1800px}
+.ruler .bar{flex:1;border-right:1px solid #333;padding:3px 4px}
+.ruler .bar.m{background:rgba(255,145,0,0.15);color:#ff9100;font-weight:700}
+.clips{min-width:1800px}
+.cr{height:52px;border-bottom:1px solid #0a0a0a;position:relative}
+.cr::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/16 - 1px),#232323 calc(100%/16 - 1px),#232323 calc(100%/16));pointer-events:none}
+.clip{position:absolute;top:5px;bottom:5px;border-radius:3px;overflow:hidden;border:1px solid rgba(0,0,0,0.4);box-shadow:0 1px 0 rgba(255,255,255,0.1) inset;display:flex;align-items:center;padding:2px 6px}
+.clip .lbl{position:absolute;left:4px;top:2px;font-size:9px;color:rgba(0,0,0,0.75);font-weight:700;pointer-events:none;z-index:2;white-space:nowrap}
+.clip .wf{position:absolute;inset:0;display:flex;align-items:center;gap:1px;padding:12px 3px 3px;mix-blend-mode:overlay}
+.clip .wf i{flex:1;background:rgba(0,0,0,0.7)}
+.clip.midi{background:linear-gradient(180deg,#5dade2,#3498db);padding-top:14px}
+.clip.midi .notes{position:absolute;inset:14px 3px 3px;display:grid;grid-template-rows:repeat(8,1fr);gap:1px}
+.clip.midi .notes i{background:rgba(255,255,255,0.9);border-radius:1px;height:3px;align-self:center;position:relative}
+.clip.drum{background:linear-gradient(180deg,#ec7063,#e74c3c)}
+.clip.bass{background:linear-gradient(180deg,#bb8fce,#9b59b6)}
+.clip.synth{background:linear-gradient(180deg,#5dade2,#3498db)}
+.clip.gtr{background:linear-gradient(180deg,#f5b041,#e67e22)}
+.clip.vox{background:linear-gradient(180deg,#48c9b0,#1abc9c)}
+.clip.fx{background:linear-gradient(180deg,#abb2b9,#7f8c8d)}
+.clip.auto{background:rgba(149,165,166,0.3);border:1px dashed #95a5a6}
+.clip.auto::after{content:'';position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(90deg,transparent,rgba(149,165,166,0.6) 60%,transparent);clip-path:polygon(0 100%,20% 40%,35% 60%,50% 30%,75% 70%,90% 20%,100% 50%,100% 100%)}
+
+.playhead{position:absolute;top:0;bottom:0;left:520px;width:1px;background:#fff;z-index:5;box-shadow:0 0 4px rgba(255,255,255,0.8)}
+.playhead::before{content:'▼';position:absolute;top:-4px;left:-7px;color:#fff;font-size:14px}
+
+.status{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#888;display:flex;align-items:center;padding:0 12px;font-size:10px;gap:16px;font-family:'Menlo',monospace;border-top:1px solid #000}
+.status .on{color:#4caf50}
+.status .w{color:#ff9100}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="tool" data-title="Session_final.logicx" data-favicon="🎵">
+<div class="app">
+  <div class="tb">
+    <span class="lg">◢◤ SONAR</span>
+    <span>Q2_Brand_Anthem_Master.sonar &nbsp;·&nbsp; 24-bit / 96 kHz · 편집됨*</span>
+    <span style="margin-left:auto">파일 &nbsp; 편집 &nbsp; 트랙 &nbsp; 리전 &nbsp; 이벤트 &nbsp; 믹스 &nbsp; 뷰 &nbsp; 창 &nbsp; 도움말</span>
+  </div>
+
+  <div class="transport">
+    <div class="tb-btn">⏮</div><div class="tb-btn">⏪</div><div class="tb-btn">⏩</div>
+    <div class="tb-btn">■</div><div class="tb-btn p">▶</div><div class="tb-btn r">●</div>
+    <div style="width:12px"></div>
+    <div class="tb-btn" title="cycle">⟳</div>
+    <div class="lcd"><span class="s">POSITION</span>18 . 3 . 248</div>
+    <div class="lcd bpm"><span class="s">TEMPO</span>127.50</div>
+    <div class="lcd"><span class="s">SIG</span>4 / 4</div>
+    <div class="lcd bpm"><span class="s">KEY</span>A♭ min</div>
+    <div class="lcd meter"><span class="s">OUT L/R</span>-6.4 / -5.8</div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <div class="tb-btn" style="width:auto;padding:0 10px;font-size:10px">QUANT 1/16</div>
+      <div class="tb-btn" style="width:auto;padding:0 10px;font-size:10px">METRO</div>
+      <div class="tb-btn" style="width:auto;padding:0 10px;font-size:10px;color:#ff9100">PUNCH</div>
+    </div>
+  </div>
+
+  <div class="meters">
+    <div class="trk"><div class="name">Kick 808</div><div class="row"><div class="btn">M</div><div class="btn s">S</div><div class="btn r">R</div></div><div class="meter"><div class="bar l" style="--ml:30%"></div><div class="bar r" style="--mr:28%"></div></div><div class="knob" style="--rot:-20deg"></div><div class="ch">CH 1</div></div>
+    <div class="trk"><div class="name">Snare</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:55%"></div><div class="bar r" style="--mr:58%"></div></div><div class="knob" style="--rot:15deg"></div><div class="ch">CH 2</div></div>
+    <div class="trk"><div class="name">HiHat</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:70%"></div><div class="bar r" style="--mr:72%"></div></div><div class="knob" style="--rot:45deg"></div><div class="ch">CH 3</div></div>
+    <div class="trk"><div class="name">Perc Loop</div><div class="row"><div class="btn m">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:100%"></div><div class="bar r" style="--mr:100%"></div></div><div class="knob" style="--rot:0deg"></div><div class="ch">CH 4</div></div>
+    <div class="trk"><div class="name">Sub Bass</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:40%"></div><div class="bar r" style="--mr:45%"></div></div><div class="knob" style="--rot:30deg"></div><div class="ch">CH 5</div></div>
+    <div class="trk"><div class="name">Reese Bass</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:62%"></div><div class="bar r" style="--mr:60%"></div></div><div class="knob" style="--rot:-10deg"></div><div class="ch">CH 6</div></div>
+    <div class="trk"><div class="name">Pad Serum</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:50%"></div><div class="bar r" style="--mr:52%"></div></div><div class="knob" style="--rot:40deg"></div><div class="ch">CH 7</div></div>
+    <div class="trk"><div class="name">Lead Synth</div><div class="row"><div class="btn">M</div><div class="btn s">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:82%"></div><div class="bar r" style="--mr:78%"></div></div><div class="knob" style="--rot:10deg"></div><div class="ch">CH 8</div></div>
+    <div class="trk"><div class="name">E.Guitar</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:65%"></div><div class="bar r" style="--mr:68%"></div></div><div class="knob" style="--rot:25deg"></div><div class="ch">CH 9</div></div>
+    <div class="trk"><div class="name">Vox Main</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn r">R</div></div><div class="meter"><div class="bar l" style="--ml:88%"></div><div class="bar r" style="--mr:90%"></div></div><div class="knob" style="--rot:0deg"></div><div class="ch">CH10</div></div>
+    <div class="trk"><div class="name">Vox Harm</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:58%"></div><div class="bar r" style="--mr:60%"></div></div><div class="knob" style="--rot:-15deg"></div><div class="ch">CH11</div></div>
+    <div class="trk"><div class="name">FX Riser</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:42%"></div><div class="bar r" style="--mr:44%"></div></div><div class="knob" style="--rot:60deg"></div><div class="ch">CH12</div></div>
+    <div class="trk bus"><div class="name">◆ Drum Bus</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:72%"></div><div class="bar r" style="--mr:74%"></div></div><div class="knob" style="--rot:30deg"></div><div class="ch">BUS1</div></div>
+    <div class="trk bus"><div class="name">◆ FX Verb</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:52%"></div><div class="bar r" style="--mr:50%"></div></div><div class="knob" style="--rot:-30deg"></div><div class="ch">BUS2</div></div>
+    <div class="trk bus"><div class="name">◆ MASTER</div><div class="row"><div class="btn">M</div><div class="btn">S</div><div class="btn">R</div></div><div class="meter"><div class="bar l" style="--ml:85%"></div><div class="bar r" style="--mr:87%"></div></div><div class="knob" style="--rot:5deg"></div><div class="ch">MSTR</div></div>
+  </div>
+
+  <div class="timeline">
+    <div class="tr-headers">
+      <div class="tr-head drum"><div class="n">▼ Kick 808</div><div class="c"><span>R</span><span class="m">M</span><span>S</span></div></div>
+      <div class="tr-head drum"><div class="n">▼ Snare + Clap</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head drum"><div class="n">▼ HiHat / Perc</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head bass"><div class="n">▼ Sub Bass</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head bass"><div class="n">▼ Reese Mid</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head synth"><div class="n">▼ Pad Atmos</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head synth"><div class="n">▼ Lead Synth</div><div class="c"><span class="r">R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head gtr"><div class="n">▼ E.Gtr Verse</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head gtr"><div class="n">▼ E.Gtr Chorus</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head vox"><div class="n">▼ Vox Main (Lee)</div><div class="c"><span class="r">R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head vox"><div class="n">▼ Vox Harm x3</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head fx"><div class="n">▼ FX Riser / Impact</div><div class="c"><span>R</span><span>M</span><span>S</span></div></div>
+      <div class="tr-head fx" style="border-left-color:#f39c12"><div class="n">▼ Automation · Vol</div><div class="c"><span>READ</span></div></div>
+    </div>
+
+    <div class="tl-wrap">
+      <div class="ruler">
+        <div class="bar">1 · Intro</div><div class="bar">2</div><div class="bar">3</div><div class="bar">4</div>
+        <div class="bar m">5 · Verse A</div><div class="bar">6</div><div class="bar">7</div><div class="bar">8</div>
+        <div class="bar m">9 · Pre</div><div class="bar">10</div><div class="bar">11</div><div class="bar">12</div>
+        <div class="bar m">13 · Chorus</div><div class="bar">14</div><div class="bar">15</div><div class="bar">16</div>
+        <div class="bar m">17 · Verse B</div><div class="bar">18</div><div class="bar">19</div><div class="bar">20</div>
+        <div class="bar m">21 · Bridge</div><div class="bar">22</div><div class="bar">23</div><div class="bar">24</div>
+      </div>
+      <div class="clips">
+        <div class="cr"><div class="clip drum" style="left:400px;width:900px"><div class="lbl">KICK_808_main_18.wav</div><div class="wf"><i style="height:60%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:60%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:60%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:25%"></i><i style="height:60%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:60%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:60%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:60%"></i><i style="height:20%"></i><i style="height:25%"></i><i style="height:20%"></i></div></div></div>
+        <div class="cr"><div class="clip drum" style="left:600px;width:720px"><div class="lbl">SN_clap_bounce.wav</div><div class="wf"><i style="height:10%"></i><i style="height:10%"></i><i style="height:80%"></i><i style="height:15%"></i><i style="height:10%"></i><i style="height:10%"></i><i style="height:80%"></i><i style="height:15%"></i><i style="height:10%"></i><i style="height:10%"></i><i style="height:80%"></i><i style="height:15%"></i><i style="height:10%"></i><i style="height:10%"></i><i style="height:80%"></i><i style="height:15%"></i><i style="height:10%"></i><i style="height:10%"></i><i style="height:80%"></i><i style="height:15%"></i></div></div></div>
+        <div class="cr"><div class="clip drum" style="left:400px;width:1020px"><div class="lbl">HAT_perc_loop_01.wav</div><div class="wf"><i style="height:40%"></i><i style="height:50%"></i><i style="height:35%"></i><i style="height:55%"></i><i style="height:38%"></i><i style="height:60%"></i><i style="height:30%"></i><i style="height:50%"></i><i style="height:42%"></i><i style="height:48%"></i><i style="height:35%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:50%"></i><i style="height:35%"></i><i style="height:55%"></i><i style="height:38%"></i><i style="height:60%"></i><i style="height:30%"></i><i style="height:50%"></i><i style="height:42%"></i><i style="height:48%"></i><i style="height:35%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:50%"></i><i style="height:35%"></i><i style="height:55%"></i></div></div></div>
+        <div class="cr"><div class="clip bass" style="left:400px;width:240px"><div class="lbl">SUB_riff_Abm.wav</div></div><div class="clip bass" style="left:660px;width:240px"><div class="lbl">SUB_riff_02</div></div><div class="clip bass" style="left:920px;width:400px"><div class="lbl">SUB_chorus_ride</div></div></div>
+        <div class="cr"><div class="clip midi" style="left:400px;width:920px;background:linear-gradient(180deg,#bb8fce,#9b59b6)"><div class="lbl">MIDI · Reese Pattern 01</div><div class="notes"><i style="grid-row:3;width:30%;margin-left:2%"></i><i style="grid-row:5;width:15%;margin-left:35%"></i><i style="grid-row:4;width:25%;margin-left:53%"></i><i style="grid-row:6;width:18%;margin-left:80%"></i></div></div></div>
+        <div class="cr"><div class="clip synth" style="left:100px;width:1220px"><div class="lbl">PAD_atmos_spring.wav (long)</div><div class="wf"><i style="height:30%"></i><i style="height:28%"></i><i style="height:32%"></i><i style="height:30%"></i><i style="height:28%"></i><i style="height:32%"></i><i style="height:35%"></i><i style="height:38%"></i><i style="height:34%"></i><i style="height:30%"></i><i style="height:32%"></i><i style="height:30%"></i><i style="height:28%"></i><i style="height:32%"></i><i style="height:30%"></i><i style="height:34%"></i><i style="height:30%"></i><i style="height:32%"></i><i style="height:28%"></i><i style="height:35%"></i><i style="height:36%"></i><i style="height:30%"></i><i style="height:28%"></i><i style="height:32%"></i><i style="height:30%"></i><i style="height:28%"></i></div></div></div>
+        <div class="cr"><div class="clip midi" style="left:920px;width:400px"><div class="lbl">MIDI · Lead Hook ●REC</div><div class="notes"><i style="grid-row:2;width:25%;margin-left:5%"></i><i style="grid-row:1;width:15%;margin-left:32%"></i><i style="grid-row:3;width:20%;margin-left:50%"></i><i style="grid-row:1;width:20%;margin-left:72%"></i></div></div></div>
+        <div class="cr"><div class="clip gtr" style="left:400px;width:460px"><div class="lbl">GTR_verse_DI.wav</div><div class="wf"><i style="height:40%"></i><i style="height:55%"></i><i style="height:45%"></i><i style="height:60%"></i><i style="height:42%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:55%"></i><i style="height:40%"></i><i style="height:48%"></i><i style="height:42%"></i><i style="height:55%"></i></div></div></div>
+        <div class="cr"><div class="clip gtr" style="left:920px;width:400px"><div class="lbl">GTR_chorus_AMP.wav</div><div class="wf"><i style="height:70%"></i><i style="height:85%"></i><i style="height:72%"></i><i style="height:88%"></i><i style="height:70%"></i><i style="height:82%"></i><i style="height:75%"></i><i style="height:88%"></i><i style="height:72%"></i><i style="height:80%"></i></div></div></div>
+        <div class="cr"><div class="clip vox" style="left:400px;width:520px"><div class="lbl">VOX_Lee_verseA_T3.wav ● COMP</div><div class="wf"><i style="height:20%"></i><i style="height:45%"></i><i style="height:65%"></i><i style="height:80%"></i><i style="height:60%"></i><i style="height:40%"></i><i style="height:25%"></i><i style="height:15%"></i><i style="height:45%"></i><i style="height:70%"></i><i style="height:82%"></i><i style="height:65%"></i><i style="height:45%"></i><i style="height:30%"></i></div></div><div class="clip vox" style="left:920px;width:400px;opacity:0.55"><div class="lbl">chorus · punch-in 21:18</div></div></div>
+        <div class="cr"><div class="clip vox" style="left:920px;width:400px;opacity:0.85"><div class="lbl">HARM_x3 stacked</div></div></div>
+        <div class="cr"><div class="clip fx" style="left:820px;width:100px;background:linear-gradient(90deg,transparent,#7f8c8d)"><div class="lbl">RISER 8bars</div></div><div class="clip fx" style="left:920px;width:30px;background:#c43030"><div class="lbl">IMP</div></div></div>
+        <div class="cr"><div class="clip auto" style="left:100px;width:1220px"><div class="lbl">Vol ramp · -6 → 0dB</div></div></div>
+      </div>
+      <div class="playhead"></div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="on">● I/O OK</span>
+    <span>Buffer 256 · 44.8ms</span>
+    <span>CPU <span style="color:#8bc34a">●●●●●○○</span> 62%</span>
+    <span>DISK <span style="color:#8bc34a">●●○○○○○</span> 18%</span>
+    <span>Plugins 47 · Frozen 6</span>
+    <span class="w">⚠ VOX bus at -0.3 dBTP</span>
+    <span style="margin-left:auto">LUFS −9.8 · Target −14 · Δ +4.2</span>
+    <span>Punch 21.1.1 → 22.3.1 &nbsp;·&nbsp; Take 14</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

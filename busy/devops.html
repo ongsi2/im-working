@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>K8s Console — prod-apac-1</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2230;--border:#30363d;--text:#c9d1d9;--dim:#8b949e;--dimmer:#6e7681;--blue:#58a6ff;--green:#3fb950;--red:#f85149;--amber:#d29922;--purple:#bc8cff;}
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',sans-serif;font-size:12.5px;overflow:hidden;}
+  .app{display:grid;grid-template-rows:42px 1fr 24px;height:100vh;}
+  .tb{background:#010409;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:18px;font-size:12.5px;}
+  .tb .logo{font-weight:800;color:#fff;}
+  .tb .ctx{background:var(--panel);border:1px solid var(--border);padding:3px 10px;border-radius:4px;color:var(--text);font-family:'Consolas',monospace;font-size:11.5px;}
+  .tb .nav{color:var(--dim);}
+  .tb .nav.active{color:var(--text);font-weight:600;}
+  .tb .spacer{flex:1;}
+  .tb .st b{color:var(--green);}
+
+  .main{display:grid;grid-template-columns:220px 1fr 420px;grid-template-rows:1fr 1fr;gap:1px;background:var(--border);overflow:hidden;}
+  .p{background:var(--panel);overflow:hidden;display:flex;flex-direction:column;}
+  .ph{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--text);font-weight:600;}
+  .ph .tag{font-size:10px;font-family:monospace;color:var(--dim);font-weight:400;}
+  .ph .spacer{flex:1;}
+  .ph .act{color:var(--dim);font-size:11px;font-weight:400;}
+
+  /* Sidebar */
+  .sidebar{grid-column:1;grid-row:1 / span 2;}
+  .nav-item{padding:5px 14px;display:flex;align-items:center;gap:8px;color:var(--dim);font-size:12px;}
+  .nav-item:hover{background:var(--panel2);}
+  .nav-item.active{color:#fff;background:var(--panel2);border-left:2px solid var(--blue);padding-left:12px;font-weight:600;}
+  .nav-item .c{margin-left:auto;font-size:10.5px;color:var(--dimmer);font-family:monospace;}
+  .nav-item .c.warn{color:var(--amber);}
+  .nav-item .c.err{color:var(--red);}
+  .nav-sec{padding:12px 14px 4px;font-size:10px;color:var(--dimmer);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;}
+
+  /* Pods table */
+  .pods{grid-column:2;grid-row:1;}
+  .podtable{flex:1;overflow-y:auto;font-size:11.5px;}
+  .podtable table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+  .podtable th{text-align:left;padding:6px 10px;position:sticky;top:0;background:var(--panel);color:var(--dim);font-size:10.5px;font-weight:600;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.3px;}
+  .podtable td{padding:5px 10px;border-bottom:1px solid rgba(48,54,61,0.5);font-family:'Consolas',monospace;font-size:11px;}
+  .podtable tr:hover{background:var(--panel2);}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;font-family:'Inter',sans-serif;}
+  .badge.run{background:rgba(63,185,80,0.15);color:var(--green);}
+  .badge.pend{background:rgba(210,153,34,0.15);color:var(--amber);}
+  .badge.err{background:rgba(248,81,73,0.18);color:var(--red);}
+  .badge.term{background:rgba(188,140,255,0.15);color:var(--purple);}
+  .dot{width:5px;height:5px;border-radius:50%;display:inline-block;}
+  .dot.g{background:var(--green);animation:bl 1.6s infinite;}
+  .dot.a{background:var(--amber);animation:bl 0.9s infinite;}
+  .dot.r{background:var(--red);animation:bl 0.5s infinite;}
+  @keyframes bl{50%{opacity:0.35;}}
+
+  /* Logs */
+  .logs{grid-column:2;grid-row:2;}
+  .logstream{flex:1;overflow:hidden;font-family:'Consolas',monospace;font-size:11px;line-height:1.55;padding:6px 0;}
+  .lline{padding:0 14px;display:grid;grid-template-columns:80px 60px 120px 1fr;gap:10px;white-space:nowrap;}
+  .lline .t{color:var(--dimmer);}
+  .lline .lv{font-weight:700;}
+  .lline .pod{color:var(--purple);}
+  .lline .msg{color:var(--text);overflow:hidden;text-overflow:ellipsis;}
+  .lv.I{color:var(--blue);}.lv.W{color:var(--amber);}.lv.E{color:var(--red);}.lv.D{color:var(--dim);}
+
+  /* Metrics */
+  .metrics{grid-column:3;grid-row:1;}
+  .mgrid{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .metric{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:8px 10px;}
+  .metric .l{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.4px;}
+  .metric .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px;}
+  .metric .spark{height:24px;margin-top:4px;}
+  .mbars{padding:2px 14px 10px;}
+  .mbars h4{font-size:11px;color:var(--dim);margin:8px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+  .node{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;align-items:center;padding:3px 0;font-size:11px;font-family:monospace;}
+  .node .bar{height:6px;background:var(--panel2);border-radius:2px;overflow:hidden;position:relative;}
+  .node .bar .f{height:100%;background:var(--blue);transition:width 0.5s;}
+  .node.hot .bar .f{background:var(--amber);}
+  .node.hot.hotter .bar .f{background:var(--red);}
+  .node .n{color:var(--text);}
+  .node .v{text-align:right;color:var(--dim);}
+
+  /* Events / alerts */
+  .events{grid-column:3;grid-row:2;}
+  .elist{flex:1;overflow-y:auto;font-size:11.5px;padding:4px 0;}
+  .ev{padding:6px 14px;border-bottom:1px solid rgba(48,54,61,0.5);display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:start;}
+  .ev .i{font-size:13px;}
+  .ev .t{color:var(--text);line-height:1.4;}
+  .ev .t b{font-family:monospace;color:var(--blue);font-weight:500;}
+  .ev .tm{font-size:10.5px;color:var(--dim);font-family:monospace;}
+
+  .status{background:#010409;border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:16px;font-size:10.5px;color:var(--dim);}
+  .status b{color:var(--text);}
+  .status .spacer{flex:1;}
+  .status .g{color:var(--green);}
+  .status .r{color:var(--red);}
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="k8s-prod — Lens" data-favicon="⎈">
+<div class="app">
+  <div class="tb">
+    <span class="logo">⎈ K8sConsole</span>
+    <span class="ctx">context: <b style="color:var(--blue)">prod-apac-1</b> / ns: <b style="color:var(--amber)">novafield-prod</b> ▾</span>
+    <span class="nav">Cluster</span>
+    <span class="nav active">Workloads</span>
+    <span class="nav">Services</span>
+    <span class="nav">Storage</span>
+    <span class="nav">Config</span>
+    <span class="nav">CRDs</span>
+    <span class="spacer"></span>
+    <span class="st">Cluster: <b>Healthy</b> · 14 nodes · 284 pods</span>
+    <span class="nav">🔔 <span style="color:var(--amber)">3</span></span>
+    <span class="nav">⚙ kpark@novafield.io</span>
+  </div>
+
+  <div class="main">
+    <aside class="p sidebar">
+      <div class="nav-sec">Cluster</div>
+      <div class="nav-item">◉ Overview</div>
+      <div class="nav-item">🖥 Nodes <span class="c">14</span></div>
+      <div class="nav-item">💾 Namespaces <span class="c">22</span></div>
+      <div class="nav-sec">Workloads</div>
+      <div class="nav-item active">⬢ Pods <span class="c">284</span></div>
+      <div class="nav-item">⚙ Deployments <span class="c">42</span></div>
+      <div class="nav-item">🔄 ReplicaSets <span class="c">58</span></div>
+      <div class="nav-item">📦 StatefulSets <span class="c">8</span></div>
+      <div class="nav-item">🛡 DaemonSets <span class="c">6</span></div>
+      <div class="nav-item">⏱ CronJobs <span class="c">24</span></div>
+      <div class="nav-item">🧪 Jobs <span class="c warn">2</span></div>
+      <div class="nav-sec">Network</div>
+      <div class="nav-item">🔌 Services <span class="c">68</span></div>
+      <div class="nav-item">🚪 Ingresses <span class="c">14</span></div>
+      <div class="nav-item">🕸 NetworkPolicies <span class="c">32</span></div>
+      <div class="nav-sec">Config</div>
+      <div class="nav-item">📄 ConfigMaps <span class="c">84</span></div>
+      <div class="nav-item">🔐 Secrets <span class="c">128</span></div>
+      <div class="nav-sec">Storage</div>
+      <div class="nav-item">💽 PVs <span class="c">42</span></div>
+      <div class="nav-item">📂 PVCs <span class="c">38</span></div>
+      <div class="nav-sec">Observability</div>
+      <div class="nav-item">📊 Grafana</div>
+      <div class="nav-item">🔍 Loki</div>
+      <div class="nav-item">📈 Prometheus</div>
+      <div class="nav-item">🔥 <span style="color:var(--red)">Alerts</span> <span class="c err">3</span></div>
+    </aside>
+
+    <section class="p pods">
+      <div class="ph">
+        <span>Pods</span><span class="tag">novafield-prod · 38 results</span>
+        <span class="spacer"></span>
+        <span class="act">▼ Running 32</span><span class="act">▼ Pending 4</span><span class="act">▼ CrashLoop 2</span>
+        <span class="act">⟳ 2s</span><span class="act">＋ Create</span>
+      </div>
+      <div class="podtable">
+        <table id="podtable">
+          <thead><tr><th>Name</th><th>Status</th><th>Restarts</th><th>CPU</th><th>Mem</th><th>Age</th><th>Node</th></tr></thead>
+          <tbody id="podbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="p logs">
+      <div class="ph">
+        <span>Logs</span><span class="tag">api-gateway-6f8c4d-xk82j · container: app · stream: stdout · tail -f</span>
+        <span class="spacer"></span>
+        <span class="act">🔍 filter</span><span class="act">⏸ pause</span><span class="act">⬇ download</span><span class="act">◇ fullscreen</span>
+      </div>
+      <div class="logstream" id="logstream"></div>
+    </section>
+
+    <aside class="p metrics">
+      <div class="ph">
+        <span>Cluster Metrics</span><span class="tag">prometheus · 1m range</span>
+        <span class="spacer"></span>
+        <span class="act">📊 Grafana ↗</span>
+      </div>
+      <div class="mgrid">
+        <div class="metric">
+          <div class="l">CPU Usage</div>
+          <div class="v" id="mcpu">68.4%</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" id="s-cpu"></svg>
+        </div>
+        <div class="metric">
+          <div class="l">Memory</div>
+          <div class="v" id="mmem">412 / 640 GiB</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" id="s-mem"></svg>
+        </div>
+        <div class="metric">
+          <div class="l">Network I/O</div>
+          <div class="v" id="mnet">842 MB/s</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" id="s-net"></svg>
+        </div>
+        <div class="metric">
+          <div class="l">Requests / s</div>
+          <div class="v" id="mreq">14,284</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" id="s-req"></svg>
+        </div>
+      </div>
+      <div class="mbars">
+        <h4>Nodes — CPU</h4>
+        <div id="nodelist"></div>
+      </div>
+    </aside>
+
+    <aside class="p events">
+      <div class="ph">
+        <span>Events & Alerts</span><span class="tag">prod-apac-1 · last 15 min</span>
+        <span class="spacer"></span>
+        <span class="act">🔕 mute</span>
+      </div>
+      <div class="elist" id="elist">
+        <div class="ev"><span class="i">🔥</span><div class="t"><b>FIRING</b> · HighPodRestartRate on <b>payment-worker-5b9d</b> (7 restarts in 10 min). Likely OOMKilled. Check limits.</div><span class="tm">2m 14s</span></div>
+        <div class="ev"><span class="i">⚠️</span><div class="t"><b>WARN</b> · Node <b>ip-10-42-8-114</b> DiskPressure=True. Kubelet evicting pods.</div><span class="tm">4m</span></div>
+        <div class="ev"><span class="i">🔥</span><div class="t"><b>FIRING</b> · <b>notification-service</b>: 5xx rate 4.2% (SLO 1%). Paging on-call.</div><span class="tm">6m</span></div>
+        <div class="ev"><span class="i">🚀</span><div class="t">Deployment <b>api-gateway</b> rollout started: image <b>v4.8.2 → v4.8.3</b> by @sm-lee</div><span class="tm">12m</span></div>
+        <div class="ev"><span class="i">✅</span><div class="t">HPA scaled <b>web-frontend</b> 6 → 9 replicas (CPU 82%)</div><span class="tm">14m</span></div>
+        <div class="ev"><span class="i">🛡</span><div class="t">cert-manager renewed <b>*.novafield.io</b> (expires in 90d)</div><span class="tm">22m</span></div>
+        <div class="ev"><span class="i">💾</span><div class="t">Velero backup <b>daily-2026-04-24</b> completed · 284 resources · 42.8 GB</div><span class="tm">41m</span></div>
+        <div class="ev"><span class="i">⚠️</span><div class="t"><b>ArgoCD</b> · app <b>billing-api</b> OutOfSync · drift detected in ConfigMap/billing-env</div><span class="tm">48m</span></div>
+        <div class="ev"><span class="i">🔐</span><div class="t">Secret <b>db-credentials</b> rotated (Vault) · synced to 14 pods</div><span class="tm">1h 2m</span></div>
+        <div class="ev"><span class="i">📦</span><div class="t">Image <b>novafield/api-gateway:v4.8.3</b> pulled by 12 nodes · 284 MB</div><span class="tm">1h 8m</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="status">
+    <span>API server <b class="g">●</b> 12ms</span>
+    <span>etcd <b class="g">●</b> healthy · 3 members</span>
+    <span>scheduler <b class="g">●</b></span>
+    <span>CNI: Cilium v1.14 <b class="g">●</b></span>
+    <span id="statmsg">Reconciling Deployment/api-gateway · 4/6 updated</span>
+    <span class="spacer"></span>
+    <span>v1.29.4 · eks.8</span>
+    <span id="clock"></span>
+  </div>
+</div>
+
+<script>
+const rand=(a,b)=>Math.random()*(b-a)+a,irand=(a,b)=>Math.floor(rand(a,b+1));
+const pad=(n,w=2)=>String(n).padStart(w,'0');
+
+// Pods
+const PODS=[
+  ['api-gateway-6f8c4d-xk82j','Running',0,142,284,'6d','ip-10-42-1-12'],
+  ['api-gateway-6f8c4d-pw29m','Running',0,128,272,'6d','ip-10-42-2-84'],
+  ['api-gateway-6f8c4d-b4n2k','Running',0,156,298,'6d','ip-10-42-3-22'],
+  ['web-frontend-7d9bc-8kqm2','Running',0,84,412,'2d','ip-10-42-1-48'],
+  ['web-frontend-7d9bc-n2p4x','Running',0,78,398,'2d','ip-10-42-2-114'],
+  ['web-frontend-7d9bc-c8w2m','Running',0,92,422,'2d','ip-10-42-4-62'],
+  ['payment-worker-5b9d-r42nx','CrashLoopBackOff',7,0,0,'18m','ip-10-42-8-114'],
+  ['payment-worker-5b9d-m82pk','Running',2,184,622,'2d','ip-10-42-5-18'],
+  ['notification-svc-88c7f-xw2k','Running',1,42,184,'14h','ip-10-42-3-22'],
+  ['notification-svc-88c7f-p9m4','Running',0,38,172,'14h','ip-10-42-6-42'],
+  ['billing-api-748d-9k2ms','Running',0,118,384,'3d','ip-10-42-2-114'],
+  ['billing-api-748d-n8w2p','Running',0,124,392,'3d','ip-10-42-4-62'],
+  ['analytics-dbt-runner','Pending',0,0,0,'2m','ip-10-42-1-12'],
+  ['search-es-0','Running',0,284,4284,'14d','ip-10-42-7-22'],
+  ['search-es-1','Running',0,272,4198,'14d','ip-10-42-7-48'],
+  ['search-es-2','Running',0,294,4312,'14d','ip-10-42-7-88'],
+  ['redis-cache-0','Running',0,42,848,'28d','ip-10-42-5-18'],
+  ['redis-cache-1','Running',0,38,824,'28d','ip-10-42-6-42'],
+  ['postgres-primary-0','Running',0,412,8284,'62d','ip-10-42-9-14'],
+  ['postgres-replica-0','Running',0,284,6142,'62d','ip-10-42-9-28'],
+  ['postgres-replica-1','Running',0,248,5984,'62d','ip-10-42-9-42'],
+  ['kafka-broker-0','Running',0,184,2412,'45d','ip-10-42-7-22'],
+  ['kafka-broker-1','Running',0,192,2384,'45d','ip-10-42-7-48'],
+  ['kafka-broker-2','Running',0,178,2422,'45d','ip-10-42-7-88'],
+  ['ingest-pipeline-b44fc-xm2k','Running',0,68,284,'8h','ip-10-42-3-22'],
+  ['ingest-pipeline-b44fc-p8n4','Pending',0,0,0,'4m','–'],
+  ['ml-inference-68c9d-vm2k','Running',0,842,12482,'4d','ip-10-42-10-14'],
+  ['cron-daily-report-28942','Running',0,42,412,'12m','ip-10-42-1-48'],
+];
+function renderPods(){
+  const body=document.getElementById('podbody');
+  body.innerHTML=PODS.map(p=>{
+    const [n,s,r,c,m,a,nd]=p;
+    const cls=s==='Running'?'run':s==='Pending'?'pend':s==='CrashLoopBackOff'?'err':'term';
+    const dot=s==='Running'?'g':s==='Pending'?'a':'r';
+    const rc=r>=5?'style="color:var(--red);font-weight:700"':r>0?'style="color:var(--amber)"':'';
+    return `<tr><td style="color:${n.startsWith('payment-worker')&&s!=='Running'?'var(--red)':'var(--blue)'}">${n}</td>
+      <td><span class="badge ${cls}"><span class="dot ${dot}"></span>${s}</span></td>
+      <td ${rc}>${r}</td><td>${c?c+'m':'—'}</td><td>${m?(m>=1024?(m/1024).toFixed(1)+'Gi':m+'Mi'):'—'}</td>
+      <td style="color:var(--dim)">${a}</td><td style="color:var(--dim)">${nd}</td></tr>`;
+  }).join('');
+}
+renderPods();
+setInterval(()=>{
+  PODS.forEach(p=>{if(p[1]==='Running'){p[3]=Math.max(20,p[3]+irand(-12,12));p[4]=Math.max(50,p[4]+irand(-40,40));}});
+  renderPods();
+},1200);
+
+// Logs
+const logstream=document.getElementById('logstream');
+const LEVELS=['I','I','I','D','I','W','I','I','E','I'];
+const PODS_L=['api-gateway-xk82j','api-gateway-pw29m','web-frontend-8kqm2','payment-worker-r42nx','billing-api-9k2ms','ingest-xm2k'];
+const MSGS=[
+  '[http] GET /v1/campaigns/apollo 200 42ms user=kpark rid=0a4f2',
+  '[http] POST /v1/orders status=201 128ms user=anon',
+  '[db] query took 14ms · SELECT * FROM campaigns WHERE org_id=$1',
+  '[cache] HIT user:82942 ttl=284s',
+  '[kafka] produced evt=order.created partition=2 offset=284192',
+  '[http] GET /v1/metrics/channels 200 188ms',
+  '[auth] token refresh uid=82942 issued_at=1714284184',
+  '[http] GET /health 200 2ms',
+  '[http] POST /v1/payments 502 1842ms rid=9a8e2 upstream_timeout',
+  '[worker] job id=28492 picked up from queue=payments',
+  '[db] slow query 482ms · UPDATE ledger SET ...',
+  '[k8s] readiness probe succeeded',
+  '[grpc] RPC Consumer/Consume OK 8ms',
+  '[http] GET /static/app.js 304 1ms',
+  '[feature] flag=apollo_v2 enabled for uid=84184',
+  '[warn] rate limit approaching: 820/1000 req/min from ip=203.0.113.42',
+];
+function pushLog(){
+  const d=new Date();
+  const lv=LEVELS[irand(0,LEVELS.length-1)];
+  const pod=PODS_L[irand(0,PODS_L.length-1)];
+  const msg=MSGS[irand(0,MSGS.length-1)];
+  const el=document.createElement('div');
+  el.className='lline';
+  el.innerHTML=`<span class="t">${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</span><span class="lv ${lv}">${lv}</span><span class="pod">${pod}</span><span class="msg">${msg}</span>`;
+  logstream.appendChild(el);
+  while(logstream.children.length>40)logstream.removeChild(logstream.firstChild);
+  logstream.scrollTop=logstream.scrollHeight;
+}
+for(let i=0;i<30;i++)pushLog();
+setInterval(pushLog,280);
+
+// Sparklines
+const sparks={cpu:[],mem:[],net:[],req:[]};
+for(const k in sparks)for(let i=0;i<30;i++)sparks[k].push(50);
+function drawSpark(id,arr,col){
+  const svg=document.getElementById(id);
+  const max=Math.max(...arr)*1.05||1,min=Math.min(...arr)*0.9;
+  const W=100,H=24,n=arr.length,step=W/(n-1);
+  const pts=arr.map((v,i)=>`${i*step},${H-((v-min)/(max-min))*H}`).join(' ');
+  svg.innerHTML=`<polyline fill="none" stroke="${col}" stroke-width="1.3" points="${pts}"/><polyline fill="${col}" fill-opacity="0.12" stroke="none" points="0,${H} ${pts} ${W},${H}"/>`;
+}
+function updateMetrics(){
+  const cpu=68.4+rand(-4,4);sparks.cpu.shift();sparks.cpu.push(cpu);
+  const mem=412+rand(-12,12);sparks.mem.shift();sparks.mem.push(mem);
+  const net=842+rand(-80,80);sparks.net.shift();sparks.net.push(net);
+  const req=14284+rand(-800,800);sparks.req.shift();sparks.req.push(req);
+  document.getElementById('mcpu').textContent=cpu.toFixed(1)+'%';
+  document.getElementById('mmem').textContent=`${Math.round(mem)} / 640 GiB`;
+  document.getElementById('mnet').textContent=`${Math.round(net)} MB/s`;
+  document.getElementById('mreq').textContent=Math.round(req).toLocaleString();
+  drawSpark('s-cpu',sparks.cpu,'#58a6ff');
+  drawSpark('s-mem',sparks.mem,'#bc8cff');
+  drawSpark('s-net',sparks.net,'#3fb950');
+  drawSpark('s-req',sparks.req,'#d29922');
+}
+updateMetrics();setInterval(updateMetrics,800);
+
+// Nodes list
+const NODES=[
+  ['ip-10-42-1-12',42],['ip-10-42-1-48',58],['ip-10-42-2-84',64],
+  ['ip-10-42-2-114',72],['ip-10-42-3-22',68],['ip-10-42-4-62',54],
+  ['ip-10-42-5-18',78],['ip-10-42-6-42',48],['ip-10-42-7-22',82],
+  ['ip-10-42-7-48',76],['ip-10-42-7-88',88],['ip-10-42-8-114',94],
+  ['ip-10-42-9-14',68],['ip-10-42-10-14',42],
+];
+function renderNodes(){
+  document.getElementById('nodelist').innerHTML=NODES.map(([n,v])=>{
+    const cls=v>90?'hot hotter':v>75?'hot':'';
+    return `<div class="node ${cls}"><span class="n">${n}</span><div class="bar"><div class="f" style="width:${v}%"></div></div><span class="v">${v}%</span></div>`;
+  }).join('');
+}
+renderNodes();
+setInterval(()=>{NODES.forEach(n=>{n[1]=Math.max(10,Math.min(99,n[1]+irand(-4,4)));});renderNodes();},1500);
+
+// Clock + status messages
+const SMSGS=[
+  'Reconciling Deployment/api-gateway · 4/6 updated',
+  'HPA evaluating web-frontend · current=82% target=70%',
+  'Flux sync: infra-live · HEAD=a8e42fc',
+  'Scheduler placed pod ingest-pipeline-p8n4 onto ip-10-42-4-62',
+  'ArgoCD syncing billing-api · applied 3 resources',
+  'Kubelet reporting node ip-10-42-8-114 DiskPressure',
+];
+let si=0;setInterval(()=>{si=(si+1)%SMSGS.length;document.getElementById('statmsg').textContent=SMSGS[si];},1800);
+function tick(){const d=new Date();document.getElementById('clock').textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} KST`;}
+tick();setInterval(tick,1000);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

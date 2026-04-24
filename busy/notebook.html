@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>DataLab · Q3_retention_cohort.ipynb</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#fafafa;color:#24292f;font-family:-apple-system,'Segoe UI',sans-serif;font-size:13px;overflow:hidden}
+.app{display:grid;grid-template-rows:30px 34px 1fr 22px;height:100vh}
+.tb{background:#f0f0f0;border-bottom:1px solid #d0d7de;display:flex;align-items:center;padding:0 12px;font-size:12px;gap:14px;color:#24292f}
+.tb .lg{font-weight:800;color:#f37726;letter-spacing:0.5px}
+.tb .kernel{margin-left:auto;display:flex;align-items:center;gap:6px;color:#24292f}
+.tb .kernel::before{content:'●';color:#2da44e;font-size:10px;animation:bl 2s ease-in-out infinite}
+@keyframes bl{50%{opacity:0.3}}
+
+.toolbar{background:#fff;border-bottom:1px solid #d0d7de;display:flex;align-items:center;padding:0 14px;gap:4px;font-size:12px}
+.tbtn{padding:4px 9px;color:#57606a;cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:4px}
+.tbtn:hover{background:#eaeef2}
+.sep{width:1px;height:16px;background:#d0d7de;margin:0 4px}
+.cell-type{padding:3px 10px;background:#eaeef2;border:1px solid #d0d7de;border-radius:4px;font-size:12px;color:#24292f;margin-left:8px}
+
+.main{display:grid;grid-template-columns:220px 1fr 280px;overflow:hidden}
+.files{background:#fff;border-right:1px solid #d0d7de;overflow-y:auto;padding:10px;font-size:12.5px}
+.files h4{color:#57606a;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.f-item{padding:3px 6px;display:flex;align-items:center;gap:6px;border-radius:3px;cursor:pointer;color:#24292f;line-height:1.5}
+.f-item:hover{background:#f6f8fa}
+.f-item.a{background:#ddf4ff;color:#0969da;font-weight:600}
+.f-item .ic{width:14px;color:#57606a}
+
+.notebook{background:#fff;overflow-y:auto;padding:16px 24px}
+.cell{margin-bottom:12px;display:grid;grid-template-columns:60px 1fr;gap:10px}
+.cell .gutter{color:#57606a;font-family:'SF Mono','Consolas',monospace;font-size:12px;text-align:right;padding-top:6px;user-select:none}
+.cell .gutter.out{color:#cf222e}
+.cell .box{border:1px solid #d0d7de;border-radius:4px;overflow:hidden}
+.cell.md .box{border:none}
+.cell .box.in{background:#f6f8fa;padding:8px 14px;font-family:'SF Mono','Consolas',monospace;font-size:12.5px;line-height:1.65}
+.cell .box.out{background:#fff;padding:10px 14px;font-family:'SF Mono','Consolas',monospace;font-size:12px;line-height:1.55;color:#24292f}
+.cell.sel .box.in{border-left:3px solid #0969da;background:#f6f8fa}
+
+.kw{color:#cf222e}.fn{color:#8250df}.str{color:#0a3069}.num{color:#0550ae}.com{color:#6e7781;font-style:italic}.op{color:#24292f}
+.md h1{font-size:22px;color:#24292f;font-weight:700;padding-bottom:8px;border-bottom:1px solid #d0d7de;margin-bottom:10px}
+.md h2{font-size:17px;color:#24292f;font-weight:700;margin-bottom:8px}
+.md p{color:#24292f;line-height:1.6;margin-bottom:8px;font-size:14px}
+.md ul{padding-left:22px;margin-bottom:8px;color:#24292f;font-size:14px;line-height:1.7}
+.md code{background:rgba(175,184,193,0.2);padding:1px 5px;border-radius:3px;font-family:'SF Mono','Consolas',monospace;font-size:12px;color:#cf222e}
+
+.df{border:1px solid #d0d7de;font-family:'SF Mono','Consolas',monospace;font-size:11.5px;border-collapse:collapse;margin-top:4px}
+.df th{background:#f6f8fa;border:1px solid #d0d7de;padding:4px 8px;font-weight:700;text-align:right;color:#57606a}
+.df td{border:1px solid #d0d7de;padding:3px 8px;text-align:right;color:#24292f}
+.df td.idx{background:#f6f8fa;color:#57606a;text-align:left;font-weight:700}
+.df .h0{background:#0a3069;color:#fff}.df .h1{background:#1a4a89;color:#fff}.df .h2{background:#3968a8;color:#fff}.df .h3{background:#6a92c2;color:#fff}.df .h4{background:#9fb9d5;color:#0a3069}.df .h5{background:#cbdae8;color:#0a3069}
+
+.chart{margin-top:6px;background:#fff;padding:12px;border:1px solid #eaeef2}
+.chart svg{width:100%;height:auto;display:block}
+.chart .cap{text-align:center;font-size:11.5px;color:#57606a;margin-top:4px;font-family:-apple-system}
+
+.vars{background:#fff;border-left:1px solid #d0d7de;overflow-y:auto;font-size:12px}
+.vars h4{background:#f6f8fa;padding:8px 12px;font-size:11px;text-transform:uppercase;color:#57606a;border-bottom:1px solid #d0d7de}
+.var{padding:6px 12px;border-bottom:1px solid #eaeef2;display:grid;grid-template-columns:60px 1fr auto;gap:8px;align-items:center;font-size:11.5px}
+.var .n{color:#8250df;font-family:'SF Mono',monospace;font-weight:700}
+.var .t{color:#cf222e;font-family:'SF Mono',monospace;font-size:10.5px}
+.var .v{color:#24292f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.status{background:#fafafa;border-top:1px solid #d0d7de;display:flex;align-items:center;padding:0 12px;font-size:11px;gap:14px;color:#57606a}
+.status b{color:#24292f}
+.status .on{color:#2da44e}
+.badge{background:#f37726;color:#fff;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="Untitled.ipynb — Jupyter" data-favicon="📓">
+<div class="app">
+  <div class="tb">
+    <span class="lg">◈ DataLab</span>
+    <span>Q3_retention_cohort.ipynb</span>
+    <span class="badge">UNSAVED</span>
+    <span>File &nbsp; Edit &nbsp; View &nbsp; Run &nbsp; Kernel &nbsp; Settings</span>
+    <span class="kernel">Python 3.11.4 · pandas 2.2 · Trusted</span>
+  </div>
+
+  <div class="toolbar">
+    <span class="tbtn">💾 Save</span>
+    <span class="tbtn">＋ Cell</span>
+    <span class="tbtn">✂ Cut</span>
+    <span class="tbtn">⎘ Copy</span>
+    <span class="tbtn">⎗ Paste</span>
+    <span class="sep"></span>
+    <span class="tbtn">▶ Run</span>
+    <span class="tbtn">■ Stop</span>
+    <span class="tbtn">⟳ Restart</span>
+    <span class="tbtn">⏩ Run All</span>
+    <span class="sep"></span>
+    <span class="cell-type">Code ▾</span>
+    <span style="margin-left:auto;color:#57606a">Cell 11 / 24 · Exec: 00:04.82s</span>
+  </div>
+
+  <div class="main">
+    <div class="files">
+      <h4>📁 Files</h4>
+      <div class="f-item"><span class="ic">📂</span>datasets/</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📄</span>users_2025Q3.parquet</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📄</span>events.parquet</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📄</span>orders.parquet</div>
+      <div class="f-item"><span class="ic">📂</span>notebooks/</div>
+      <div class="f-item a" style="padding-left:18px"><span class="ic">📓</span>Q3_retention_cohort.ipynb</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📓</span>funnel_checkout.ipynb</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📓</span>LTV_forecast_v3.ipynb</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📓</span>churn_model_xgb.ipynb</div>
+      <div class="f-item"><span class="ic">📂</span>sql/</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📄</span>cohort_base.sql</div>
+      <div class="f-item" style="padding-left:18px"><span class="ic">📄</span>activity_daily.sql</div>
+
+      <h4 style="margin-top:14px">🔌 Connections</h4>
+      <div class="f-item"><span class="ic">●</span>Snowflake · PROD_ANALYTICS</div>
+      <div class="f-item"><span class="ic">●</span>BigQuery · gcp-novafield</div>
+      <div class="f-item"><span class="ic" style="color:#cf222e">●</span>Redshift · staging (expired)</div>
+
+      <h4 style="margin-top:14px">📊 Recent Queries</h4>
+      <div class="f-item">cohort_retention_84d</div>
+      <div class="f-item">weekly_active_users_v2</div>
+      <div class="f-item">revenue_by_channel</div>
+    </div>
+
+    <div class="notebook">
+      <div class="cell md">
+        <div class="gutter"></div>
+        <div class="box md">
+          <h1>Q3 &nbsp;2025 &nbsp;코호트 &nbsp;유지율 &nbsp;분석</h1>
+          <p>목적: Onboarding v3.4 개편 이후 가입 코호트의 주차별 유지율 변화 측정. 제품팀 <code>@jiwon.kim</code> 요청.</p>
+          <ul>
+            <li>데이터 소스: <code>fct_user_activity</code> (Snowflake)</li>
+            <li>관찰 기간: <code>2025-07-01</code> ~ <code>2025-09-23</code> (12주)</li>
+            <li>이벤트 정의: <code>session_start</code> + <code>dwell_time ≥ 60s</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter">In [1]:</div>
+        <div class="box in">
+<span class="kw">import</span> <span class="fn">pandas</span> <span class="kw">as</span> pd<br>
+<span class="kw">import</span> <span class="fn">numpy</span> <span class="kw">as</span> np<br>
+<span class="kw">import</span> <span class="fn">matplotlib.pyplot</span> <span class="kw">as</span> plt<br>
+<span class="kw">import</span> <span class="fn">seaborn</span> <span class="kw">as</span> sns<br>
+<span class="kw">from</span> <span class="fn">snowflake.connector</span> <span class="kw">import</span> connect<br>
+<span class="kw">from</span> <span class="fn">datetime</span> <span class="kw">import</span> date, timedelta<br>
+<br>
+sns.set_theme(style=<span class="str">"whitegrid"</span>, palette=<span class="str">"mako"</span>)<br>
+pd.options.display.float_format = <span class="str">'{:,.3f}'</span>.format
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter">In [2]:</div>
+        <div class="box in">
+<span class="com"># 코호트 베이스 — 가입 주차별 유저 수</span><br>
+conn = connect(user=<span class="str">"analytics_ro"</span>, account=<span class="str">"novafield-prod"</span>, role=<span class="str">"ANALYST"</span>)<br>
+<br>
+query = <span class="str">"""<br>
+  SELECT DATE_TRUNC('week', signup_at) AS cohort_week,<br>
+         COUNT(DISTINCT user_id)       AS new_users<br>
+    FROM analytics.dim_users<br>
+   WHERE signup_at &gt;= '2025-07-01'<br>
+   GROUP BY 1 ORDER BY 1<br>
+"""</span><br>
+cohort = pd.read_sql(query, conn)<br>
+cohort
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter out">Out[2]:</div>
+        <div class="box out">
+          <table class="df">
+            <thead><tr><th></th><th>cohort_week</th><th>new_users</th></tr></thead>
+            <tbody>
+              <tr><td class="idx">0</td><td>2025-06-30</td><td>8,214</td></tr>
+              <tr><td class="idx">1</td><td>2025-07-07</td><td>9,842</td></tr>
+              <tr><td class="idx">2</td><td>2025-07-14</td><td>11,208</td></tr>
+              <tr><td class="idx">3</td><td>2025-07-21</td><td>12,482</td></tr>
+              <tr><td class="idx">4</td><td>2025-07-28</td><td>14,024</td></tr>
+              <tr><td class="idx">5</td><td>2025-08-04</td><td>15,682</td></tr>
+              <tr><td class="idx">6</td><td>2025-08-11</td><td>18,148 <span style="color:#2da44e;font-size:10px">▲ v3.4</span></td></tr>
+              <tr><td class="idx">7</td><td>2025-08-18</td><td>19,624</td></tr>
+              <tr><td class="idx">8</td><td>2025-08-25</td><td>21,108</td></tr>
+              <tr><td class="idx">9</td><td>2025-09-01</td><td>22,840</td></tr>
+              <tr><td class="idx">10</td><td>2025-09-08</td><td>23,244</td></tr>
+              <tr><td class="idx">11</td><td>2025-09-15</td><td>24,018</td></tr>
+            </tbody>
+          </table>
+          <div style="color:#57606a;font-size:11px;margin-top:4px">12 rows × 2 columns</div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter">In [3]:</div>
+        <div class="box in">
+<span class="com"># 유지율 매트릭스 계산</span><br>
+activity = pd.read_parquet(<span class="str">"datasets/events.parquet"</span>)<br>
+activity[<span class="str">"weeks_since_signup"</span>] = (<br>
+&nbsp;&nbsp;(activity.event_week - activity.cohort_week).dt.days // <span class="num">7</span><br>
+)<br>
+retention = (<br>
+&nbsp;&nbsp;activity.groupby([<span class="str">"cohort_week"</span>, <span class="str">"weeks_since_signup"</span>])<br>
+&nbsp;&nbsp;.user_id.nunique().unstack().divide(cohort.set_index(<span class="str">"cohort_week"</span>).new_users, axis=<span class="num">0</span>)<br>
+)<br>
+retention.round(<span class="num">3</span>)
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter out">Out[3]:</div>
+        <div class="box out" style="overflow-x:auto">
+          <table class="df">
+            <thead><tr><th>cohort_week</th><th>W0</th><th>W1</th><th>W2</th><th>W3</th><th>W4</th><th>W5</th><th>W6</th><th>W7</th><th>W8</th></tr></thead>
+            <tbody>
+              <tr><td class="idx">07-07</td><td class="h0">1.000</td><td class="h4">0.482</td><td class="h5">0.321</td><td class="h5">0.258</td><td class="h5">0.221</td><td class="h5">0.198</td><td class="h5">0.184</td><td class="h5">0.172</td><td class="h5">0.164</td></tr>
+              <tr><td class="idx">07-14</td><td class="h0">1.000</td><td class="h4">0.494</td><td class="h5">0.335</td><td class="h5">0.272</td><td class="h5">0.228</td><td class="h5">0.204</td><td class="h5">0.188</td><td class="h5">0.178</td><td class="h5">0.169</td></tr>
+              <tr><td class="idx">07-21</td><td class="h0">1.000</td><td class="h3">0.512</td><td class="h4">0.348</td><td class="h5">0.281</td><td class="h5">0.238</td><td class="h5">0.212</td><td class="h5">0.194</td><td class="h5">0.183</td><td style="color:#bbb">NaN</td></tr>
+              <tr><td class="idx">07-28</td><td class="h0">1.000</td><td class="h3">0.528</td><td class="h4">0.358</td><td class="h5">0.290</td><td class="h5">0.245</td><td class="h5">0.218</td><td class="h5">0.198</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td></tr>
+              <tr><td class="idx">08-04</td><td class="h0">1.000</td><td class="h3">0.542</td><td class="h4">0.368</td><td class="h5">0.298</td><td class="h5">0.250</td><td class="h5">0.222</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td></tr>
+              <tr><td class="idx">08-11</td><td class="h0">1.000</td><td class="h2">0.618</td><td class="h3">0.445</td><td class="h4">0.368</td><td class="h4">0.312</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td></tr>
+              <tr><td class="idx">08-18</td><td class="h0">1.000</td><td class="h2">0.632</td><td class="h3">0.462</td><td class="h4">0.382</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td></tr>
+              <tr><td class="idx">08-25</td><td class="h0">1.000</td><td class="h1">0.648</td><td class="h2">0.478</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td></tr>
+              <tr><td class="idx">09-01</td><td class="h0">1.000</td><td class="h1">0.661</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td><td style="color:#bbb">NaN</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cell sel">
+        <div class="gutter">In [4]:</div>
+        <div class="box in">
+<span class="com"># 히트맵 — v3.4 전후 비교</span><br>
+fig, ax = plt.subplots(figsize=(<span class="num">10</span>, <span class="num">5</span>))<br>
+sns.heatmap(retention * <span class="num">100</span>, annot=<span class="kw">True</span>, fmt=<span class="str">".1f"</span>, cmap=<span class="str">"mako_r"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cbar_kws={<span class="str">"label"</span>: <span class="str">"Retention %"</span>}, ax=ax)<br>
+ax.axhline(<span class="num">5</span>, color=<span class="str">"#ff8000"</span>, lw=<span class="num">2</span>, ls=<span class="str">"--"</span>)<br>
+ax.set_title(<span class="str">"가입 코호트별 주간 유지율 · v3.4 론칭 8/11"</span>)<br>
+plt.tight_layout(); plt.show()
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter out">Out[4]:</div>
+        <div class="box out">
+          <div class="chart">
+            <svg viewBox="0 0 640 240">
+              <g font-family="-apple-system" font-size="9" fill="#57606a">
+                <text x="20" y="14">Cohort</text>
+                <text x="60" y="14" text-anchor="middle">W0</text>
+                <text x="120" y="14" text-anchor="middle">W1</text>
+                <text x="180" y="14" text-anchor="middle">W2</text>
+                <text x="240" y="14" text-anchor="middle">W3</text>
+                <text x="300" y="14" text-anchor="middle">W4</text>
+                <text x="360" y="14" text-anchor="middle">W5</text>
+                <text x="420" y="14" text-anchor="middle">W6</text>
+                <text x="480" y="14" text-anchor="middle">W7</text>
+                <text x="540" y="14" text-anchor="middle">W8</text>
+              </g>
+              <g font-family="-apple-system" font-size="9">
+                <!-- rows -->
+                <g transform="translate(0,24)"><text x="36" y="14" fill="#57606a" text-anchor="end">07-07</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#6a92c2"/><text x="120" y="14" fill="#fff" text-anchor="middle">48.2</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#cbdae8"/><text x="180" y="14" fill="#0a3069" text-anchor="middle">32.1</text>
+                  <rect x="220" y="0" width="40" height="20" fill="#cbdae8"/><text x="240" y="14" fill="#0a3069" text-anchor="middle">25.8</text>
+                  <rect x="280" y="0" width="40" height="20" fill="#e0ebf3"/><text x="300" y="14" fill="#0a3069" text-anchor="middle">22.1</text>
+                  <rect x="340" y="0" width="40" height="20" fill="#e0ebf3"/><text x="360" y="14" fill="#0a3069" text-anchor="middle">19.8</text>
+                  <rect x="400" y="0" width="40" height="20" fill="#e0ebf3"/><text x="420" y="14" fill="#0a3069" text-anchor="middle">18.4</text>
+                  <rect x="460" y="0" width="40" height="20" fill="#e0ebf3"/><text x="480" y="14" fill="#0a3069" text-anchor="middle">17.2</text>
+                  <rect x="520" y="0" width="40" height="20" fill="#e0ebf3"/><text x="540" y="14" fill="#0a3069" text-anchor="middle">16.4</text>
+                </g>
+                <g transform="translate(0,46)"><text x="36" y="14" fill="#57606a" text-anchor="end">07-14</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#5a85b8"/><text x="120" y="14" fill="#fff" text-anchor="middle">49.4</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#cbdae8"/><text x="180" y="14" fill="#0a3069" text-anchor="middle">33.5</text>
+                  <rect x="220" y="0" width="40" height="20" fill="#cbdae8"/><text x="240" y="14" fill="#0a3069" text-anchor="middle">27.2</text>
+                  <rect x="280" y="0" width="40" height="20" fill="#e0ebf3"/><text x="300" y="14" fill="#0a3069" text-anchor="middle">22.8</text>
+                  <rect x="340" y="0" width="40" height="20" fill="#e0ebf3"/><text x="360" y="14" fill="#0a3069" text-anchor="middle">20.4</text>
+                  <rect x="400" y="0" width="40" height="20" fill="#e0ebf3"/><text x="420" y="14" fill="#0a3069" text-anchor="middle">18.8</text>
+                  <rect x="460" y="0" width="40" height="20" fill="#e0ebf3"/><text x="480" y="14" fill="#0a3069" text-anchor="middle">17.8</text>
+                  <rect x="520" y="0" width="40" height="20" fill="#e0ebf3"/><text x="540" y="14" fill="#0a3069" text-anchor="middle">16.9</text>
+                </g>
+                <g transform="translate(0,68)"><text x="36" y="14" fill="#57606a" text-anchor="end">07-21</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#3968a8"/><text x="120" y="14" fill="#fff" text-anchor="middle">51.2</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#9fb9d5"/><text x="180" y="14" fill="#0a3069" text-anchor="middle">34.8</text>
+                  <rect x="220" y="0" width="40" height="20" fill="#cbdae8"/><text x="240" y="14" fill="#0a3069" text-anchor="middle">28.1</text>
+                </g>
+                <g transform="translate(0,90)"><text x="36" y="14" fill="#57606a" text-anchor="end">07-28</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#3968a8"/><text x="120" y="14" fill="#fff" text-anchor="middle">52.8</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#9fb9d5"/><text x="180" y="14" fill="#0a3069" text-anchor="middle">35.8</text>
+                  <rect x="220" y="0" width="40" height="20" fill="#cbdae8"/><text x="240" y="14" fill="#0a3069" text-anchor="middle">29.0</text>
+                </g>
+                <g transform="translate(0,112)"><text x="36" y="14" fill="#57606a" text-anchor="end">08-04</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#3968a8"/><text x="120" y="14" fill="#fff" text-anchor="middle">54.2</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#9fb9d5"/><text x="180" y="14" fill="#0a3069" text-anchor="middle">36.8</text>
+                </g>
+                <line x1="20" y1="134" x2="620" y2="134" stroke="#ff8000" stroke-width="2" stroke-dasharray="5,3"/>
+                <text x="620" y="132" fill="#ff8000" text-anchor="end" font-weight="700">── Onboarding v3.4 배포 (08-11)</text>
+                <g transform="translate(0,140)"><text x="36" y="14" fill="#ff8000" text-anchor="end" font-weight="700">08-11</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#1a4a89"/><text x="120" y="14" fill="#fff" text-anchor="middle">61.8</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#3968a8"/><text x="180" y="14" fill="#fff" text-anchor="middle">44.5</text>
+                  <rect x="220" y="0" width="40" height="20" fill="#6a92c2"/><text x="240" y="14" fill="#fff" text-anchor="middle">36.8</text>
+                  <rect x="280" y="0" width="40" height="20" fill="#6a92c2"/><text x="300" y="14" fill="#fff" text-anchor="middle">31.2</text>
+                </g>
+                <g transform="translate(0,162)"><text x="36" y="14" fill="#57606a" text-anchor="end">08-18</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#1a4a89"/><text x="120" y="14" fill="#fff" text-anchor="middle">63.2</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#3968a8"/><text x="180" y="14" fill="#fff" text-anchor="middle">46.2</text>
+                  <rect x="220" y="0" width="40" height="20" fill="#6a92c2"/><text x="240" y="14" fill="#fff" text-anchor="middle">38.2</text>
+                </g>
+                <g transform="translate(0,184)"><text x="36" y="14" fill="#57606a" text-anchor="end">08-25</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#1a4a89"/><text x="120" y="14" fill="#fff" text-anchor="middle">64.8</text>
+                  <rect x="160" y="0" width="40" height="20" fill="#1a4a89"/><text x="180" y="14" fill="#fff" text-anchor="middle">47.8</text>
+                </g>
+                <g transform="translate(0,206)"><text x="36" y="14" fill="#57606a" text-anchor="end">09-01</text>
+                  <rect x="40" y="0" width="40" height="20" fill="#0a3069"/><text x="60" y="14" fill="#fff" text-anchor="middle">100</text>
+                  <rect x="100" y="0" width="40" height="20" fill="#1a4a89"/><text x="120" y="14" fill="#fff" text-anchor="middle">66.1</text>
+                </g>
+              </g>
+            </svg>
+            <div class="cap">Fig. 1 &nbsp;가입 코호트별 주간 유지율 (%) · v3.4 이후 W1 유지율 +13.4pp 상승</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter">In [5]:</div>
+        <div class="box in">
+<span class="com"># 통계 검정 — v3.4 전후 W1 유지율 차이</span><br>
+<span class="kw">from</span> <span class="fn">scipy.stats</span> <span class="kw">import</span> ttest_ind<br>
+pre  = retention.loc[<span class="str">"2025-06-30"</span>:<span class="str">"2025-08-04"</span>, <span class="num">1</span>].dropna()<br>
+post = retention.loc[<span class="str">"2025-08-11"</span>:, <span class="num">1</span>].dropna()<br>
+t, p = ttest_ind(pre, post, equal_var=<span class="kw">False</span>)<br>
+<span class="fn">print</span>(<span class="str">f"pre   n={len(pre)}, mean={pre.mean():.3f}"</span>)<br>
+<span class="fn">print</span>(<span class="str">f"post  n={len(post)}, mean={post.mean():.3f}"</span>)<br>
+<span class="fn">print</span>(<span class="str">f"t = {t:.3f},  p = {p:.4e}"</span>)
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="gutter out">Out[5]:</div>
+        <div class="box out">
+pre   n=6, mean=0.509<br>
+post  n=4, mean=0.640<br>
+t = -8.942,  p = 1.84e-05 &nbsp;&nbsp;<span style="color:#2da44e;font-weight:700">✓ significant (α=0.01)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="vars">
+      <h4>🔎 Variable Inspector</h4>
+      <div class="var"><span class="n">conn</span><span class="t">Conn</span><span class="v">snowflake session</span></div>
+      <div class="var"><span class="n">cohort</span><span class="t">DF</span><span class="v">(12, 2)</span></div>
+      <div class="var"><span class="n">activity</span><span class="t">DF</span><span class="v">(4,284,210, 6)</span></div>
+      <div class="var"><span class="n">retention</span><span class="t">DF</span><span class="v">(12, 13)</span></div>
+      <div class="var"><span class="n">pre</span><span class="t">Ser</span><span class="v">6 values</span></div>
+      <div class="var"><span class="n">post</span><span class="t">Ser</span><span class="v">4 values</span></div>
+      <div class="var"><span class="n">t</span><span class="t">f64</span><span class="v">-8.9418</span></div>
+      <div class="var"><span class="n">p</span><span class="t">f64</span><span class="v">1.838e-05</span></div>
+      <div class="var"><span class="n">fig</span><span class="t">Fig</span><span class="v">720×360</span></div>
+
+      <h4 style="margin-top:8px">📊 Memory</h4>
+      <div class="var"><span class="n">RAM</span><span class="t">used</span><span class="v">3.42 GB</span></div>
+      <div class="var"><span class="n">kernel</span><span class="t">pid</span><span class="v">48291</span></div>
+      <div class="var"><span class="n">uptime</span><span class="t">min</span><span class="v">42.8</span></div>
+
+      <h4 style="margin-top:8px">⚡ Query Plan</h4>
+      <div style="padding:8px 12px;font-family:'SF Mono',monospace;font-size:10.5px;color:#57606a;line-height:1.55">
+        Scan fct_user_activity<br>
+        &nbsp;↳ filter signup_at<br>
+        &nbsp;&nbsp;&nbsp;↳ group by 1<br>
+        Rows 284,102 · 4.2s<br>
+        Bytes 842 MB<br>
+        Credits 0.082
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="on">● Kernel ready</span>
+    <span>Python 3.11.4 <b>|</b> pandas 2.2.3</span>
+    <span>RAM 3.42 / 32 GB</span>
+    <span>Cells executed 11 / 24</span>
+    <span>Last saved 14:42 · 자동 저장 ON</span>
+    <span style="margin-left:auto">row 18 col 42 · UTF-8 · LF</span>
+    <span style="color:#f37726;font-weight:700">● Python</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

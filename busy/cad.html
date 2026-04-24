@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Tower-B · Floor 12 · Drawing Plan</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#1e1e1e;--panel:#252526;--panel2:#2d2d30;--border:#3e3e42;--text:#cccccc;--dim:#858585;--accent:#007acc;--cyan:#4ec9b0;--amber:#d7ba7d;--red:#f14c4c;--green:#4ec94e;--violet:#c586c0;--canvas:#0f172a;}
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',sans-serif;font-size:12px;overflow:hidden;}
+  .app{display:grid;grid-template-rows:28px 36px 1fr 22px;height:100vh;}
+  .tb{background:#1f1f1f;display:flex;align-items:center;padding:0 10px;gap:14px;font-size:11.5px;border-bottom:1px solid #000;}
+  .tb .logo{color:var(--accent);font-weight:800;letter-spacing:-0.3px;}
+  .tb .m{color:var(--dim);} .tb .proj{color:var(--text);}
+  .tb .spacer{flex:1;}
+  /* Ribbon */
+  .rb{background:var(--panel);border-bottom:1px solid #000;display:flex;align-items:center;padding:2px 10px;gap:18px;font-size:11px;color:var(--dim);}
+  .rb .grp{display:flex;align-items:center;gap:4px;border-right:1px solid var(--border);padding-right:14px;}
+  .rb .tool{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:#1f1f1f;border-radius:2px;font-size:13px;color:var(--text);}
+  .rb .tool.active{background:var(--accent);color:#fff;}
+  .rb .tool:hover{background:#333;}
+  .rb .glab{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:0.4px;padding-left:3px;}
+
+  .main{display:grid;grid-template-columns:240px 1fr 280px;gap:1px;background:#000;overflow:hidden;}
+  .p{background:var(--panel);overflow:hidden;display:flex;flex-direction:column;}
+  .ph{background:#1f1f1f;padding:4px 10px;border-bottom:1px solid #000;font-size:10.5px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;display:flex;gap:10px;align-items:center;}
+  .ph .spacer{flex:1;}
+
+  /* Left: layers + project tree */
+  .left{grid-column:1;}
+  .tree{padding:6px 0;font-size:12px;}
+  .tnode{padding:2px 10px;display:flex;align-items:center;gap:6px;color:var(--text);}
+  .tnode:hover{background:var(--panel2);}
+  .tnode.sel{background:#094771;color:#fff;}
+  .tnode .ch{width:10px;color:var(--dim);font-size:10px;}
+  .tnode .ic{width:14px;}
+  .tnode.child{padding-left:26px;}
+  .tnode.child2{padding-left:42px;}
+  .sec{padding:6px 10px 2px;font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;border-top:1px solid var(--border);margin-top:4px;}
+
+  .layers{flex:1;overflow-y:auto;font-size:11.5px;}
+  .lay{display:grid;grid-template-columns:18px 18px 18px 18px 1fr;gap:2px;align-items:center;padding:3px 8px;border-bottom:1px solid rgba(255,255,255,0.03);font-family:'Consolas',monospace;font-size:11px;}
+  .lay:hover{background:var(--panel2);}
+  .lay.cur{background:#37373d;}
+  .lay .sw{width:10px;height:10px;border-radius:1px;justify-self:center;}
+  .lay .ic{font-size:11px;color:var(--dim);text-align:center;}
+  .lay .ic.on{color:var(--text);}
+
+  /* Canvas */
+  .canvas{grid-column:2;background:var(--canvas);position:relative;overflow:hidden;}
+  .gridbg{position:absolute;inset:0;background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px),
+    linear-gradient(rgba(255,255,255,0.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.08) 1px,transparent 1px);
+    background-size:20px 20px,20px 20px,100px 100px,100px 100px;}
+  .axis{position:absolute;}
+  .axis.x{left:40px;right:40px;bottom:14px;height:20px;}
+  .axis.y{top:30px;bottom:40px;left:14px;width:20px;}
+
+  svg.draw{position:absolute;inset:0;width:100%;height:100%;}
+
+  .hud{position:absolute;top:12px;left:14px;background:rgba(15,23,42,0.9);border:1px solid #234;padding:8px 12px;font-family:'Consolas',monospace;font-size:11px;color:var(--text);border-radius:3px;line-height:1.7;}
+  .hud b{color:var(--amber);}
+  .hud .row{display:grid;grid-template-columns:100px 1fr;gap:8px;}
+  .hud .row span:last-child{color:var(--cyan);}
+
+  .compass{position:absolute;top:12px;right:14px;width:70px;height:70px;border:1px solid #345;border-radius:50%;background:rgba(15,23,42,0.9);display:flex;align-items:center;justify-content:center;}
+  .compass svg{width:64px;height:64px;}
+
+  .toollbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.85);border:1px solid #234;display:flex;gap:2px;padding:3px;border-radius:3px;}
+  .toollbar .t{padding:4px 8px;font-size:11px;color:var(--dim);}
+  .toollbar .t.active{background:var(--accent);color:#fff;border-radius:2px;}
+
+  .zoombar{position:absolute;bottom:30px;right:14px;background:rgba(15,23,42,0.9);border:1px solid #234;display:flex;gap:2px;padding:3px;border-radius:3px;font-size:11px;}
+  .zoombar .b{padding:2px 8px;color:var(--dim);}
+  .zoombar .b.active{color:var(--text);}
+
+  .scale-ref{position:absolute;left:50%;bottom:48px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-family:monospace;font-size:10px;color:rgba(255,255,255,0.6);}
+  .scale-ref .bar{display:inline-flex;border:1px solid rgba(255,255,255,0.6);}
+  .scale-ref .seg{width:40px;height:6px;}
+  .scale-ref .seg.f{background:rgba(255,255,255,0.6);}
+
+  /* Right: Properties */
+  .right{grid-column:3;}
+  .body{flex:1;overflow-y:auto;padding:10px;font-size:11.5px;}
+  .psec{margin-bottom:10px;background:var(--panel2);border:1px solid var(--border);}
+  .psec .t{background:#1f1f1f;padding:4px 8px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--dim);}
+  .psec .prop{display:grid;grid-template-columns:90px 1fr;gap:4px;padding:3px 8px;align-items:center;}
+  .psec .prop label{color:var(--dim);font-size:11px;}
+  .psec .prop .v{font-family:'Consolas',monospace;color:var(--text);}
+  .psec .prop .v.blue{color:var(--accent);}
+  .schedule{margin-top:6px;}
+  .schedule table{width:100%;font-family:monospace;font-size:10.5px;border-collapse:collapse;}
+  .schedule th{text-align:left;padding:3px 4px;background:#1f1f1f;color:var(--dim);font-weight:600;border-bottom:1px solid var(--border);}
+  .schedule td{padding:2px 4px;border-bottom:1px solid rgba(255,255,255,0.04);}
+  .schedule td.n{text-align:right;color:var(--cyan);}
+
+  .status{background:#007acc;display:flex;align-items:center;padding:0 14px;gap:18px;font-size:11px;color:#fff;}
+  .status .spacer{flex:1;}
+  .status b{font-family:monospace;}
+</style>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body data-title="Block_B_Floor_12.dwg" data-favicon="📐" data-suppress="cursor">
+<div class="app">
+  <div class="tb">
+    <span class="logo">▥ DraftWorks Pro</span>
+    <span class="m">파일</span><span class="m">편집</span><span class="m">보기</span><span class="m">삽입</span><span class="m">포맷</span><span class="m">도구</span><span class="m">그리기</span><span class="m">매개변수</span><span class="m">창</span>
+    <span class="spacer"></span>
+    <span class="proj">NVFD_TowerB_12F_Plan_v27.dwg</span>
+    <span class="m">mm · 1:100</span>
+    <span class="m">⟲ ⟳</span>
+    <span class="m">📤 내보내기</span>
+  </div>
+
+  <div class="rb">
+    <div class="grp">
+      <span class="tool">⬚</span><span class="tool active">▸</span><span class="tool">＋</span>
+      <span class="glab">선택</span>
+    </div>
+    <div class="grp">
+      <span class="tool">／</span><span class="tool">⌒</span><span class="tool">▢</span><span class="tool">◯</span><span class="tool">⬡</span><span class="tool">⌒</span><span class="tool">◢</span>
+      <span class="glab">드로우</span>
+    </div>
+    <div class="grp">
+      <span class="tool">⇄</span><span class="tool">⟲</span><span class="tool">⎚</span><span class="tool">⎌</span><span class="tool">⎊</span><span class="tool">⇔</span>
+      <span class="glab">변환</span>
+    </div>
+    <div class="grp">
+      <span class="tool">⊢</span><span class="tool">⊥</span><span class="tool">∥</span><span class="tool">⊿</span>
+      <span class="glab">치수</span>
+    </div>
+    <div class="grp">
+      <span class="tool">T</span><span class="tool">⎘</span><span class="tool">📐</span><span class="tool">▦</span>
+      <span class="glab">주석</span>
+    </div>
+    <div class="grp" style="border-right:none">
+      <span class="tool">🔲</span><span class="tool">◧</span><span class="tool">⧉</span>
+      <span class="glab">블록</span>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center;color:var(--dim)">
+      <span>🧲 Snap: <b style="color:var(--text)">끝점·중간·교차</b></span>
+      <span>∠ 직교</span>
+      <span>⌀ 객체스냅</span>
+      <span>📏 동적입력</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Left: layers -->
+    <aside class="p left">
+      <div class="ph"><span>프로젝트 탐색기</span><span class="spacer"></span><span>＋</span></div>
+      <div class="tree">
+        <div class="tnode"><span class="ch">▾</span><span class="ic">📁</span>Novafield Tower B</div>
+        <div class="tnode child"><span class="ch">▾</span><span class="ic">📁</span>평면도 (Plans)</div>
+        <div class="tnode child2"><span class="ic">📄</span>B2_Parking</div>
+        <div class="tnode child2"><span class="ic">📄</span>1F_Lobby</div>
+        <div class="tnode child2 sel"><span class="ic">📄</span>12F_Office <span style="color:var(--amber);margin-left:auto">●</span></div>
+        <div class="tnode child2"><span class="ic">📄</span>13F_Office</div>
+        <div class="tnode child2"><span class="ic">📄</span>RF_Mechanical</div>
+        <div class="tnode child"><span class="ch">▸</span><span class="ic">📁</span>입면도 (Elevations)</div>
+        <div class="tnode child"><span class="ch">▸</span><span class="ic">📁</span>단면도 (Sections)</div>
+        <div class="tnode child"><span class="ch">▸</span><span class="ic">📁</span>디테일 (Details)</div>
+        <div class="tnode child"><span class="ch">▸</span><span class="ic">📁</span>3D Model</div>
+        <div class="tnode child"><span class="ch">▸</span><span class="ic">📁</span>MEP</div>
+      </div>
+
+      <div class="sec">레이어 (Layers)</div>
+      <div class="layers">
+        <div class="lay cur"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#4ec9b0"></span><span>A-WALL-EXT</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#ffffff"></span><span>A-WALL-INT</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#d7ba7d"></span><span>A-DOOR</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#9cdcfe"></span><span>A-WIND</span></div>
+        <div class="lay"><span class="ic">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#c586c0"></span><span>A-FURN</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#f14c4c"></span><span>A-DIM</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#569cd6"></span><span>A-GRID</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#ce9178"></span><span>A-TEXT</span></div>
+        <div class="lay"><span class="ic">●</span><span class="ic on">🔓</span><span class="ic">🖨</span><span class="sw" style="background:#6a9955"></span><span>S-COLUMN</span></div>
+        <div class="lay"><span class="ic">●</span><span class="ic">🔒</span><span class="ic">🖨</span><span class="sw" style="background:#ffd700"></span><span>M-DUCT</span></div>
+        <div class="lay"><span class="ic">●</span><span class="ic">🔒</span><span class="ic">🖨</span><span class="sw" style="background:#50c878"></span><span>E-LIGHT</span></div>
+        <div class="lay"><span class="ic">●</span><span class="ic">🔒</span><span class="ic">🖨</span><span class="sw" style="background:#ff6b6b"></span><span>P-SPRINKLER</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#888"></span><span>A-AREA-HATCH</span></div>
+        <div class="lay"><span class="ic on">●</span><span class="ic on">🔓</span><span class="ic on">🖨</span><span class="sw" style="background:#fff;border:1px solid #666"></span><span>X-VIEWPORT</span></div>
+      </div>
+    </aside>
+
+    <!-- Canvas -->
+    <main class="p canvas" id="canvas">
+      <div class="gridbg"></div>
+      <svg class="draw" viewBox="0 0 1200 780" preserveAspectRatio="xMidYMid meet">
+        <!-- Grid lines (A-F columns, 1-5 rows) -->
+        <defs>
+          <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#666" stroke-width="0.4"/>
+          </pattern>
+          <pattern id="concrete" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="6" stroke="#4a5" stroke-width="0.3" opacity="0.5"/>
+          </pattern>
+          <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#f14c4c"/>
+          </marker>
+        </defs>
+
+        <!-- Grid -->
+        <g stroke="#569cd6" stroke-width="0.4" stroke-dasharray="8 4 1 4" opacity="0.65">
+          <line x1="140" y1="60" x2="140" y2="720"/>
+          <line x1="290" y1="60" x2="290" y2="720"/>
+          <line x1="470" y1="60" x2="470" y2="720"/>
+          <line x1="650" y1="60" x2="650" y2="720"/>
+          <line x1="830" y1="60" x2="830" y2="720"/>
+          <line x1="1010" y1="60" x2="1010" y2="720"/>
+          <line x1="1140" y1="60" x2="1140" y2="720"/>
+          <line x1="80" y1="110" x2="1160" y2="110"/>
+          <line x1="80" y1="260" x2="1160" y2="260"/>
+          <line x1="80" y1="440" x2="1160" y2="440"/>
+          <line x1="80" y1="590" x2="1160" y2="590"/>
+          <line x1="80" y1="700" x2="1160" y2="700"/>
+        </g>
+        <!-- Grid bubbles -->
+        <g font-family="Consolas,monospace" font-size="10" font-weight="700" fill="#569cd6">
+          <g>
+            <circle cx="140" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="140" y="46" text-anchor="middle">A</text>
+            <circle cx="290" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="290" y="46" text-anchor="middle">B</text>
+            <circle cx="470" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="470" y="46" text-anchor="middle">C</text>
+            <circle cx="650" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="650" y="46" text-anchor="middle">D</text>
+            <circle cx="830" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="830" y="46" text-anchor="middle">E</text>
+            <circle cx="1010" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="1010" y="46" text-anchor="middle">F</text>
+            <circle cx="1140" cy="42" r="11" fill="#0f172a" stroke="#569cd6"/><text x="1140" y="46" text-anchor="middle">G</text>
+          </g>
+          <g>
+            <circle cx="55" cy="110" r="11" fill="#0f172a" stroke="#569cd6"/><text x="55" y="114" text-anchor="middle">1</text>
+            <circle cx="55" cy="260" r="11" fill="#0f172a" stroke="#569cd6"/><text x="55" y="264" text-anchor="middle">2</text>
+            <circle cx="55" cy="440" r="11" fill="#0f172a" stroke="#569cd6"/><text x="55" y="444" text-anchor="middle">3</text>
+            <circle cx="55" cy="590" r="11" fill="#0f172a" stroke="#569cd6"/><text x="55" y="594" text-anchor="middle">4</text>
+            <circle cx="55" cy="700" r="11" fill="#0f172a" stroke="#569cd6"/><text x="55" y="704" text-anchor="middle">5</text>
+          </g>
+        </g>
+
+        <!-- Exterior walls (double-line) -->
+        <g stroke="#4ec9b0" stroke-width="3" fill="none">
+          <rect x="100" y="80" width="1060" height="620"/>
+          <rect x="106" y="86" width="1048" height="608"/>
+        </g>
+        <!-- Fill between wall lines -->
+        <path d="M100,80 L1160,80 L1160,700 L100,700 Z M106,86 L106,694 L1154,694 L1154,86 Z" fill="#4ec9b0" fill-opacity="0.18" fill-rule="evenodd"/>
+
+        <!-- Interior walls -->
+        <g stroke="#eee" stroke-width="1.6" fill="none">
+          <!-- Core -->
+          <rect x="560" y="240" width="280" height="260" fill="#1a2535" fill-opacity="0.5"/>
+          <rect x="560" y="240" width="280" height="260"/>
+          <!-- core internal -->
+          <line x1="560" y1="320" x2="700" y2="320"/>
+          <line x1="700" y1="240" x2="700" y2="420"/>
+          <line x1="700" y1="420" x2="840" y2="420"/>
+          <line x1="770" y1="420" x2="770" y2="500"/>
+
+          <!-- Office partitions left side -->
+          <line x1="290" y1="86" x2="290" y2="260"/>
+          <line x1="290" y1="260" x2="470" y2="260"/>
+          <line x1="290" y1="340" x2="470" y2="340"/>
+          <line x1="290" y1="440" x2="560" y2="440"/>
+          <line x1="290" y1="440" x2="290" y2="590"/>
+          <line x1="180" y1="590" x2="560" y2="590"/>
+
+          <!-- Office partitions right side -->
+          <line x1="840" y1="240" x2="1010" y2="240"/>
+          <line x1="1010" y1="86" x2="1010" y2="240"/>
+          <line x1="840" y1="340" x2="1154" y2="340"/>
+          <line x1="840" y1="500" x2="1154" y2="500"/>
+          <line x1="840" y1="590" x2="1010" y2="590"/>
+          <line x1="1010" y1="500" x2="1010" y2="694"/>
+        </g>
+
+        <!-- Columns -->
+        <g fill="#6a9955" stroke="#8ac779" stroke-width="1">
+          <rect x="132" y="102" width="16" height="16"/>
+          <rect x="282" y="102" width="16" height="16"/>
+          <rect x="462" y="102" width="16" height="16"/>
+          <rect x="642" y="102" width="16" height="16"/>
+          <rect x="822" y="102" width="16" height="16"/>
+          <rect x="1002" y="102" width="16" height="16"/>
+          <rect x="1132" y="102" width="16" height="16"/>
+          <rect x="132" y="252" width="16" height="16"/>
+          <rect x="462" y="252" width="16" height="16"/>
+          <rect x="822" y="252" width="16" height="16"/>
+          <rect x="1132" y="252" width="16" height="16"/>
+          <rect x="132" y="432" width="16" height="16"/>
+          <rect x="462" y="432" width="16" height="16"/>
+          <rect x="822" y="432" width="16" height="16"/>
+          <rect x="1132" y="432" width="16" height="16"/>
+          <rect x="132" y="582" width="16" height="16"/>
+          <rect x="462" y="582" width="16" height="16"/>
+          <rect x="822" y="582" width="16" height="16"/>
+          <rect x="1132" y="582" width="16" height="16"/>
+          <rect x="132" y="682" width="16" height="16"/>
+          <rect x="462" y="682" width="16" height="16"/>
+          <rect x="822" y="682" width="16" height="16"/>
+          <rect x="1132" y="682" width="16" height="16"/>
+        </g>
+
+        <!-- Doors (arc + line) -->
+        <g stroke="#d7ba7d" stroke-width="1.2" fill="none">
+          <!-- Office doors -->
+          <g><line x1="290" y1="190" x2="290" y2="220"/><path d="M290,220 A30,30 0 0,0 320,190"/></g>
+          <g><line x1="380" y1="340" x2="410" y2="340"/><path d="M410,340 A30,30 0 0,1 380,310"/></g>
+          <g><line x1="290" y1="500" x2="290" y2="530"/><path d="M290,530 A30,30 0 0,0 320,500"/></g>
+          <!-- Core doors -->
+          <g><line x1="600" y1="320" x2="630" y2="320"/><path d="M630,320 A30,30 0 0,1 600,290"/></g>
+          <g><line x1="730" y1="420" x2="760" y2="420"/><path d="M760,420 A30,30 0 0,1 730,390"/></g>
+          <g><line x1="900" y1="340" x2="930" y2="340"/><path d="M930,340 A30,30 0 0,1 900,310"/></g>
+          <g><line x1="900" y1="500" x2="930" y2="500"/><path d="M930,500 A30,30 0 0,1 900,470"/></g>
+          <!-- Entry -->
+          <g><line x1="620" y1="240" x2="680" y2="240"/><path d="M620,240 A60,60 0 0,1 680,240"/></g>
+        </g>
+
+        <!-- Windows (triple line) -->
+        <g stroke="#9cdcfe" stroke-width="0.8">
+          <!-- top -->
+          <line x1="160" y1="80" x2="280" y2="80"/><line x1="160" y1="83" x2="280" y2="83"/><line x1="160" y1="86" x2="280" y2="86"/>
+          <line x1="320" y1="80" x2="460" y2="80"/><line x1="320" y1="83" x2="460" y2="83"/><line x1="320" y1="86" x2="460" y2="86"/>
+          <line x1="490" y1="80" x2="630" y2="80"/><line x1="490" y1="83" x2="630" y2="83"/><line x1="490" y1="86" x2="630" y2="86"/>
+          <line x1="670" y1="80" x2="810" y2="80"/><line x1="670" y1="83" x2="810" y2="83"/><line x1="670" y1="86" x2="810" y2="86"/>
+          <line x1="850" y1="80" x2="990" y2="80"/><line x1="850" y1="83" x2="990" y2="83"/><line x1="850" y1="86" x2="990" y2="86"/>
+          <line x1="1030" y1="80" x2="1140" y2="80"/><line x1="1030" y1="83" x2="1140" y2="83"/><line x1="1030" y1="86" x2="1140" y2="86"/>
+          <!-- bottom -->
+          <line x1="160" y1="700" x2="460" y2="700"/><line x1="160" y1="697" x2="460" y2="697"/><line x1="160" y1="694" x2="460" y2="694"/>
+          <line x1="490" y1="700" x2="820" y2="700"/><line x1="490" y1="697" x2="820" y2="697"/><line x1="490" y1="694" x2="820" y2="694"/>
+          <line x1="850" y1="700" x2="1140" y2="700"/><line x1="850" y1="697" x2="1140" y2="697"/><line x1="850" y1="694" x2="1140" y2="694"/>
+          <!-- sides -->
+          <line x1="100" y1="140" x2="100" y2="460"/><line x1="103" y1="140" x2="103" y2="460"/><line x1="106" y1="140" x2="106" y2="460"/>
+          <line x1="100" y1="490" x2="100" y2="660"/><line x1="103" y1="490" x2="103" y2="660"/><line x1="106" y1="490" x2="106" y2="660"/>
+          <line x1="1154" y1="140" x2="1154" y2="320"/><line x1="1157" y1="140" x2="1157" y2="320"/><line x1="1160" y1="140" x2="1160" y2="320"/>
+          <line x1="1154" y1="380" x2="1154" y2="660"/><line x1="1157" y1="380" x2="1157" y2="660"/><line x1="1160" y1="380" x2="1160" y2="660"/>
+        </g>
+
+        <!-- Core labels -->
+        <g font-family="Consolas,monospace" font-size="9" fill="#aaa" text-anchor="middle">
+          <text x="580" y="268">ELEV</text><text x="580" y="280">1</text>
+          <text x="580" y="300">ELEV 2</text>
+          <text x="650" y="270">ELEV</text><text x="650" y="282">3</text>
+          <text x="775" y="285">CORE</text><text x="775" y="298">SHAFT</text><text x="775" y="311">M / W</text>
+          <text x="630" y="380">LOBBY</text>
+          <text x="735" y="470">STAIR A</text>
+          <text x="805" y="470">M.E.P</text>
+        </g>
+        <!-- core hatch -->
+        <rect x="740" y="260" width="60" height="50" fill="url(#hatch)" opacity="0.3"/>
+
+        <!-- Room labels + area hatch for open office -->
+        <g font-family="Consolas,monospace" fill="#ce9178">
+          <text x="220" y="175" font-size="13" text-anchor="middle" font-weight="700">OFFICE 12-A</text>
+          <text x="220" y="190" font-size="10" text-anchor="middle" fill="#999">82.40 m² · 장인호 상무</text>
+
+          <text x="380" y="300" font-size="13" text-anchor="middle" font-weight="700">MEETING-12A</text>
+          <text x="380" y="314" font-size="10" text-anchor="middle" fill="#999">34.60 m² · 14 pax</text>
+
+          <text x="380" y="385" font-size="13" text-anchor="middle" font-weight="700">FOCUS ROOM</text>
+          <text x="380" y="399" font-size="10" text-anchor="middle" fill="#999">18.20 m²</text>
+
+          <text x="370" y="515" font-size="13" text-anchor="middle" font-weight="700">OPEN OFFICE</text>
+          <text x="370" y="529" font-size="10" text-anchor="middle" fill="#999">148.80 m² · 42 seats</text>
+
+          <text x="300" y="645" font-size="13" text-anchor="middle" font-weight="700">LOUNGE</text>
+          <text x="300" y="659" font-size="10" text-anchor="middle" fill="#999">52.40 m²</text>
+
+          <text x="925" y="175" font-size="13" text-anchor="middle" font-weight="700">EXEC SUITE</text>
+          <text x="925" y="190" font-size="10" text-anchor="middle" fill="#999">96.20 m²</text>
+
+          <text x="998" y="290" font-size="13" text-anchor="middle" font-weight="700">PHONE BTH</text>
+          <text x="925" y="420" font-size="13" text-anchor="middle" font-weight="700">MEETING-12B</text>
+          <text x="925" y="434" font-size="10" text-anchor="middle" fill="#999">28.80 m² · 10 pax</text>
+
+          <text x="998" y="550" font-size="13" text-anchor="middle" font-weight="700">PANTRY</text>
+          <text x="998" y="564" font-size="10" text-anchor="middle" fill="#999">22.40 m²</text>
+
+          <text x="925" y="645" font-size="13" text-anchor="middle" font-weight="700">COLLAB AREA</text>
+          <text x="925" y="659" font-size="10" text-anchor="middle" fill="#999">64.80 m²</text>
+        </g>
+
+        <!-- Furniture (open office desks) -->
+        <g stroke="#c586c0" stroke-width="0.8" fill="none" opacity="0.85">
+          <!-- rows of desks -->
+          <g>
+            <rect x="160" y="480" width="60" height="30"/><rect x="160" y="514" width="60" height="30"/>
+            <rect x="230" y="480" width="60" height="30"/><rect x="230" y="514" width="60" height="30"/>
+            <rect x="300" y="480" width="60" height="30"/><rect x="300" y="514" width="60" height="30"/>
+            <rect x="370" y="480" width="60" height="30"/><rect x="370" y="514" width="60" height="30"/>
+            <rect x="440" y="480" width="60" height="30"/><rect x="440" y="514" width="60" height="30"/>
+          </g>
+          <g>
+            <rect x="160" y="550" width="60" height="30"/>
+            <rect x="230" y="550" width="60" height="30"/>
+            <rect x="300" y="550" width="60" height="30"/>
+            <rect x="370" y="550" width="60" height="30"/>
+            <rect x="440" y="550" width="60" height="30"/>
+          </g>
+          <!-- chair circles -->
+          <g>
+            <circle cx="190" cy="475" r="5"/><circle cx="260" cy="475" r="5"/><circle cx="330" cy="475" r="5"/><circle cx="400" cy="475" r="5"/><circle cx="470" cy="475" r="5"/>
+            <circle cx="190" cy="547" r="5"/><circle cx="260" cy="547" r="5"/><circle cx="330" cy="547" r="5"/><circle cx="400" cy="547" r="5"/><circle cx="470" cy="547" r="5"/>
+          </g>
+          <!-- meeting tables -->
+          <rect x="322" y="278" width="120" height="40" rx="4"/>
+          <g><circle cx="340" cy="273" r="4"/><circle cx="370" cy="273" r="4"/><circle cx="400" cy="273" r="4"/><circle cx="425" cy="273" r="4"/>
+             <circle cx="340" cy="323" r="4"/><circle cx="370" cy="323" r="4"/><circle cx="400" cy="323" r="4"/><circle cx="425" cy="323" r="4"/></g>
+          <!-- exec desk -->
+          <rect x="180" y="160" width="90" height="36" rx="2"/>
+          <circle cx="225" cy="210" r="7"/>
+          <!-- exec suite -->
+          <rect x="870" y="160" width="100" height="40" rx="2"/>
+          <circle cx="920" cy="215" r="7"/>
+          <rect x="900" y="150" width="60" height="6"/>
+          <!-- pantry -->
+          <rect x="960" y="528" width="80" height="16"/><rect x="960" y="548" width="80" height="16"/>
+        </g>
+
+        <!-- Dimensions (top) -->
+        <g stroke="#f14c4c" stroke-width="0.6" fill="none" font-family="Consolas,monospace" font-size="10" fill-opacity="1">
+          <!-- extension lines -->
+          <line x1="100" y1="80" x2="100" y2="30"/><line x1="290" y1="80" x2="290" y2="30"/>
+          <line x1="470" y1="80" x2="470" y2="30"/><line x1="650" y1="80" x2="650" y2="30"/>
+          <line x1="830" y1="80" x2="830" y2="30"/><line x1="1010" y1="80" x2="1010" y2="30"/>
+          <line x1="1160" y1="80" x2="1160" y2="30"/>
+          <!-- dim line -->
+          <line x1="100" y1="24" x2="1160" y2="24" stroke="#f14c4c"/>
+          <g fill="#f14c4c" stroke="#f14c4c">
+            <circle cx="100" cy="24" r="1.4"/><circle cx="290" cy="24" r="1.4"/>
+            <circle cx="470" cy="24" r="1.4"/><circle cx="650" cy="24" r="1.4"/>
+            <circle cx="830" cy="24" r="1.4"/><circle cx="1010" cy="24" r="1.4"/>
+            <circle cx="1160" cy="24" r="1.4"/>
+          </g>
+          <text x="195" y="20" fill="#f14c4c" text-anchor="middle">9,500</text>
+          <text x="380" y="20" fill="#f14c4c" text-anchor="middle">9,000</text>
+          <text x="560" y="20" fill="#f14c4c" text-anchor="middle">9,000</text>
+          <text x="740" y="20" fill="#f14c4c" text-anchor="middle">9,000</text>
+          <text x="920" y="20" fill="#f14c4c" text-anchor="middle">9,000</text>
+          <text x="1085" y="20" fill="#f14c4c" text-anchor="middle">7,500</text>
+        </g>
+
+        <!-- Section marker A-A' -->
+        <g stroke="#f14c4c" stroke-width="1" fill="#f14c4c" font-family="Consolas,monospace" font-size="10">
+          <line x1="80" y1="380" x2="1180" y2="380" stroke-dasharray="8 3 2 3" opacity="0.6"/>
+          <polygon points="78,372 90,372 84,384"/>
+          <polygon points="1182,372 1170,372 1176,384"/>
+          <circle cx="70" cy="380" r="10" fill="#0f172a" stroke="#f14c4c"/><text x="70" y="383" text-anchor="middle">A</text>
+          <circle cx="1190" cy="380" r="10" fill="#0f172a" stroke="#f14c4c"/><text x="1190" y="383" text-anchor="middle">A'</text>
+        </g>
+
+        <!-- Title block -->
+        <g font-family="Consolas,monospace">
+          <rect x="880" y="720" width="280" height="54" fill="#0f172a" stroke="#4ec9b0"/>
+          <line x1="880" y1="738" x2="1160" y2="738" stroke="#4ec9b0"/>
+          <line x1="1000" y1="720" x2="1000" y2="774" stroke="#4ec9b0"/>
+          <line x1="1080" y1="720" x2="1080" y2="774" stroke="#4ec9b0"/>
+          <text x="886" y="732" font-size="9" fill="#888">DRAWING</text>
+          <text x="886" y="754" font-size="10" fill="#fff" font-weight="700">A-102</text>
+          <text x="886" y="768" font-size="9" fill="#aaa">12F Plan</text>
+          <text x="1006" y="732" font-size="9" fill="#888">SCALE</text>
+          <text x="1006" y="754" font-size="11" fill="#fff" font-weight="700">1 : 100</text>
+          <text x="1006" y="768" font-size="9" fill="#aaa">A1 sheet</text>
+          <text x="1086" y="732" font-size="9" fill="#888">REV · DATE</text>
+          <text x="1086" y="754" font-size="11" fill="#fff" font-weight="700">27 · 04.24</text>
+          <text x="1086" y="768" font-size="9" fill="#aaa">K. Park</text>
+        </g>
+      </svg>
+
+      <div class="hud">
+        <div class="row"><span>Command:</span><span>OFFSET</span></div>
+        <div class="row"><span>Distance:</span><span>200.00 mm</span></div>
+        <div class="row"><span>Cursor:</span><span id="cur">X 482,340  Y 214,820</span></div>
+        <div class="row"><span>Snap:</span><span>ENDPOINT @ A-WALL-EXT</span></div>
+        <div style="color:var(--dim);margin-top:4px">Specify point on side to offset or <b>[Exit/Undo]</b>:</div>
+      </div>
+
+      <div class="toollbar">
+        <span class="t">2D Wireframe</span><span class="t active">2D Shaded</span><span class="t">Hidden</span><span class="t">Conceptual</span><span class="t">Realistic</span>
+      </div>
+
+      <div class="compass">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="#4ec9b0" stroke-width="1"/>
+          <polygon points="32,6 28,34 32,30 36,34" fill="#f14c4c" stroke="#f14c4c"/>
+          <polygon points="32,58 28,30 32,34 36,30" fill="#fff" stroke="#ccc"/>
+          <text x="32" y="18" fill="#fff" font-size="8" text-anchor="middle" font-family="Consolas,monospace" font-weight="700">N</text>
+          <line x1="6" y1="32" x2="58" y2="32" stroke="#4ec9b0" stroke-width="0.4" opacity="0.5"/>
+        </svg>
+      </div>
+
+      <div class="scale-ref">
+        <span>0</span>
+        <span class="bar">
+          <span class="seg f"></span><span class="seg"></span><span class="seg f"></span><span class="seg"></span><span class="seg f"></span>
+        </span>
+        <span>10 m</span>
+      </div>
+
+      <div class="zoombar">
+        <span class="b">⊟</span><span class="b active">100%</span><span class="b">⊞</span><span class="b">◉ Extents</span><span class="b">⟲</span>
+      </div>
+    </main>
+
+    <!-- Right panel -->
+    <aside class="p right">
+      <div class="ph"><span>속성 · Properties</span><span class="spacer"></span><span>▥</span></div>
+      <div class="body">
+        <div style="font-size:11px;color:var(--dim);margin-bottom:6px">선택됨: <b style="color:var(--cyan)">WALL-EXT / id 00482</b></div>
+
+        <div class="psec">
+          <div class="t">◇ 일반</div>
+          <div class="prop"><label>Layer</label><div class="v blue">A-WALL-EXT</div></div>
+          <div class="prop"><label>Color</label><div class="v"><span style="display:inline-block;width:10px;height:10px;background:#4ec9b0;vertical-align:middle;margin-right:4px"></span>ByLayer</div></div>
+          <div class="prop"><label>Linetype</label><div class="v">Continuous</div></div>
+          <div class="prop"><label>Lineweight</label><div class="v">0.50 mm</div></div>
+        </div>
+
+        <div class="psec">
+          <div class="t">📐 지오메트리</div>
+          <div class="prop"><label>Start X</label><div class="v">100.000</div></div>
+          <div class="prop"><label>Start Y</label><div class="v">80.000</div></div>
+          <div class="prop"><label>End X</label><div class="v">1,160.000</div></div>
+          <div class="prop"><label>End Y</label><div class="v">80.000</div></div>
+          <div class="prop"><label>Length</label><div class="v">53,000 mm</div></div>
+          <div class="prop"><label>Angle</label><div class="v">0°</div></div>
+          <div class="prop"><label>Width</label><div class="v">200 mm</div></div>
+          <div class="prop"><label>Height</label><div class="v">3,200 mm</div></div>
+          <div class="prop"><label>Material</label><div class="v blue">CON-REINF-200</div></div>
+        </div>
+
+        <div class="psec">
+          <div class="t">🏗 BIM 속성</div>
+          <div class="prop"><label>Element ID</label><div class="v">W-EXT-12F-N-001</div></div>
+          <div class="prop"><label>Fire Rating</label><div class="v">2-HR</div></div>
+          <div class="prop"><label>Load Bearing</label><div class="v">✓ Yes</div></div>
+          <div class="prop"><label>Thermal U</label><div class="v">0.24 W/m²K</div></div>
+          <div class="prop"><label>STC Rating</label><div class="v">STC 54</div></div>
+        </div>
+
+        <div class="psec">
+          <div class="t">📋 룸 스케줄 (12F)</div>
+          <div class="schedule">
+            <table>
+              <thead><tr><th>Room</th><th>Type</th><th style="text-align:right">m²</th><th style="text-align:right">Pax</th></tr></thead>
+              <tbody>
+                <tr><td>12-A</td><td>Office</td><td class="n">82.4</td><td class="n">1</td></tr>
+                <tr><td>12-B</td><td>Meeting</td><td class="n">34.6</td><td class="n">14</td></tr>
+                <tr><td>12-C</td><td>Focus</td><td class="n">18.2</td><td class="n">1</td></tr>
+                <tr><td>12-D</td><td>Open</td><td class="n">148.8</td><td class="n">42</td></tr>
+                <tr><td>12-E</td><td>Lounge</td><td class="n">52.4</td><td class="n">—</td></tr>
+                <tr><td>12-F</td><td>Exec</td><td class="n">96.2</td><td class="n">2</td></tr>
+                <tr><td>12-G</td><td>Meeting</td><td class="n">28.8</td><td class="n">10</td></tr>
+                <tr><td>12-H</td><td>Pantry</td><td class="n">22.4</td><td class="n">—</td></tr>
+                <tr><td>12-J</td><td>Collab</td><td class="n">64.8</td><td class="n">—</td></tr>
+                <tr style="border-top:1px solid var(--border);font-weight:700"><td colspan="2">Net Total</td><td class="n">548.6</td><td class="n">70</td></tr>
+                <tr><td colspan="2" style="color:var(--dim)">Gross (incl. core)</td><td class="n" style="color:var(--amber)">664.2</td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="status">
+    <span>◉ Model</span>
+    <span>⌗ Layout 1</span>
+    <span>⌗ Layout 2</span>
+    <span id="st-cur">X: 482.340  Y: 214.820  Z: 0.000</span>
+    <span id="st-cmd">OFFSET: Specify point on side to offset</span>
+    <span class="spacer"></span>
+    <span>SNAP</span><span>GRID</span><span>ORTHO</span><span>OTRACK</span><span>LWT</span>
+    <span><b>Drawing saved · 18s ago</b></span>
+  </div>
+</div>
+
+<script>
+// Pulse cursor coordinates
+let cx=482340,cy=214820;
+setInterval(()=>{
+  cx+=(Math.random()*200-100)|0;cy+=(Math.random()*200-100)|0;
+  const fx=cx.toLocaleString('en-US'),fy=cy.toLocaleString('en-US');
+  document.getElementById('cur').textContent=`X ${fx}  Y ${fy}`;
+  document.getElementById('st-cur').textContent=`X: ${(cx/1000).toFixed(3)}  Y: ${(cy/1000).toFixed(3)}  Z: 0.000`;
+},420);
+
+const CMDS=[
+  'OFFSET: Specify point on side to offset',
+  'TRIM: Select cutting edges...',
+  'DIMLINEAR: Specify second extension line origin',
+  'COPY: <Displacement>: Specify base point',
+  'HATCH: Select internal point',
+  'ROTATE: Specify rotation angle',
+  'EXTEND: Select object to extend',
+  'MIRROR: Specify first point of mirror line',
+];
+let ci=0;setInterval(()=>{ci=(ci+1)%CMDS.length;document.getElementById('st-cmd').textContent=CMDS[ci];},2000);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

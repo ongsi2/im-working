@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>LedgerPro ERP · 일반회계 · 전표입력</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#d8dce4;color:#1a1a1a;font-family:'맑은 고딕','Malgun Gothic','Segoe UI',sans-serif;font-size:12px;overflow:hidden}
+.app{display:grid;grid-template-rows:28px 30px 24px 1fr 20px;height:100vh}
+
+/* classic Korean ERP title bar */
+.tb{background:linear-gradient(180deg,#2050a0,#103070);color:#fff;display:flex;align-items:center;padding:0 8px;font-size:11.5px;gap:10px;font-weight:700}
+.tb .logo{color:#ffd060}
+.tb .user{margin-left:auto;font-weight:400;font-size:11px}
+
+.menu{background:#e8ecf4;border-bottom:1px solid #98a0b0;display:flex;align-items:center;padding:0 4px;font-size:12px}
+.menu .mi{padding:6px 12px;cursor:pointer;color:#1a1a1a}
+.menu .mi:hover{background:#c0cce0}
+.menu .mi u{text-decoration:underline}
+
+.tools{background:#e8ecf4;border-bottom:1px solid #98a0b0;display:flex;align-items:center;padding:2px;gap:1px;font-size:10.5px}
+.tb2{padding:2px 8px;background:#f4f6fa;border:1px solid #c0c8d4;color:#1a1a1a;display:flex;align-items:center;gap:3px;border-radius:2px;cursor:pointer}
+.tb2:hover{background:#fff}
+.tb2.a{background:#c8d8ee;border-color:#5080c0}
+.sep{width:1px;height:18px;background:#c0c8d4;margin:0 3px}
+
+.main{display:grid;grid-template-columns:180px 1fr 260px;overflow:hidden;background:#d8dce4}
+
+.sidemenu{background:#f8f9fb;border-right:1px solid #98a0b0;overflow-y:auto;font-size:11.5px}
+.sidemenu h4{background:#2050a0;color:#fff;padding:5px 8px;font-size:11px;font-weight:700}
+.sidemenu .grp{padding:3px 0;border-bottom:1px solid #e0e4ec}
+.sidemenu .gh{padding:4px 8px;color:#103070;font-weight:700;background:#e8ecf4;font-size:11px}
+.sidemenu .mi{padding:3px 8px 3px 22px;cursor:pointer;color:#1a1a1a;display:flex;justify-content:space-between}
+.sidemenu .mi:hover{background:#d0dcf0}
+.sidemenu .mi.a{background:#c0d0ec;font-weight:700;color:#103070}
+.sidemenu .mi .k{color:#808890;font-size:10px}
+
+.content{display:grid;grid-template-rows:auto auto 1fr auto;background:#eaeef4;overflow:hidden;padding:4px;gap:3px}
+
+.sheet-title{background:linear-gradient(180deg,#5080c0,#2050a0);color:#fff;padding:4px 10px;font-weight:700;font-size:12px;display:flex;align-items:center;gap:8px;border:1px solid #103070}
+.sheet-title .loc{margin-left:auto;font-weight:400;font-size:10.5px;color:#c0d0e8}
+
+/* header fields */
+.hdr-form{background:#fff;border:1px solid #98a0b0;padding:6px 8px;display:grid;grid-template-columns:repeat(8,auto);gap:6px 14px;align-items:center;font-size:11.5px}
+.hdr-form label{color:#103070;font-weight:700}
+.hdr-form input,.hdr-form select{border:1px solid #98a0b0;padding:2px 4px;font-size:11.5px;font-family:inherit;background:#fffbe6;height:21px}
+.hdr-form input[readonly]{background:#eef0f4}
+.hdr-form .v{display:inline-block;padding:2px 6px;border:1px solid #98a0b0;background:#fffbe6;min-width:80px;height:21px}
+.hdr-form .v.n{text-align:right;font-family:'Consolas',monospace}
+
+/* entry table */
+.entry-tbl{background:#fff;border:1px solid #98a0b0;overflow:auto}
+table.jv{border-collapse:collapse;width:100%;font-size:11.5px}
+table.jv th{background:linear-gradient(180deg,#e8ecf4,#c8d4e4);border:1px solid #98a0b0;padding:3px 5px;font-weight:700;color:#103070;text-align:center;font-size:11px;position:sticky;top:0;z-index:1}
+table.jv td{border:1px solid #c8cdd4;padding:2px 5px;height:22px;vertical-align:middle;background:#fff}
+table.jv td.n{text-align:right;font-family:'Consolas',monospace}
+table.jv td.c{text-align:center}
+table.jv tr.sel td{background:#fff4c8}
+table.jv tr.sel td.fcode{background:#ffd060;font-weight:700}
+table.jv tr:nth-child(even) td{background:#f6f8fb}
+table.jv tr:nth-child(even).sel td{background:#fff4c8}
+table.jv .dc-d{background:#ffe8e8 !important;color:#a02020;font-weight:700}
+table.jv .dc-c{background:#e8f0ff !important;color:#103070;font-weight:700}
+table.jv tfoot td{background:#e8ecf4 !important;font-weight:700;color:#103070;border-top:2px solid #103070;height:24px}
+.code-btn{display:inline-block;background:#e8ecf4;border:1px solid #98a0b0;padding:0 4px;margin-left:3px;cursor:pointer;font-size:10px}
+
+/* summary */
+.summary{background:#fff;border:1px solid #98a0b0;display:grid;grid-template-columns:repeat(6,1fr);font-size:11.5px}
+.summary .c{border-right:1px solid #c8cdd4;padding:4px 8px;display:flex;flex-direction:column;gap:2px}
+.summary .c:last-child{border-right:0}
+.summary .c .l{color:#103070;font-weight:700;font-size:10.5px}
+.summary .c .v{font-family:'Consolas',monospace;text-align:right;font-size:14px;font-weight:700;color:#1a1a1a}
+.summary .c.bal .v{color:#2060c0}
+.summary .c.err .v{color:#c01818}
+
+/* right panel */
+.right{background:#f8f9fb;border-left:1px solid #98a0b0;overflow-y:auto;padding:4px;display:flex;flex-direction:column;gap:4px}
+.pnl{background:#fff;border:1px solid #98a0b0}
+.pnl h5{background:linear-gradient(180deg,#e8ecf4,#c8d4e4);color:#103070;padding:3px 8px;font-size:11px;font-weight:700;border-bottom:1px solid #98a0b0;display:flex;align-items:center;gap:4px}
+.pnl h5 .cnt{margin-left:auto;background:#2050a0;color:#fff;padding:0 6px;border-radius:8px;font-size:10px}
+.pnl .body{padding:6px 8px;font-size:11px}
+
+/* recent entries */
+table.rec{width:100%;border-collapse:collapse;font-size:11px}
+table.rec th{background:#e8ecf4;color:#103070;padding:2px 4px;text-align:left;border-bottom:1px solid #98a0b0;font-size:10px}
+table.rec td{padding:2px 4px;border-bottom:1px solid #eaeef4}
+table.rec td.n{text-align:right;font-family:'Consolas',monospace;color:#103070}
+table.rec tr:hover td{background:#f6f8fb}
+
+/* approval */
+.appr{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:6px}
+.appr .s{border:1px solid #98a0b0;padding:4px;text-align:center;font-size:10px;background:#f8f9fb;position:relative;min-height:54px}
+.appr .s .r{font-weight:700;color:#103070;font-size:10px;margin-bottom:2px}
+.appr .s .n{font-size:11px}
+.appr .s .stamp{position:absolute;inset:auto 0 2px 0;font-size:9px;color:#c01818;font-weight:700}
+.appr .s.done{background:#e8f5e8}
+.appr .s.done::after{content:'승인';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-15deg);color:rgba(192,24,24,0.5);font-size:22px;font-weight:900;border:2px solid rgba(192,24,24,0.5);padding:2px 8px;border-radius:4px;letter-spacing:2px;font-family:'맑은 고딕'}
+.appr .s.pending{background:#fff8e0}
+.appr .s.current{background:#e8f0ff;border:2px solid #2060c0;font-weight:700}
+
+/* status */
+.sbar{background:#e8ecf4;border-top:1px solid #98a0b0;display:flex;align-items:center;padding:0 10px;font-size:10.5px;gap:16px;color:#103070}
+.sbar .on{color:#207040}
+.sbar .w{color:#c07020}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="table" data-title="월마감 처리 — SAP" data-favicon="🏢">
+<div class="app">
+  <div class="tb">
+    <span class="logo">◈ LedgerPro ERP 12.4</span>
+    <span>일반회계 &gt; 전표입력 &gt; 분개전표</span>
+    <span class="user">(주)노바필드 [본사] · 2024 회계기 · 사용자: 김영희 (FIN_ACCT) · 접속시간 02:14:38</span>
+  </div>
+
+  <div class="menu">
+    <div class="mi"><u>파</u>일(F)</div>
+    <div class="mi"><u>편</u>집(E)</div>
+    <div class="mi"><u>조</u>회(V)</div>
+    <div class="mi"><u>기</u>능(T)</div>
+    <div class="mi"><u>보</u>고서(R)</div>
+    <div class="mi"><u>결</u>산(C)</div>
+    <div class="mi"><u>마</u>스터(M)</div>
+    <div class="mi"><u>도</u>움말(H)</div>
+    <div style="margin-left:auto;padding:4px 8px;color:#808890;font-size:10.5px">F1 도움말 · F2 조회 · F3 코드검색 · F8 저장 · F10 전표복사</div>
+  </div>
+
+  <div class="tools">
+    <div class="tb2">📄 신규(F4)</div>
+    <div class="tb2 a">💾 저장(F8)</div>
+    <div class="tb2">🔍 조회(F2)</div>
+    <div class="tb2">📋 복사(F10)</div>
+    <div class="tb2">✗ 취소</div>
+    <div class="sep"></div>
+    <div class="tb2">⇅ 차대바꿈</div>
+    <div class="tb2">✎ 분개장</div>
+    <div class="tb2">📑 원장조회</div>
+    <div class="tb2">📊 시산표</div>
+    <div class="sep"></div>
+    <div class="tb2">▶ 결재상신</div>
+    <div class="tb2">🖨 출력</div>
+    <div style="margin-left:auto;padding:3px 8px;color:#103070;font-size:10.5px">회계월: <b>2024 / 09</b> &nbsp;|&nbsp; 전표번호: <b style="color:#c01818">9월-0428호</b></div>
+  </div>
+
+  <div class="main">
+    <div class="sidemenu">
+      <h4>📂 업무 메뉴</h4>
+      <div class="grp">
+        <div class="gh">◆ 일반회계</div>
+        <div class="mi a">· 전표입력 <span class="k">F3</span></div>
+        <div class="mi">· 전표승인 <span class="k">F4</span></div>
+        <div class="mi">· 분개장 조회</div>
+        <div class="mi">· 총계정원장</div>
+        <div class="mi">· 거래처원장</div>
+        <div class="mi">· 시산표</div>
+        <div class="mi">· 재무제표</div>
+      </div>
+      <div class="grp">
+        <div class="gh">◆ 고정자산</div>
+        <div class="mi">· 자산등록</div>
+        <div class="mi">· 감가상각</div>
+        <div class="mi">· 자산처분</div>
+      </div>
+      <div class="grp">
+        <div class="gh">◆ 부가세관리</div>
+        <div class="mi">· 매입매출장</div>
+        <div class="mi">· 부가세신고</div>
+        <div class="mi">· 세금계산서</div>
+      </div>
+      <div class="grp">
+        <div class="gh">◆ 원가회계</div>
+        <div class="mi">· 원가배부</div>
+        <div class="mi">· 제품별원가</div>
+      </div>
+      <div class="grp">
+        <div class="gh">◆ 자금관리</div>
+        <div class="mi">· 자금수지</div>
+        <div class="mi">· 어음관리</div>
+      </div>
+      <div class="grp">
+        <div class="gh">◆ 결산</div>
+        <div class="mi">· 결산자동분개</div>
+        <div class="mi">· 이익잉여금처분</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="sheet-title">■ 분개전표 입력 [AR·매출세금계산서]
+        <span class="loc">본사 (1000) · 회계단위 KRW · 전표유형 일반(GL) · 수정불가 전표는 결재완료된 항목</span>
+      </div>
+
+      <div class="hdr-form">
+        <label>전표일자</label><span class="v">2024-09-28</span>
+        <label>전표번호</label><span class="v">GL-2024-0428</span>
+        <label>유형</label><span class="v">대체 [3]</span>
+        <label>증빙구분</label><span class="v">세금계산서 [11]</span>
+        <label>거래처</label><span class="v" style="min-width:160px">(주)대한상사 (00248)</span>
+        <label>사업장</label><span class="v">본사 (100)</span>
+        <label>프로젝트</label><span class="v">PJ-NVF-2409</span>
+        <label>관리자</label><span class="v">김영희</label>
+      </div>
+
+      <div class="entry-tbl">
+        <table class="jv">
+          <thead><tr>
+            <th style="width:28px">No</th>
+            <th style="width:60px">구분</th>
+            <th style="width:80px">계정코드</th>
+            <th>계정과목</th>
+            <th style="width:110px">거래처</th>
+            <th style="width:80px">부서</th>
+            <th style="width:120px">차변(Debit)</th>
+            <th style="width:120px">대변(Credit)</th>
+            <th>적요</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="c">1</td><td class="c dc-d">차변</td><td class="c fcode">10800</td><td>외상매출금</td><td>(주)대한상사</td><td>영업1팀</td><td class="n">132,000,000</td><td class="n"></td><td>9월 정기 납품분 세금계산서</td></tr>
+            <tr><td class="c">2</td><td class="c dc-c">대변</td><td class="c">25500</td><td>부가세예수금</td><td>(주)대한상사</td><td>영업1팀</td><td class="n"></td><td class="n">12,000,000</td><td>VAT 10% (공급가액 120,000,000)</td></tr>
+            <tr><td class="c">3</td><td class="c dc-c">대변</td><td class="c">40100</td><td>제품매출</td><td>(주)대한상사</td><td>영업1팀</td><td class="n"></td><td class="n">120,000,000</td><td>제품코드 A-2041 · 1,200EA @ 100,000</td></tr>
+            <tr class="sel"><td class="c">4</td><td class="c dc-d">차변</td><td class="c fcode">83300</td><td>지급수수료</td><td>(주)한국카드</td><td>재무팀</td><td class="n">280,000</td><td class="n"></td><td>카드 가맹점 수수료 (2.1%)<span style="background:#ffd060;padding:0 4px;margin-left:4px">▌</span></td></tr>
+            <tr><td class="c">5</td><td class="c dc-c">대변</td><td class="c">10300</td><td>보통예금</td><td>국민은행</td><td>재무팀</td><td class="n"></td><td class="n">280,000</td><td>계좌 301-82-4728 · 자동이체</td></tr>
+            <tr><td class="c">6</td><td class="c dc-d">차변</td><td class="c">51100</td><td>복리후생비</td><td>(주)행복다이닝</td><td>영업1팀</td><td class="n">842,000</td><td class="n"></td><td>9/25 영업부 회식 (12인)</td></tr>
+            <tr><td class="c">7</td><td class="c dc-d">차변</td><td class="c">13500</td><td>부가세대급금</td><td>(주)행복다이닝</td><td>영업1팀</td><td class="n">84,200</td><td class="n"></td><td>VAT (공급가액 842,000)</td></tr>
+            <tr><td class="c">8</td><td class="c dc-c">대변</td><td class="c">25300</td><td>미지급금</td><td>비씨카드</td><td>영업1팀</td><td class="n"></td><td class="n">926,200</td><td>법인카드 9월분</td></tr>
+            <tr><td class="c">9</td><td class="c dc-d">차변</td><td class="c">82200</td><td>차량유지비</td><td>SK에너지</td><td>물류팀</td><td class="n">184,500</td><td class="n"></td><td>영업차량 주유 (78서4208)</td></tr>
+            <tr><td class="c">10</td><td class="c dc-d">차변</td><td class="c">13500</td><td>부가세대급금</td><td>SK에너지</td><td>물류팀</td><td class="n">18,450</td><td class="n"></td><td>VAT</td></tr>
+            <tr><td class="c">11</td><td class="c dc-c">대변</td><td class="c">10100</td><td>현금</td><td></td><td>물류팀</td><td class="n"></td><td class="n">202,950</td><td>현금 결제</td></tr>
+            <tr><td class="c">12</td><td class="c dc-d">차변</td><td class="c">80100</td><td>급여</td><td></td><td>인사팀</td><td class="n">18,420,000</td><td class="n"></td><td>9월 급여 - 영업부 4명</td></tr>
+            <tr><td class="c">13</td><td class="c dc-c">대변</td><td class="c">25400</td><td>예수금 (소득세)</td><td>국세청</td><td>인사팀</td><td class="n"></td><td class="n">742,800</td><td>근로소득세</td></tr>
+            <tr><td class="c">14</td><td class="c dc-c">대변</td><td class="c">25401</td><td>예수금 (4대보험)</td><td>국민건강보험공단</td><td>인사팀</td><td class="n"></td><td class="n">1,482,400</td><td>건강·국민·고용·산재</td></tr>
+            <tr><td class="c">15</td><td class="c dc-c">대변</td><td class="c">10300</td><td>보통예금</td><td>국민은행</td><td>인사팀</td><td class="n"></td><td class="n">16,194,800</td><td>급여계좌 자동이체</td></tr>
+            <tr><td class="c" style="color:#a0a8b0">16</td><td class="c" style="color:#a0a8b0">··</td><td></td><td></td><td></td><td></td><td class="n"></td><td class="n"></td><td style="color:#a0a8b0;font-style:italic">— 입력하려면 Enter</td></tr>
+          </tbody>
+          <tfoot><tr>
+            <td colspan="6" style="text-align:right;padding-right:10px">합계 (Total)</td>
+            <td class="n">151,829,150</td>
+            <td class="n">151,086,350</td>
+            <td style="color:#c01818">⚠ 차대불일치: 742,800 (대변부족)</td>
+          </tr></tfoot>
+        </table>
+      </div>
+
+      <div class="summary">
+        <div class="c"><span class="l">차변합계</span><span class="v">151,829,150</span></div>
+        <div class="c"><span class="l">대변합계</span><span class="v">151,086,350</span></div>
+        <div class="c err"><span class="l">차대차액</span><span class="v">742,800</span></div>
+        <div class="c"><span class="l">라인수</span><span class="v">15</span></div>
+        <div class="c"><span class="l">세액합계</span><span class="v">12,102,650</span></div>
+        <div class="c bal"><span class="l">전표상태</span><span class="v" style="font-size:12px">◆ 편집중</span></div>
+      </div>
+
+      <div class="appr">
+        <div class="s done"><div class="r">작성자</div><div class="n">김영희</div><div class="stamp">09/28 02:14</div></div>
+        <div class="s current"><div class="r">확인자</div><div class="n">박주임</div><div class="stamp">대기중</div></div>
+        <div class="s pending"><div class="r">팀장</div><div class="n">이대리</div><div class="stamp">-</div></div>
+        <div class="s pending"><div class="r">회계담당</div><div class="n">정과장</div><div class="stamp">-</div></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="pnl">
+        <h5>📚 계정코드 조회 <span class="cnt">833</span></h5>
+        <div class="body" style="padding:0;max-height:180px;overflow:auto">
+          <table class="rec">
+            <tr><th style="width:50px">코드</th><th>계정과목</th><th style="width:30px;text-align:center">유형</th></tr>
+            <tr><td>83300</td><td><b style="background:#ffd060">지급수수료</b></td><td style="text-align:center">비용</td></tr>
+            <tr><td>83100</td><td>보험료</td><td style="text-align:center">비용</td></tr>
+            <tr><td>83200</td><td>여비교통비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>83400</td><td>통신비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>83500</td><td>도서인쇄비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>83600</td><td>소모품비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>83700</td><td>광고선전비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>83800</td><td>교육훈련비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>84100</td><td>회의비</td><td style="text-align:center">비용</td></tr>
+            <tr><td>84200</td><td>접대비</td><td style="text-align:center">비용</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>🕘 최근 작성전표</h5>
+        <div class="body" style="padding:0">
+          <table class="rec">
+            <tr><th>번호</th><th>적요</th><th class="n" style="text-align:right">금액</th></tr>
+            <tr><td>GL-0427</td><td>(주)서진 매출</td><td class="n">88,000,000</td></tr>
+            <tr><td>GL-0426</td><td>9월 임차료</td><td class="n">4,200,000</td></tr>
+            <tr><td>GL-0425</td><td>법인카드 9월 결제</td><td class="n">3,482,140</td></tr>
+            <tr><td>GL-0424</td><td>(주)포스 매입세금계산서</td><td class="n">18,920,000</td></tr>
+            <tr><td>GL-0423</td><td>전기료 9월분</td><td class="n">1,248,000</td></tr>
+            <tr><td>GL-0422</td><td>(주)모아 외상매출 회수</td><td class="n">42,000,000</td></tr>
+            <tr><td>GL-0421</td><td>(주)대한상사 계약금 수취</td><td class="n">10,000,000</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>📊 당월 누계</h5>
+        <div class="body" style="padding:8px">
+          <table class="rec">
+            <tr><td>매출액</td><td class="n" style="color:#2060c0"><b>2,842,180,000</b></td></tr>
+            <tr><td>매출원가</td><td class="n">1,714,280,000</td></tr>
+            <tr><td>판관비</td><td class="n">428,140,000</td></tr>
+            <tr><td>영업이익</td><td class="n" style="color:#207040"><b>699,760,000</b></td></tr>
+            <tr><td>외상매출금잔액</td><td class="n">1,428,920,000</td></tr>
+            <tr><td>외상매입금잔액</td><td class="n">842,180,000</td></tr>
+            <tr><td>현금잔액</td><td class="n">18,420,800</td></tr>
+            <tr><td>보통예금잔액</td><td class="n">2,148,920,180</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>⚠ 검증 오류</h5>
+        <div class="body">
+          <div style="color:#c01818;font-weight:700;margin-bottom:3px">● 차대차액 742,800원 불일치</div>
+          <div style="color:#c07020">● 증빙첨부 누락 (라인4)</div>
+          <div style="color:#c07020">● 프로젝트코드 미입력 (라인9-11)</div>
+          <div style="color:#808890">● 부가세율 재검토 권장 (라인7)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <span class="on">● DB 연결정상 (ORA-PROD01)</span>
+    <span>사용자 kim_yh · 세션 sk-a842f19e</span>
+    <span>회계년도 2024</span>
+    <span>통화 KRW</span>
+    <span class="w">⚠ 미승인 전표 14건</span>
+    <span style="margin-left:auto">CAPS · NUM · 한/영 한국어</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

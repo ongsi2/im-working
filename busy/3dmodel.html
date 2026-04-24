@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>MeshForge · MechKey_v24.blend</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#2a2a2a;color:#c8c8c8;font-family:-apple-system,'Segoe UI',sans-serif;font-size:11px;overflow:hidden}
+.app{display:grid;grid-template-rows:24px 28px 1fr 22px;height:100vh}
+.tb{background:#1d1d1d;color:#c8c8c8;display:flex;align-items:center;padding:0 10px;font-size:11px;gap:14px;border-bottom:1px solid #000}
+.tb .lg{font-weight:800;color:#ff8000;letter-spacing:1px}
+.wb{background:#3a3a3a;border-bottom:1px solid #000;display:flex;align-items:center;padding:0 8px;gap:2px;font-size:11px}
+.wb-tab{padding:4px 14px;border-right:1px solid #2a2a2a;color:#aaa;cursor:pointer}
+.wb-tab.a{background:#2a2a2a;color:#fff}
+.wb-mode{padding:3px 12px;background:#3a3a3a;border:1px solid #1a1a1a;margin-left:10px;border-radius:2px}
+.wb-mode.a{background:#1168c7;color:#fff;border-color:#0d4a8f}
+
+.main{display:grid;grid-template-columns:60px 1fr 260px;grid-template-rows:1fr;overflow:hidden}
+.toolb{background:#1d1d1d;border-right:1px solid #000;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px;overflow-y:auto}
+.tbtn{width:44px;height:36px;display:flex;align-items:center;justify-content:center;color:#c8c8c8;font-size:16px;border-radius:3px;cursor:pointer;border:1px solid transparent}
+.tbtn:hover{background:#2a2a2a}
+.tbtn.a{background:#1168c7;color:#fff;border-color:#0d4a8f}
+.tbtn .lb{font-size:8px;display:block;margin-top:-2px;color:#888}
+.sep-h{width:30px;height:1px;background:#000;margin:3px 0}
+
+.vp{background:#3d3d3d;position:relative;overflow:hidden}
+.vp-hdr{position:absolute;top:0;left:0;right:0;background:rgba(29,29,29,0.9);display:flex;align-items:center;padding:3px 8px;gap:8px;font-size:10.5px;z-index:5;border-bottom:1px solid #000}
+.vp-hdr .b{padding:2px 7px;background:#4a4a4a;border-radius:2px;cursor:pointer}
+.vp-hdr .b.a{background:#1168c7;color:#fff}
+.stats{position:absolute;top:34px;right:8px;font-family:'Consolas',monospace;font-size:10px;color:#aaa;text-align:right;line-height:1.4;z-index:4;background:rgba(29,29,29,0.7);padding:4px 8px;border-radius:2px}
+.stats b{color:#fff}
+
+.grid-bg{position:absolute;inset:0;background:
+  radial-gradient(ellipse at center,#555 0%,#2a2a2a 75%);
+}
+.grid-bg::before{content:'';position:absolute;inset:0;background-image:
+  linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:40px 40px;transform:perspective(800px) rotateX(55deg) translateY(100px);transform-origin:center bottom}
+.grid-bg::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent,#4a7dba 40%,#4a7dba 80%,transparent);opacity:0.5}
+
+.axes{position:absolute;bottom:12px;left:12px;width:60px;height:60px;z-index:3}
+.axes svg{width:100%;height:100%}
+
+.gizmo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6}
+.gizmo .ring{position:absolute;border-radius:50%;border:2px solid;left:50%;top:50%;transform:translate(-50%,-50%)}
+.gizmo .rx{width:280px;height:280px;border-color:#ff4040}
+.gizmo .ry{width:280px;height:280px;border-color:#4cff4c;transform:translate(-50%,-50%) rotateY(70deg)}
+.gizmo .rz{width:280px;height:280px;border-color:#4080ff;transform:translate(-50%,-50%) rotateX(70deg)}
+
+/* isometric-ish keyboard */
+.kb{position:absolute;top:50%;left:50%;transform:translate(-50%,-42%) rotateX(58deg) rotateZ(-30deg);transform-style:preserve-3d;z-index:5}
+.kb .plate{position:absolute;width:520px;height:200px;left:-260px;top:-100px;background:linear-gradient(135deg,#2d2d35 0%,#1a1a20 100%);border:1px solid #555;border-radius:8px;box-shadow:0 20px 40px rgba(0,0,0,0.5)}
+.kb .row{position:absolute;display:flex;gap:6px;left:14px}
+.kb .k{width:34px;height:34px;background:linear-gradient(180deg,#4a4a52,#2e2e36);border:1px solid #5a5a62;border-radius:4px;box-shadow:0 3px 0 #1a1a20,inset 0 1px 0 rgba(255,255,255,0.15);color:#aaa;font-size:8px;padding:2px 3px;position:relative}
+.kb .k.sel{background:linear-gradient(180deg,#ff9540,#d47318);border-color:#ff8000;box-shadow:0 3px 0 #8f4800,inset 0 1px 0 rgba(255,255,255,0.3),0 0 12px rgba(255,128,0,0.6);color:#fff}
+.kb .k.w{width:52px}
+.kb .k.xl{width:68px}
+.kb .k.sp{width:190px}
+.kb .k.act{background:linear-gradient(180deg,#6e7078,#3e4048)}
+
+.edges{position:absolute;top:50%;left:50%;width:2px;height:2px;z-index:7;pointer-events:none}
+.edges .v{position:absolute;width:6px;height:6px;background:#ff8000;border:1px solid #000;border-radius:1px;transform:translate(-50%,-50%)}
+.edges .v.sel{background:#fff;border-color:#ff8000;width:8px;height:8px}
+
+.props{background:#2a2a2a;border-left:1px solid #000;overflow-y:auto;font-size:11px;display:grid;grid-template-rows:auto 1fr}
+.otab{background:#3a3a3a;display:flex;border-bottom:1px solid #000;overflow-x:auto}
+.otab .o{padding:6px 8px;font-size:11px;color:#aaa;border-right:1px solid #2a2a2a;cursor:pointer;flex-shrink:0}
+.otab .o.a{background:#2a2a2a;color:#fff;border-top:2px solid #ff8000;margin-top:-1px;padding-top:5px}
+
+.outliner{background:#252525;border-bottom:1px solid #000;padding:4px 8px;max-height:240px;overflow-y:auto}
+.outliner h4{color:#aaa;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.tree{font-family:'Consolas',monospace;font-size:11px;line-height:1.55}
+.tree .n{color:#c8c8c8;cursor:pointer;padding:1px 4px;display:flex;gap:4px;align-items:center}
+.tree .n:hover{background:#353535}
+.tree .n.sel{background:#1168c7;color:#fff}
+.tree .ic{color:#888;width:14px}
+.tree .sub{padding-left:14px}
+
+.pnl{padding:8px 10px;border-bottom:1px solid #1a1a1a}
+.pnl h5{color:#fff;font-size:11px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pnl h5::before{content:'▼';font-size:7px;color:#888}
+.row{display:grid;grid-template-columns:68px 1fr;gap:4px;margin-bottom:3px;align-items:center}
+.row .k{color:#aaa;font-size:10.5px}
+.xyz{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
+.xyz .v{background:#454545;padding:3px 6px;font-family:'Consolas',monospace;font-size:10.5px;border-radius:2px;text-align:center;border-left:3px solid #ff4040}
+.xyz .v.y{border-left-color:#4cff4c}
+.xyz .v.z{border-left-color:#4080ff}
+.slider{background:#454545;height:18px;border-radius:2px;position:relative;font-size:10.5px;padding:2px 6px;font-family:'Consolas',monospace;overflow:hidden}
+.slider::before{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--p,40%);background:#5a5a5a}
+.slider span{position:relative;z-index:1}
+.chk{display:flex;gap:4px;align-items:center;font-size:10.5px;color:#aaa}
+.chk input{accent-color:#ff8000}
+
+.mod-list{font-size:10.5px}
+.mod{background:#353535;padding:5px 8px;margin-bottom:2px;border-left:3px solid #8080ff;display:flex;align-items:center;gap:6px;border-radius:2px}
+.mod.m{border-left-color:#ff6080}
+.mod.a{border-left-color:#60c060}
+.mod .ic{width:14px;color:#aaa}
+.mod .n{color:#fff}
+.mod .r{margin-left:auto;color:#888;font-size:9px}
+
+.status{background:#1d1d1d;color:#888;display:flex;align-items:center;padding:0 10px;font-size:10px;gap:16px;font-family:'Consolas',monospace;border-top:1px solid #000}
+.status .on{color:#4caf50}
+.status .w{color:#ff8000}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="tool" data-title="render_scene_04.blend" data-favicon="🧊">
+<div class="app">
+  <div class="tb">
+    <span class="lg">◆ MeshForge</span>
+    <span>File &nbsp; Edit &nbsp; Render &nbsp; Window &nbsp; Help</span>
+    <span style="margin-left:14px">MechKey_v24.blend</span>
+    <span style="color:#ff8000">● 편집됨 &nbsp;·&nbsp; 자동저장 34s 전</span>
+    <span style="margin-left:auto">Scene: Main &nbsp;·&nbsp; View Layer: Render</span>
+  </div>
+
+  <div class="wb">
+    <div class="wb-tab">Layout</div>
+    <div class="wb-tab a">Modeling</div>
+    <div class="wb-tab">Sculpt</div>
+    <div class="wb-tab">UV Edit</div>
+    <div class="wb-tab">Shading</div>
+    <div class="wb-tab">Animation</div>
+    <div class="wb-tab">Rendering</div>
+    <div class="wb-tab">Scripting</div>
+    <div class="wb-mode a">✎ Edit Mode</div>
+    <div class="wb-mode">◼ Face</div>
+    <div class="wb-mode">／ Edge</div>
+    <div class="wb-mode a" style="background:#1168c7">• Vertex</div>
+    <span style="margin-left:auto;color:#888">Global · Median · ▣ Snap 1.0</span>
+  </div>
+
+  <div class="main">
+    <div class="toolb">
+      <div class="tbtn">⌖<span class="lb">Sel</span></div>
+      <div class="tbtn a">↔<span class="lb">Move</span></div>
+      <div class="tbtn">⟳<span class="lb">Rot</span></div>
+      <div class="tbtn">⊙<span class="lb">Scale</span></div>
+      <div class="sep-h"></div>
+      <div class="tbtn">✚<span class="lb">Extr</span></div>
+      <div class="tbtn">⊕<span class="lb">Inset</span></div>
+      <div class="tbtn">⬚<span class="lb">Bevel</span></div>
+      <div class="tbtn">✂<span class="lb">Loop</span></div>
+      <div class="tbtn">⬗<span class="lb">Knife</span></div>
+      <div class="sep-h"></div>
+      <div class="tbtn">◌<span class="lb">Slide</span></div>
+      <div class="tbtn">▦<span class="lb">Grid</span></div>
+      <div class="tbtn">✎<span class="lb">Meas</span></div>
+      <div class="sep-h"></div>
+      <div class="tbtn" style="color:#ff8000">●<span class="lb">Note</span></div>
+    </div>
+
+    <div class="vp">
+      <div class="vp-hdr">
+        <span>View</span><span>Select</span><span>Mesh</span><span>Vertex</span><span>Edge</span><span>Face</span>
+        <span class="b a">◨ Wire</span>
+        <span class="b">◨ Solid</span>
+        <span class="b">◨ Material</span>
+        <span class="b">◨ Rendered</span>
+        <span style="margin-left:auto;color:#888">User Persp · 55mm · (-8.4, -12.2, 6.8)</span>
+      </div>
+
+      <div class="stats">
+        Verts <b>4 / 18,248</b><br>
+        Edges <b>6 / 36,420</b><br>
+        Faces <b>0 / 18,172</b><br>
+        Tris <b>36,344</b><br>
+        Objects <b>2 / 84</b><br>
+        Memory <b>842 MB</b><br>
+        FPS <b style="color:#4caf50">60.0</b>
+      </div>
+
+      <div class="grid-bg"></div>
+
+      <div class="kb">
+        <div class="plate">
+          <div class="row" style="top:22px"><div class="k">Esc</div><div class="k">F1</div><div class="k">F2</div><div class="k">F3</div><div class="k">F4</div><div class="k">F5</div><div class="k">F6</div><div class="k">F7</div><div class="k">F8</div><div class="k">F9</div><div class="k">F10</div><div class="k">F11</div><div class="k">F12</div></div>
+          <div class="row" style="top:60px"><div class="k">~</div><div class="k">1</div><div class="k">2</div><div class="k">3</div><div class="k">4</div><div class="k">5</div><div class="k">6</div><div class="k">7</div><div class="k">8</div><div class="k">9</div><div class="k">0</div><div class="k">-</div><div class="k">=</div><div class="k w">⌫</div></div>
+          <div class="row" style="top:98px"><div class="k w">Tab</div><div class="k">Q</div><div class="k">W</div><div class="k sel">E</div><div class="k">R</div><div class="k">T</div><div class="k">Y</div><div class="k">U</div><div class="k">I</div><div class="k">O</div><div class="k">P</div><div class="k">[</div><div class="k">]</div><div class="k">\</div></div>
+          <div class="row" style="top:136px"><div class="k xl">Caps</div><div class="k">A</div><div class="k">S</div><div class="k">D</div><div class="k">F</div><div class="k">G</div><div class="k">H</div><div class="k">J</div><div class="k">K</div><div class="k">L</div><div class="k">;</div><div class="k">'</div><div class="k w">⏎</div></div>
+          <div class="row" style="top:174px"><div class="k xl">⇧</div><div class="k">Z</div><div class="k">X</div><div class="k">C</div><div class="k">V</div><div class="k">B</div><div class="k">N</div><div class="k">M</div><div class="k">,</div><div class="k">.</div><div class="k">/</div><div class="k xl">⇧</div></div>
+        </div>
+      </div>
+
+      <div class="axes"><svg viewBox="0 0 60 60">
+        <line x1="30" y1="40" x2="50" y2="48" stroke="#ff4040" stroke-width="2"/><text x="52" y="52" fill="#ff4040" font-size="10" font-family="monospace">X</text>
+        <line x1="30" y1="40" x2="10" y2="48" stroke="#4cff4c" stroke-width="2"/><text x="3" y="52" fill="#4cff4c" font-size="10" font-family="monospace">Y</text>
+        <line x1="30" y1="40" x2="30" y2="10" stroke="#4080ff" stroke-width="2"/><text x="32" y="12" fill="#4080ff" font-size="10" font-family="monospace">Z</text>
+        <circle cx="30" cy="40" r="3" fill="#fff"/>
+      </svg></div>
+    </div>
+
+    <div class="props">
+      <div class="otab">
+        <div class="o">▣</div><div class="o">⊡</div><div class="o a">⚙ Obj</div><div class="o">◎ Mod</div><div class="o">◫ Mat</div><div class="o">⌯ Data</div><div class="o">⌚ Anim</div>
+      </div>
+
+      <div style="overflow-y:auto">
+      <div class="outliner">
+        <h4>◩ Outliner</h4>
+        <div class="tree">
+          <div class="n"><span class="ic">▾</span><span>🎬</span> Scene Collection</div>
+          <div class="sub">
+            <div class="n"><span class="ic">▾</span><span>📦</span> MechKey_Assembly</div>
+            <div class="sub">
+              <div class="n sel"><span class="ic">▸</span><span>▦</span> Keycap_E_SA</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> Keycap_Alpha.028</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> Keycap_Mod.012</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> Switch_MX_x84</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> Plate_Alu_5mm</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> PCB_Hotswap</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> Case_Top</div>
+              <div class="n"><span class="ic">▸</span><span>▦</span> Case_Bottom</div>
+            </div>
+            <div class="n"><span class="ic">▸</span><span>💡</span> Key_Light</div>
+            <div class="n"><span class="ic">▸</span><span>💡</span> Rim_Area</div>
+            <div class="n"><span class="ic">▸</span><span>📷</span> Camera_Hero</div>
+            <div class="n"><span class="ic">▸</span><span>🌍</span> HDRI_Studio</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>⚙ &nbsp;Keycap_E_SA</h5>
+        <div class="row"><div class="k">Location</div><div class="xyz"><div class="v">-1.248</div><div class="v y">0.642</div><div class="v z">0.823</div></div></div>
+        <div class="row"><div class="k">Rotation</div><div class="xyz"><div class="v">0.00°</div><div class="v y">0.00°</div><div class="v z">-12.5°</div></div></div>
+        <div class="row"><div class="k">Scale</div><div class="xyz"><div class="v">1.000</div><div class="v y">1.000</div><div class="v z">1.000</div></div></div>
+        <div class="row"><div class="k">Dimensions</div><div class="xyz"><div class="v">18.05</div><div class="v y">18.05</div><div class="v z">11.42</div></div></div>
+      </div>
+
+      <div class="pnl">
+        <h5>◎ &nbsp;Modifiers (4)</h5>
+        <div class="mod-list">
+          <div class="mod"><span class="ic">◫</span><span class="n">Mirror</span><span class="r">X axis</span></div>
+          <div class="mod m"><span class="ic">⊕</span><span class="n">Subdivision Surface</span><span class="r">Viewport 2 · Render 3</span></div>
+          <div class="mod"><span class="ic">⬚</span><span class="n">Bevel</span><span class="r">Width 0.28 · Seg 2</span></div>
+          <div class="mod a"><span class="ic">✎</span><span class="n">Solidify</span><span class="r">Thick 0.35</span></div>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <h5>◫ &nbsp;Material: <span style="color:#ff8000">PBT_DyeSub</span></h5>
+        <div class="row"><div class="k">Base Color</div><div class="slider" style="--p:28%"><span>#4A4D52 (28%)</span></div></div>
+        <div class="row"><div class="k">Metallic</div><div class="slider" style="--p:2%"><span>0.020</span></div></div>
+        <div class="row"><div class="k">Roughness</div><div class="slider" style="--p:68%"><span>0.680</span></div></div>
+        <div class="row"><div class="k">Subsurface</div><div class="slider" style="--p:12%"><span>0.120 · PBT hue</span></div></div>
+        <div class="row"><div class="k">Normal</div><div class="slider" style="--p:45%"><span>PBT_micro_texture.exr</span></div></div>
+        <div class="row"><div class="k">Displacement</div><div class="slider" style="--p:8%"><span>0.08mm</span></div></div>
+      </div>
+
+      <div class="pnl">
+        <h5>⌯ &nbsp;Mesh Data</h5>
+        <div class="row"><div class="k">UV Maps</div><div class="slider"><span>UVMap + Lightmap</span></div></div>
+        <div class="row"><div class="k">Shape Keys</div><div class="slider"><span>3 keys · Press_anim</span></div></div>
+        <div class="row"><div class="k">Vertex Groups</div><div class="slider"><span>4 groups</span></div></div>
+        <div class="chk" style="margin-top:6px"><input type="checkbox" checked> Shade Smooth · Auto 30°</div>
+        <div class="chk"><input type="checkbox" checked> Crease edges (16)</div>
+        <div class="chk"><input type="checkbox"> Apply on export</div>
+      </div>
+
+      <div class="pnl">
+        <h5>⌚ &nbsp;Render: Cycles · GPU</h5>
+        <div class="row"><div class="k">Samples</div><div class="slider" style="--p:52%"><span>256 · Denoise OptiX</span></div></div>
+        <div class="row"><div class="k">Resolution</div><div class="slider"><span>3840 × 2160 · 100%</span></div></div>
+        <div class="row"><div class="k">Frames</div><div class="slider"><span>1 → 240 · 24 fps</span></div></div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="on">● GPU: RTX A5000 · 16.2 GB / 24 GB</span>
+    <span>VRAM <span style="color:#8bc34a">●●●●●●○○</span> 67%</span>
+    <span>Tris 1.24M</span>
+    <span>2 verts selected · median (-1.148, 0.642, 0.823)</span>
+    <span class="w">⚠ Non-manifold: 4 edges on Case_Top</span>
+    <span style="margin-left:auto">Render queue 1/12 · ETA 38m · Frame 108/240</span>
+    <span>Blender v4.2.1</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

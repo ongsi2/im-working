@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>SentinelSOC · Threat Operations</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#05060a;color:#c8d4e0;font-family:'Consolas','JetBrains Mono',monospace;font-size:11.5px;overflow:hidden}
+.app{display:grid;grid-template-rows:30px 1fr 22px;height:100vh}
+.tb{background:linear-gradient(180deg,#0a0e18,#05060a);border-bottom:1px solid #1a2540;display:flex;align-items:center;padding:0 12px;font-size:11px;gap:14px;color:#8ea0b8}
+.tb b{color:#ff3860;font-weight:800;letter-spacing:2px}
+.tb .sev{padding:2px 8px;background:#c4102a;color:#fff;font-weight:800;letter-spacing:1px;animation:bl 1.5s infinite}
+@keyframes bl{50%{opacity:0.6}}
+
+.main{display:grid;grid-template-columns:1fr 1.4fr 1fr;grid-template-rows:auto 1fr;gap:1px;background:#0a1020;padding:1px;overflow:hidden}
+.panel{background:#0a0e18;border:1px solid #1a2540;padding:10px;overflow:hidden;display:flex;flex-direction:column}
+.panel h4{color:#4cc2ff;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;border-bottom:1px solid #1a2540;padding-bottom:5px;display:flex;align-items:center;gap:6px}
+.panel h4 .cnt{margin-left:auto;background:#1a2540;padding:1px 7px;border-radius:9px;font-size:10px;color:#fff}
+.panel h4 .cnt.r{background:#c4102a;animation:bl 1.5s infinite}
+
+.kpis{grid-column:1/4;display:grid;grid-template-columns:repeat(6,1fr);gap:1px}
+.kpi{background:#0a0e18;padding:8px 12px;border:1px solid #1a2540}
+.kpi .l{color:#8ea0b8;font-size:9.5px;text-transform:uppercase;letter-spacing:1px}
+.kpi .v{font-size:26px;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace;line-height:1.1}
+.kpi .d{font-size:10px;margin-top:2px}
+.kpi.r .v{color:#ff3860}
+.kpi.w .v{color:#ffb020}
+.kpi.g .v{color:#4cff88}
+.kpi .d.up{color:#ff3860}.kpi .d.dn{color:#4cff88}
+
+.alerts{overflow-y:auto;font-size:11px}
+.al{border-left:3px solid #4cc2ff;background:#0f1628;padding:6px 8px;margin-bottom:3px;display:grid;grid-template-columns:auto 1fr auto;gap:6px;font-size:10.5px}
+.al.crit{border-left-color:#ff3860;background:#2a0a15;animation:bl 2s infinite}
+.al.high{border-left-color:#ff7020;background:#1f1308}
+.al.med{border-left-color:#ffb020;background:#1a1508}
+.al.low{border-left-color:#4cff88}
+.al .sev{font-weight:800;font-size:9px;padding:1px 5px;border-radius:2px;text-align:center}
+.al.crit .sev{background:#ff3860;color:#fff}
+.al.high .sev{background:#ff7020;color:#fff}
+.al.med .sev{background:#ffb020;color:#000}
+.al.low .sev{background:#4cff88;color:#000}
+.al .body{color:#c8d4e0}
+.al .body b{color:#fff}
+.al .body .src{color:#6a9f82;font-size:10px}
+.al .ts{color:#8ea0b8;font-size:10px;text-align:right;white-space:nowrap}
+
+/* world map */
+.map{position:relative;background:#05060a;border:1px solid #1a2540;overflow:hidden}
+.map svg{width:100%;height:100%;display:block}
+.map .hot{position:absolute;width:10px;height:10px;border-radius:50%;background:#ff3860;box-shadow:0 0 12px #ff3860;transform:translate(-50%,-50%);animation:pulse 1.5s ease-out infinite}
+.map .hot.w{background:#ffb020;box-shadow:0 0 10px #ffb020;width:7px;height:7px;animation-duration:2.2s}
+.map .hot.g{background:#4cff88;box-shadow:0 0 8px #4cff88;width:5px;height:5px;animation-duration:3s}
+@keyframes pulse{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(3);opacity:0}}
+.map .core{position:absolute;width:14px;height:14px;border-radius:50%;background:#4cc2ff;transform:translate(-50%,-50%);box-shadow:0 0 16px #4cc2ff;border:2px solid #fff}
+.map .arc{position:absolute;pointer-events:none}
+
+.map-label{position:absolute;background:rgba(10,14,24,0.85);border:1px solid #1a2540;padding:2px 5px;font-size:9.5px;color:#c8d4e0;pointer-events:none}
+.map-label.r{border-color:#ff3860;color:#ffb0c0}
+
+.log{overflow-y:auto;font-size:10.5px;font-family:'Consolas',monospace;line-height:1.45}
+.log .ln{display:grid;grid-template-columns:56px 56px 1fr;gap:8px;padding:1px 2px;border-bottom:1px solid rgba(26,37,64,0.3)}
+.log .ln .t{color:#6a7a94}
+.log .ln .sv{font-weight:700;font-size:10px}
+.log .ln .sv.e{color:#ff3860}
+.log .ln .sv.w{color:#ffb020}
+.log .ln .sv.i{color:#4cc2ff}
+.log .ln .sv.d{color:#6a9f82}
+.log .ln .m{color:#c8d4e0}
+.log .ln .m b{color:#fff}
+.log .ln .m em{color:#ff7ba7;font-style:normal}
+
+.proc{overflow-y:auto;font-size:10.5px;font-family:'Consolas',monospace}
+.proc .hdr{display:grid;grid-template-columns:60px 80px 50px 50px 1fr;gap:6px;color:#6a7a94;font-size:9.5px;border-bottom:1px solid #1a2540;padding-bottom:3px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.proc .pr{display:grid;grid-template-columns:60px 80px 50px 50px 1fr;gap:6px;padding:2px 0;border-bottom:1px solid rgba(26,37,64,0.2)}
+.proc .pr.bad{color:#ff6a88}.proc .pr.bad b{color:#ff3860}
+.proc .pr b{color:#fff}
+
+.mitre{display:grid;grid-template-columns:repeat(12,1fr);gap:1px;font-size:8.5px}
+.mitre .c{background:#0f1628;padding:3px 2px;text-align:center;color:#6a7a94;min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mitre .c.h1{background:#442010;color:#ff9566}
+.mitre .c.h2{background:#6a2418;color:#ffb59f}
+.mitre .c.h3{background:#8a2820;color:#ffd0c0}
+.mitre .c.active{background:#c4102a;color:#fff;font-weight:700;animation:bl 2s infinite}
+.mitre-tactics{display:grid;grid-template-columns:repeat(12,1fr);gap:1px;font-size:8.5px;margin-bottom:2px}
+.mitre-tactics .t{background:#1a2540;color:#4cc2ff;padding:3px 2px;text-align:center;font-weight:700;letter-spacing:0.5px}
+
+.chart{background:#0a0e18;height:100%;position:relative}
+
+.status{background:#0a0e18;border-top:1px solid #1a2540;display:flex;align-items:center;padding:0 12px;font-size:10.5px;gap:16px;color:#8ea0b8}
+.status .on{color:#4cff88}
+.status .e{color:#ff3860}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="SOC Ops · SIEM" data-favicon="🛡️">
+<div class="app">
+  <div class="tb">
+    <span><b>⌖ SentinelSOC</b> · Security Operations Center · Tier-2 Console</span>
+    <span class="sev">DEFCON 2</span>
+    <span>Shift: NIGHT · 23:00-07:00</span>
+    <span>Analyst: PARK, H.R. (L3)</span>
+    <span style="margin-left:auto">UTC 08:42:18 · Last sync 2s</span>
+  </div>
+
+  <div class="main">
+    <div class="kpis">
+      <div class="kpi r"><div class="l">Critical &nbsp;alerts</div><div class="v">14</div><div class="d up">▲ +9 / 1h</div></div>
+      <div class="kpi w"><div class="l">High</div><div class="v">48</div><div class="d up">▲ +12 / 1h</div></div>
+      <div class="kpi"><div class="l">Incidents &nbsp;open</div><div class="v">7</div><div class="d">3 in triage</div></div>
+      <div class="kpi"><div class="l">Events / sec</div><div class="v">28.4K</div><div class="d">peak 42.1K</div></div>
+      <div class="kpi g"><div class="l">MTTR (24h)</div><div class="v">18m</div><div class="d dn">▼ -4m</div></div>
+      <div class="kpi"><div class="l">Hosts &nbsp;monitored</div><div class="v">14,248</div><div class="d">98.7% online</div></div>
+    </div>
+
+    <div class="panel">
+      <h4>🔔 Alert Queue <span class="cnt r">62</span></h4>
+      <div class="alerts">
+        <div class="al crit">
+          <div class="sev">CRIT</div>
+          <div class="body"><b>Suspected ransomware encryption spree</b><br>
+            <span class="src">host=FIN-DESK-042 · user=jy.park@novafield · 1,284 files renamed .LOCKD in 90s</span><br>
+            MITRE T1486 · Impact</div>
+          <div class="ts">00:42<br>just now</div>
+        </div>
+        <div class="al crit">
+          <div class="sev">CRIT</div>
+          <div class="body"><b>Lateral movement · SMB brute force</b><br>
+            <span class="src">src=10.42.8.142 → 24 hosts · Kerberos TGS 4769 storm</span><br>
+            MITRE T1078.002</div>
+          <div class="ts">00:41</div>
+        </div>
+        <div class="al high">
+          <div class="sev">HIGH</div>
+          <div class="body"><b>C2 beacon · cobalt-like</b><br>
+            <span class="src">185.220.101.42:443 · HTTPS 60s jitter · 14 hosts affected</span></div>
+          <div class="ts">00:38</div>
+        </div>
+        <div class="al high">
+          <div class="sev">HIGH</div>
+          <div class="body"><b>Impossible travel · Entra ID</b><br>
+            <span class="src">seoul 00:14 → johannesburg 00:41 · token replay</span></div>
+          <div class="ts">00:37</div>
+        </div>
+        <div class="al high">
+          <div class="sev">HIGH</div>
+          <div class="body"><b>Privilege escalation on domain controller</b><br>
+            <span class="src">svc-backup → DOMAIN ADMINS · evt 4728 · DC01</span></div>
+          <div class="ts">00:34</div>
+        </div>
+        <div class="al med">
+          <div class="sev">MED</div>
+          <div class="body"><b>DNS tunneling suspected</b><br>
+            <span class="src">1,842 TXT queries to *.statsrv.pw · host=MKT-LT-218</span></div>
+          <div class="ts">00:31</div>
+        </div>
+        <div class="al med">
+          <div class="sev">MED</div>
+          <div class="body"><b>PowerShell obfuscation detected</b><br>
+            <span class="src">-EncodedCommand · Base64 2.8KB · host=FIN-DESK-042</span></div>
+          <div class="ts">00:28</div>
+        </div>
+        <div class="al med">
+          <div class="sev">MED</div>
+          <div class="body"><b>Anomalous outbound · S3 exfil?</b><br>
+            <span class="src">420GB in 12 min to s3://novafield-leaks-2025/*</span></div>
+          <div class="ts">00:22</div>
+        </div>
+        <div class="al low">
+          <div class="sev">LOW</div>
+          <div class="body"><b>Deprecated TLS 1.0 handshake</b><br>
+            <span class="src">legacy scanner · SCAN-SRV-03 → finance.cluster</span></div>
+          <div class="ts">00:18</div>
+        </div>
+        <div class="al low">
+          <div class="sev">LOW</div>
+          <div class="body"><b>User failed MFA challenge ×3</b></div>
+          <div class="ts">00:14</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-row:2">
+      <h4>🌐 Global Threat Map <span class="cnt">live</span></h4>
+      <div class="map">
+        <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+          <rect width="800" height="400" fill="#05060a"/>
+          <g stroke="#1a2540" stroke-width="0.4" fill="none" opacity="0.6">
+            <path d="M50 140 Q80 110 140 120 L180 140 L220 120 L260 130 L300 100 L320 90 L360 120 L400 80 L440 90 L480 120 L520 110 L560 140 L600 160 L640 180 L680 200 L720 160 L760 180"/>
+            <path d="M40 180 L80 210 L120 200 L160 220 L200 200 L240 230 L280 240 L320 260 L360 250 L400 270 L440 260 L480 280 L520 270 L560 250 L600 280 L640 300 L680 280 L720 260 L760 280"/>
+            <path d="M60 280 L100 300 L140 280 L180 320 L220 310 L260 340 L300 320 L340 340"/>
+            <path d="M460 130 L500 150 L540 140 L580 170 L620 160 L660 190"/>
+          </g>
+          <g fill="#0a1a2e" stroke="#1a3560" stroke-width="0.5">
+            <path d="M50 140 Q80 110 140 120 L180 140 L220 120 L260 130 L300 100 L320 90 L360 120 L400 80 L440 90 L480 120 L520 110 L560 140 L600 160 L640 180 L680 200 L720 160 L760 180 L760 280 L720 260 L680 280 L640 300 L600 280 L560 250 L520 270 L480 280 L440 260 L400 270 L360 250 L320 260 L280 240 L240 230 L200 200 L160 220 L120 200 L80 210 L40 180 Z"/>
+          </g>
+          <g stroke="rgba(76,194,255,0.4)" stroke-width="0.8" fill="none" stroke-dasharray="3,2">
+            <path d="M610 170 Q 500 80 280 130"/>
+            <path d="M610 170 Q 500 120 220 240"/>
+            <path d="M610 170 Q 700 220 720 300"/>
+            <path d="M610 170 Q 660 200 580 260"/>
+          </g>
+          <g stroke="rgba(255,56,96,0.6)" stroke-width="1" fill="none">
+            <path d="M280 130 Q 440 70 610 170"/>
+            <path d="M220 240 Q 400 350 610 170"/>
+          </g>
+        </svg>
+        <div class="core" style="top:42.5%;left:76%"></div>
+        <div class="map-label" style="top:40%;left:76%">⌖ ICN-HQ</div>
+
+        <div class="hot" style="top:33%;left:35%"></div>
+        <div class="map-label r" style="top:30%;left:36%">KYIV · C2</div>
+
+        <div class="hot" style="top:60%;left:27%"></div>
+        <div class="map-label r" style="top:62%;left:28%">LAGOS · recon</div>
+
+        <div class="hot w" style="top:28%;left:62%"></div>
+        <div class="map-label" style="top:25%;left:60%">MOSCOW · brute</div>
+
+        <div class="hot w" style="top:52%;left:18%"></div>
+        <div class="map-label" style="top:54%;left:20%">BRASILIA</div>
+
+        <div class="hot g" style="top:75%;left:88%"></div>
+        <div class="hot g" style="top:44%;left:14%"></div>
+        <div class="hot w" style="top:35%;left:50%"></div>
+        <div class="hot" style="top:68%;left:70%"></div>
+        <div class="map-label r" style="top:70%;left:71%">JKT · exfil →</div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:3;grid-row:2">
+      <h4>◴ Live SIEM Stream <span class="cnt">28.4K/s</span></h4>
+      <div class="log">
+        <div class="ln"><span class="t">00:42:18</span><span class="sv e">FATAL</span><span class="m"><b>FIN-DESK-042</b> file_rename surge detected ·  <em>.LOCKD</em> +1284 /90s</span></div>
+        <div class="ln"><span class="t">00:42:17</span><span class="sv e">ALERT</span><span class="m">auth: kerberos AS-REP roasting · user=<b>svc-ci</b> · rc4-hmac</span></div>
+        <div class="ln"><span class="t">00:42:17</span><span class="sv w">WARN</span><span class="m">edr: amsi bypass attempt · <b>powershell.exe</b> token theft</span></div>
+        <div class="ln"><span class="t">00:42:16</span><span class="sv i">INFO</span><span class="m">firewall: drop 185.220.101.42:443→10.42.8.142:51842</span></div>
+        <div class="ln"><span class="t">00:42:16</span><span class="sv e">ALERT</span><span class="m">dns: query <em>auth.badguy-c2.pw</em> · src=MKT-LT-218 · blocked</span></div>
+        <div class="ln"><span class="t">00:42:15</span><span class="sv w">WARN</span><span class="m">ids: smb1 pipe access · srv=FS01 · share=finance$</span></div>
+        <div class="ln"><span class="t">00:42:15</span><span class="sv i">INFO</span><span class="m">vpn: user jy.park disconnected gw-01 · uptime 14m</span></div>
+        <div class="ln"><span class="t">00:42:14</span><span class="sv e">FATAL</span><span class="m">edr: <b>mshta.exe</b> spawned by excel.exe · T1566</span></div>
+        <div class="ln"><span class="t">00:42:14</span><span class="sv w">WARN</span><span class="m">ad: group add · USER svc-backup → DOMAIN ADMINS evt4728</span></div>
+        <div class="ln"><span class="t">00:42:13</span><span class="sv i">INFO</span><span class="m">o365: login seoul 192.0.2.14 → user jy.park@</span></div>
+        <div class="ln"><span class="t">00:42:13</span><span class="sv d">DEBUG</span><span class="m">corr_id=a842-f19e processed 12 events · rules 34</span></div>
+        <div class="ln"><span class="t">00:42:12</span><span class="sv e">ALERT</span><span class="m">s3: putObject 28.4GB bucket=<em>novafield-leaks-2025</em> · public-read</span></div>
+        <div class="ln"><span class="t">00:42:12</span><span class="sv w">WARN</span><span class="m">dc01: 4625 logon fail · src=10.42.8.142 ×48/min</span></div>
+        <div class="ln"><span class="t">00:42:11</span><span class="sv i">INFO</span><span class="m">fw: allow 172.16.3.22→cdn.cloudflare (80)</span></div>
+        <div class="ln"><span class="t">00:42:11</span><span class="sv e">FATAL</span><span class="m">sysmon: <b>rundll32.exe</b> injects into lsass.exe · T1003</span></div>
+        <div class="ln"><span class="t">00:42:10</span><span class="sv w">WARN</span><span class="m">mfa: challenge fail ×3 user=beth.chen</span></div>
+        <div class="ln"><span class="t">00:42:10</span><span class="sv i">INFO</span><span class="m">edr agent heartbeat 14,248 hosts · 187 stale</span></div>
+        <div class="ln"><span class="t">00:42:09</span><span class="sv e">ALERT</span><span class="m">wazuh: integrity breach /etc/passwd on <b>PROD-DB-04</b></span></div>
+        <div class="ln"><span class="t">00:42:09</span><span class="sv w">WARN</span><span class="m">net: unusual ja3 fingerprint · <em>a0e9f5d64265..</em></span></div>
+        <div class="ln"><span class="t">00:42:08</span><span class="sv i">INFO</span><span class="m">playbook: auto-isolate FIN-DESK-042 ✓ switch port down</span></div>
+        <div class="ln"><span class="t">00:42:08</span><span class="sv i">INFO</span><span class="m">soar: case #INC-2025-0842 opened · Analyst parkhr</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>⚔ MITRE ATT&amp;CK Heatmap <span class="cnt">14 active</span></h4>
+      <div class="mitre-tactics">
+        <div class="t">Recon</div><div class="t">Res</div><div class="t">Init</div><div class="t">Exec</div><div class="t">Persist</div><div class="t">PrivEsc</div><div class="t">DefEv</div><div class="t">CredAc</div><div class="t">Disc</div><div class="t">Lat</div><div class="t">Coll</div><div class="t">Impact</div>
+      </div>
+      <div class="mitre">
+        <div class="c h2">T1595</div><div class="c">T1583</div><div class="c h2">T1566</div><div class="c active">T1059</div><div class="c h1">T1547</div><div class="c h3">T1068</div><div class="c active">T1027</div><div class="c active">T1003</div><div class="c">T1083</div><div class="c active">T1021</div><div class="c h2">T1005</div><div class="c active">T1486</div>
+        <div class="c">T1589</div><div class="c">T1585</div><div class="c">T1189</div><div class="c h2">T1053</div><div class="c">T1136</div><div class="c h1">T1078</div><div class="c h2">T1562</div><div class="c h1">T1558</div><div class="c h1">T1046</div><div class="c h2">T1550</div><div class="c">T1560</div><div class="c h2">T1490</div>
+        <div class="c">T1596</div><div class="c">T1586</div><div class="c">T1190</div><div class="c">T1203</div><div class="c">T1098</div><div class="c">T1543</div><div class="c h3">T1055</div><div class="c h2">T1110</div><div class="c">T1087</div><div class="c">T1210</div><div class="c">T1119</div><div class="c">T1485</div>
+        <div class="c">T1598</div><div class="c">T1587</div><div class="c h1">T1133</div><div class="c">T1129</div><div class="c h1">T1505</div><div class="c">T1548</div><div class="c">T1070</div><div class="c">T1040</div><div class="c">T1057</div><div class="c h1">T1570</div><div class="c">T1114</div><div class="c">T1489</div>
+      </div>
+
+      <h4 style="margin-top:10px">🔥 Top Suspicious Processes</h4>
+      <div class="proc">
+        <div class="hdr"><span>PID</span><span>HOST</span><span>CPU</span><span>NET</span><span>PROCESS</span></div>
+        <div class="pr bad"><span>8842</span><span>FIN-DESK-042</span><span>84%</span><span>42MB/s</span><span>C:\Users\..\<b>svchost_x.exe</b> (unsigned)</span></div>
+        <div class="pr bad"><span>4218</span><span>FIN-DESK-042</span><span>62%</span><span>—</span><span>powershell.exe <em>-enc SQBmAC4A..</em></span></div>
+        <div class="pr bad"><span>7142</span><span>DC01</span><span>41%</span><span>8MB/s</span><span><b>mimikatz.exe</b> (renamed task.exe)</span></div>
+        <div class="pr bad"><span>1288</span><span>WEB-PROD-03</span><span>38%</span><span>180MB/s</span><span>w3wp.exe → cmd.exe → <b>certutil</b></span></div>
+        <div class="pr"><span>4502</span><span>MKT-LT-218</span><span>18%</span><span>2MB/s</span><span>cloud-drive.exe</span></div>
+        <div class="pr"><span>3201</span><span>HR-VM-12</span><span>12%</span><span>4MB/s</span><span>teams.exe</span></div>
+        <div class="pr"><span>8812</span><span>PROD-DB-04</span><span>9%</span><span>&lt;1MB/s</span><span>postgres postgres: archiver</span></div>
+      </div>
+
+      <h4 style="margin-top:10px">📜 Playbook Runs (last hour)</h4>
+      <div class="log" style="max-height:140px;font-size:10.5px">
+        <div class="ln"><span class="t">00:42</span><span class="sv i">RUN</span><span class="m">isolate-endpoint → FIN-DESK-042 · <b>✓ contained</b></span></div>
+        <div class="ln"><span class="t">00:41</span><span class="sv i">RUN</span><span class="m">block-ioc → 185.220.101.42 · 14 FWs · <b>✓</b></span></div>
+        <div class="ln"><span class="t">00:38</span><span class="sv w">PEND</span><span class="m">reset-credentials → jy.park · awaiting L3 approval</span></div>
+        <div class="ln"><span class="t">00:34</span><span class="sv i">RUN</span><span class="m">snapshot-disk → FIN-DESK-042 · <b>✓ forensic.dd</b></span></div>
+        <div class="ln"><span class="t">00:28</span><span class="sv i">RUN</span><span class="m">enrich-ioc virustotal · 28/72 positive</span></div>
+        <div class="ln"><span class="t">00:14</span><span class="sv i">RUN</span><span class="m">notify on-call → CISO, IR-team (#soc-incident)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="on">● SIEM · EDR · NDR · SOAR OK</span>
+    <span>Indexed 4.28B events · 24h</span>
+    <span>Retention 180d</span>
+    <span>Threat intel: 48 feeds</span>
+    <span class="e">⚠ Active IR: INC-2025-0842</span>
+    <span style="margin-left:auto">Analyst parkhr · Last action 2s</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

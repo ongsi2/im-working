@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>system.monitor — prod-cluster-01</title>
+<template id="__bundler_thumbnail" data-bg-color="#0a0d10">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect x="60" y="60" width="360" height="220" fill="none" stroke="#4ade80" stroke-width="3" opacity="0.7"/>
+    <rect x="440" y="60" width="440" height="220" fill="none" stroke="#60a5fa" stroke-width="3" opacity="0.7"/>
+    <rect x="900" y="60" width="240" height="220" fill="none" stroke="#a78bfa" stroke-width="3" opacity="0.7"/>
+    <rect x="60" y="300" width="360" height="220" fill="none" stroke="#22d3ee" stroke-width="3" opacity="0.7"/>
+    <rect x="440" y="300" width="440" height="220" fill="none" stroke="#fbbf24" stroke-width="3" opacity="0.7"/>
+    <rect x="900" y="300" width="240" height="220" fill="none" stroke="#f472b6" stroke-width="3" opacity="0.7"/>
+    <rect x="60" y="540" width="360" height="200" fill="none" stroke="#4ade80" stroke-width="3" opacity="0.7"/>
+    <rect x="440" y="540" width="440" height="200" fill="none" stroke="#60a5fa" stroke-width="3" opacity="0.7"/>
+    <rect x="900" y="540" width="240" height="200" fill="none" stroke="#a78bfa" stroke-width="3" opacity="0.7"/>
+    <path d="M 100 180 L 160 150 L 220 170 L 280 120 L 340 140 L 380 100" fill="none" stroke="#4ade80" stroke-width="4"/>
+    <path d="M 480 400 L 540 380 L 600 420 L 660 360 L 720 390 L 780 350 L 840 380" fill="none" stroke="#fbbf24" stroke-width="4"/>
+    <circle cx="950" cy="180" r="8" fill="#a78bfa"/>
+    <circle cx="990" cy="180" r="8" fill="#a78bfa" opacity="0.6"/>
+    <circle cx="1030" cy="180" r="8" fill="#a78bfa" opacity="0.3"/>
+    <text x="600" y="780" font-family="monospace" font-size="28" fill="#5a6877" text-anchor="middle">● system.monitor</text>
+  </svg>
+</template>
+<style>
+  :root {
+    --bg: #0a0d10;
+    --panel: #0e1216;
+    --panel-2: #11161b;
+    --border: #1c232c;
+    --border-hi: #2a3540;
+    --text: #c8d1dc;
+    --dim: #5a6877;
+    --dimmer: #3a4552;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #ef4444;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --cyan: #22d3ee;
+    --pink: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    overflow: hidden;
+    cursor: default;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.04), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.04), transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 100% 3px;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 26px;
+    background: #070a0d;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 16px;
+    z-index: 100;
+    font-size: 10.5px;
+  }
+  .topbar .logo {
+    color: var(--green);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .topbar .crumbs {
+    color: var(--dim);
+  }
+  .topbar .crumbs b { color: var(--text); font-weight: 500; }
+  .topbar .spacer { flex: 1; }
+  .topbar .stat {
+    color: var(--dim);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .topbar .stat b { color: var(--text); font-weight: 500; }
+  .topbar .stat .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Grid */
+  .grid {
+    position: absolute;
+    top: 26px; left: 0; right: 0; bottom: 22px;
+    display: grid;
+    grid-template-columns: 1.3fr 1.6fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    z-index: 2;
+  }
+
+  .panel {
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .panel-head {
+    height: 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 10px;
+    background: #0b0f13;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .panel-head .title {
+    color: var(--text);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .panel-head .meta {
+    color: var(--dim);
+    font-size: 9.5px;
+  }
+  .panel-head .right {
+    margin-left: auto;
+    color: var(--dim);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 9.5px;
+  }
+  .panel-head .tag {
+    padding: 1px 5px;
+    border: 1px solid var(--border-hi);
+    border-radius: 2px;
+    font-size: 9px;
+    color: var(--dim);
+  }
+  .panel-head .tag.live {
+    color: var(--green);
+    border-color: rgba(74, 222, 128, 0.3);
+  }
+  .panel-head .tag.live::before {
+    content: '●';
+    margin-right: 3px;
+    animation: pulse 1.5s infinite;
+  }
+  .panel-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ───── Terminal ───── */
+  .terminal {
+    padding: 8px 10px;
+    font-size: 10.5px;
+    line-height: 1.5;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+  }
+  .terminal .row { white-space: pre; }
+  .terminal .c-dim { color: var(--dim); }
+  .terminal .c-green { color: var(--green); }
+  .terminal .c-amber { color: var(--amber); }
+  .terminal .c-red { color: var(--red); }
+  .terminal .c-blue { color: var(--blue); }
+  .terminal .c-purple { color: var(--purple); }
+  .terminal .c-cyan { color: var(--cyan); }
+  .terminal .c-pink { color: var(--pink); }
+  .terminal .prompt { color: var(--green); }
+
+  /* ───── Logs ───── */
+  .logs {
+    padding: 6px 10px;
+    font-size: 10px;
+    line-height: 1.55;
+    overflow: hidden;
+    height: 100%;
+  }
+  .logs .row {
+    display: flex;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .logs .ts { color: var(--dimmer); flex-shrink: 0; }
+  .logs .lvl { flex-shrink: 0; width: 40px; }
+  .logs .lvl.info { color: var(--blue); }
+  .logs .lvl.warn { color: var(--amber); }
+  .logs .lvl.err { color: var(--red); }
+  .logs .lvl.ok { color: var(--green); }
+  .logs .lvl.dbg { color: var(--purple); }
+  .logs .src { color: var(--dim); flex-shrink: 0; }
+  .logs .msg { color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+
+  /* ───── Chart ───── */
+  .chart-wrap {
+    padding: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chart-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 10px;
+  }
+  .chart-label { color: var(--dim); width: 60px; }
+  .chart-value { color: var(--text); font-weight: 500; font-size: 13px; }
+  .chart-value.big { font-size: 20px; letter-spacing: -0.5px; }
+  .chart-delta { font-size: 9.5px; }
+  .chart-delta.up { color: var(--green); }
+  .chart-delta.down { color: var(--red); }
+  .chart-delta.flat { color: var(--dim); }
+
+  svg.spark { display: block; width: 100%; }
+
+  /* Stat grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    height: 100%;
+    background: var(--border);
+  }
+  .stat-cell {
+    background: var(--panel);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .stat-cell .k { color: var(--dim); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-cell .v { color: var(--text); font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
+  .stat-cell .v .unit { font-size: 10px; color: var(--dim); margin-left: 3px; }
+  .stat-cell .bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+    position: relative;
+  }
+  .stat-cell .bar-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: var(--green);
+    transition: width 0.6s ease;
+  }
+  .stat-cell.warn .bar-fill { background: var(--amber); }
+  .stat-cell.err .bar-fill { background: var(--red); }
+  .stat-cell .sub { color: var(--dim); font-size: 9.5px; }
+
+  /* Map / nodes */
+  .nodes {
+    padding: 8px;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-auto-rows: min-content;
+    gap: 3px;
+    overflow: hidden;
+    align-content: start;
+  }
+  .node {
+    aspect-ratio: 1;
+    border: 1px solid var(--border-hi);
+    background: #0a0e12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: var(--dim);
+    position: relative;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .node.ok { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.08); color: var(--green); }
+  .node.warn { border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.08); color: var(--amber); }
+  .node.err { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.12); color: var(--red); animation: blink 1s infinite; }
+  .node.off { opacity: 0.3; }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Diff / code */
+  .code {
+    padding: 8px 0;
+    font-size: 10.5px;
+    line-height: 1.55;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+  }
+  .code .line {
+    display: flex;
+    padding: 0 10px 0 0;
+    white-space: pre;
+  }
+  .code .ln {
+    display: inline-block;
+    width: 36px;
+    color: var(--dimmer);
+    text-align: right;
+    padding-right: 10px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .code .line.add { background: rgba(74, 222, 128, 0.08); }
+  .code .line.add .ln { color: var(--green); }
+  .code .line.del { background: rgba(239, 68, 68, 0.08); }
+  .code .line.del .ln { color: var(--red); }
+  .code .line.cur { background: rgba(96, 165, 250, 0.1); }
+  .code .kw { color: var(--purple); }
+  .code .str { color: var(--amber); }
+  .code .com { color: var(--dim); font-style: italic; }
+  .code .fn { color: var(--cyan); }
+  .code .num { color: var(--pink); }
+  .code .typ { color: var(--blue); }
+
+  /* Queue table */
+  .queue {
+    font-size: 10px;
+    height: 100%;
+    overflow: hidden;
+  }
+  .queue table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .queue th, .queue td {
+    text-align: left;
+    padding: 4px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .queue th {
+    color: var(--dim);
+    font-weight: normal;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: #0b0f13;
+    position: sticky;
+    top: 0;
+  }
+  .queue td.status-run { color: var(--blue); }
+  .queue td.status-ok { color: var(--green); }
+  .queue td.status-wait { color: var(--amber); }
+  .queue td.status-err { color: var(--red); }
+  .queue td.mono { color: var(--dim); }
+
+  /* Bottom bar */
+  .bottombar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 22px;
+    background: #070a0d;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 14px;
+    z-index: 100;
+    font-size: 10px;
+    color: var(--dim);
+  }
+  .bottombar b { color: var(--text); font-weight: 500; }
+  .bottombar .spacer { flex: 1; }
+  .bottombar .key {
+    padding: 0 4px;
+    border: 1px solid var(--border-hi);
+    border-radius: 2px;
+    font-size: 9px;
+    color: var(--dim);
+  }
+
+  /* Typing cursor */
+  .cursor::after {
+    content: '▊';
+    color: var(--green);
+    animation: blink 1s step-end infinite;
+  }
+
+  /* Progress bars for jobs */
+  .prog {
+    height: 2px;
+    background: var(--border);
+    position: relative;
+    margin-top: 3px;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .prog-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: var(--blue);
+    transition: width 0.3s linear;
+  }
+</style>
+<link rel="stylesheet" href="./shared.css">
+</head>
+<body data-title="SYS.MONITOR · prod-us-east-1" data-favicon="🖥️">
+
+<div class="topbar">
+  <span class="logo">◇ orbitctl</span>
+  <span class="crumbs">workspace / <b>prod-cluster-01</b> / observability</span>
+  <span class="spacer"></span>
+  <span class="stat"><span class="dot"></span> connected</span>
+  <span class="stat">region <b>ap-northeast-2</b></span>
+  <span class="stat">uptime <b id="uptime">00:00:00</b></span>
+  <span class="stat">user <b>k.park@</b></span>
+  <span class="stat" id="clock"></span>
+</div>
+
+<div class="grid">
+  <!-- Row 1 -->
+  <div class="panel" style="grid-column:1; grid-row:1;">
+    <div class="panel-head">
+      <span class="title">build.log</span>
+      <span class="meta">— release/v4.18.2-rc3</span>
+      <span class="right"><span class="tag live">streaming</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="terminal" id="terminal"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="grid-column:2; grid-row:1;">
+    <div class="panel-head">
+      <span class="title">ingest.events</span>
+      <span class="meta">— kafka://events.internal:9092</span>
+      <span class="right"><span class="tag">p95 142ms</span><span class="tag live">tailing</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="logs" id="logs"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="grid-column:3; grid-row:1;">
+    <div class="panel-head">
+      <span class="title">metrics</span>
+      <span class="meta">— 1m resolution</span>
+      <span class="right"><span class="tag live">live</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap" id="metrics"></div>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div class="panel" style="grid-column:1; grid-row:2;">
+    <div class="panel-head">
+      <span class="title">nodes</span>
+      <span class="meta">— 64 pods / 8 regions</span>
+      <span class="right"><span class="tag" id="nodes-tag">62 healthy</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="nodes" id="nodes"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="grid-column:2; grid-row:2;">
+    <div class="panel-head">
+      <span class="title">pipeline.scheduler</span>
+      <span class="meta">— airflow-exec</span>
+      <span class="right"><span class="tag" id="queue-tag">14 running</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="queue" id="queue">
+        <table>
+          <thead><tr>
+            <th style="width:26%">job</th>
+            <th style="width:16%">owner</th>
+            <th style="width:10%">status</th>
+            <th style="width:14%">progress</th>
+            <th style="width:14%">dur</th>
+            <th style="width:20%">last heartbeat</th>
+          </tr></thead>
+          <tbody id="queue-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="grid-column:3; grid-row:2;">
+    <div class="panel-head">
+      <span class="title">system.resources</span>
+      <span class="right"><span class="tag live">5s</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="stat-grid">
+        <div class="stat-cell" id="cell-cpu">
+          <div class="k">cpu load</div>
+          <div class="v"><span data-v>38</span><span class="unit">%</span></div>
+          <div class="bar"><div class="bar-fill" style="width:38%"></div></div>
+          <div class="sub">32 cores · avg 0.74</div>
+        </div>
+        <div class="stat-cell" id="cell-mem">
+          <div class="k">memory</div>
+          <div class="v"><span data-v>22.4</span><span class="unit">GB</span></div>
+          <div class="bar"><div class="bar-fill" style="width:56%"></div></div>
+          <div class="sub">of 40.0 GB</div>
+        </div>
+        <div class="stat-cell warn" id="cell-net">
+          <div class="k">network i/o</div>
+          <div class="v"><span data-v>842</span><span class="unit">Mb/s</span></div>
+          <div class="bar"><div class="bar-fill" style="width:71%"></div></div>
+          <div class="sub">eth0 · 12.4M pkt/s</div>
+        </div>
+        <div class="stat-cell" id="cell-disk">
+          <div class="k">disk iops</div>
+          <div class="v"><span data-v>14.2</span><span class="unit">k</span></div>
+          <div class="bar"><div class="bar-fill" style="width:44%"></div></div>
+          <div class="sub">nvme0 · r/w 62:38</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3 -->
+  <div class="panel" style="grid-column:1; grid-row:3;">
+    <div class="panel-head">
+      <span class="title">editor</span>
+      <span class="meta">— src/pipeline/stream_aggregator.ts</span>
+      <span class="right"><span class="tag">ts</span><span class="tag">●</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="code" id="code"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="grid-column:2; grid-row:3;">
+    <div class="panel-head">
+      <span class="title">request.trace</span>
+      <span class="meta">— distributed tracing</span>
+      <span class="right"><span class="tag live">live</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="terminal" id="trace"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="grid-column:3; grid-row:3;">
+    <div class="panel-head">
+      <span class="title">errors.budget</span>
+      <span class="meta">— rolling 24h</span>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap">
+        <div class="chart-row">
+          <span class="chart-value big" id="budget-val">99.94</span>
+          <span class="unit" style="color:var(--dim);font-size:10px">% availability</span>
+          <span class="chart-delta up" style="margin-left:auto">▲ 0.02</span>
+        </div>
+        <svg class="spark" id="spark-avail" viewBox="0 0 240 50" preserveAspectRatio="none" style="height:50px"></svg>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;font-size:10px">
+          <div>
+            <div style="color:var(--dim)">errors/min</div>
+            <div style="color:var(--text);font-size:14px;margin-top:2px"><span id="err-rate">3.2</span></div>
+          </div>
+          <div>
+            <div style="color:var(--dim)">budget remaining</div>
+            <div style="color:var(--green);font-size:14px;margin-top:2px">76.4%</div>
+          </div>
+          <div>
+            <div style="color:var(--dim)">p50 latency</div>
+            <div style="color:var(--text);font-size:14px;margin-top:2px"><span id="p50">41</span>ms</div>
+          </div>
+          <div>
+            <div style="color:var(--dim)">p99 latency</div>
+            <div style="color:var(--text);font-size:14px;margin-top:2px"><span id="p99">284</span>ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottombar">
+  <span>NORMAL</span>
+  <span>utf-8</span>
+  <span>ln <b id="ln">128</b>:<b id="col">24</b></span>
+  <span class="spacer"></span>
+  <span>branch <b>feat/stream-window-v2</b></span>
+  <span>↑3 ↓0</span>
+  <span>● <b id="commits">2</b> modified</span>
+  <span>◆ <b id="deploys">847</b> deploys today</span>
+  <span class="key">F</span> fullscreen
+  <span class="key">␣</span> pause
+</div>
+
+<script>
+// ───────── util ─────────
+const rand = (a, b) => Math.random() * (b - a) + a;
+const irand = (a, b) => Math.floor(rand(a, b + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const pad = (n, w = 2) => String(n).padStart(w, '0');
+const hex = (n) => Math.floor(n).toString(16).padStart(2, '0');
+const shortId = () => Array.from({length: 8}, () => hex(Math.random()*255)).join('').slice(0, 8);
+const uuid = () => `${shortId()}-${shortId().slice(0,4)}-${shortId().slice(0,4)}-${shortId()}`;
+
+let paused = false;
+
+// ───────── clock / uptime ─────────
+const startTime = Date.now();
+function tickClock() {
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const s = Math.floor((Date.now() - startTime) / 1000);
+  document.getElementById('uptime').textContent =
+    `${pad(Math.floor(s/3600))}:${pad(Math.floor(s/60)%60)}:${pad(s%60)}`;
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ───────── terminal (build log) ─────────
+const TERM_LINES = [
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-blue">info</span>  webpack compiled <span class="c-green">${irand(800,2400)}</span> modules in <span class="c-amber">${irand(400,1800)}ms</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-purple">build</span> bundling <span class="c-cyan">chunk-${shortId().slice(0,6)}.js</span> <span class="c-dim">(${(rand(10,320)).toFixed(1)} KiB)</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-green">pass</span>  ${pick(['auth.service','stream.worker','cache.layer','queue.dispatcher','edge.gateway','model.inference'])} <span class="c-dim">— ${irand(12,94)} tests, ${rand(0.2,3.8).toFixed(2)}s</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-amber">warn</span>  ${pick(['deprecated peer','circular dep','unused export','implicit any','shadowed var'])} in <span class="c-cyan">src/${pick(['pipeline','edge','core','db','api'])}/${pick(['stream','index','worker','handler','router'])}.ts</span>:<span class="c-pink">${irand(40,600)}</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-blue">fetch</span> <span class="c-green">GET</span> /api/v2/${pick(['orders','users','metrics','events','spans'])} <span class="c-dim">→</span> <span class="c-green">200</span> <span class="c-dim">${irand(12,380)}ms ${(rand(0.1,14.2)).toFixed(1)}KB</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-purple">docker</span> layer cached <span class="c-cyan">sha256:${shortId()}${shortId()}</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-green">▸</span> <span class="c-blue">npm install</span> resolved <span class="c-pink">${irand(340,1240)}</span> packages in <span class="c-amber">${rand(2.1,18.4).toFixed(1)}s</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-cyan">tsc</span>   check ${pick(['ok','strict','noImplicitAny'])} — <span class="c-green">${irand(800,3400)} files</span>, <span class="c-dim">0 errors</span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-pink">k8s</span>   scaling deployment/<span class="c-cyan">${pick(['api-gw','stream-worker','cache','auth','inference'])}</span> from <span class="c-amber">${irand(3,8)}</span> → <span class="c-green">${irand(6,14)}</span> replicas`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-green">✓</span> <span class="c-dim">migration ${irand(20250101, 20260423)}_${pick(['add_idx','drop_col','backfill','rename_tbl'])} applied <span class="c-amber">(${irand(42,1840)}ms)</span></span>`,
+  () => `<span class="c-dim">[${ts()}]</span> <span class="c-blue">git</span>   rebased ${irand(1,6)} commits onto <span class="c-purple">origin/main</span> <span class="c-dim">(fast-forward)</span>`,
+];
+function ts() {
+  const d = new Date();
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
+}
+const termEl = document.getElementById('terminal');
+function termLine() {
+  if (paused) return;
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = pick(TERM_LINES)();
+  termEl.appendChild(row);
+  // Trim
+  const max = Math.floor(termEl.clientHeight / 16) + 2;
+  while (termEl.childNodes.length > max) termEl.removeChild(termEl.firstChild);
+}
+setInterval(termLine, 280);
+for (let i = 0; i < 20; i++) termLine();
+
+// ───────── logs ─────────
+const LOG_SRCS = ['api-gw','stream-wrk','auth-svc','edge-01','ingest','cache','scheduler','billing','search','router-eu'];
+const LOG_MSGS = {
+  info: [
+    'request processed', 'cache hit', 'token refreshed', 'event published', 'shard rebalanced',
+    'connection pool resized', 'index snapshot committed', 'metrics flushed to tsdb',
+    'healthcheck ok', 'consumer group joined', 'batch dispatched', 'session resumed',
+  ],
+  warn: [
+    'retry scheduled (attempt 2/5)', 'high queue depth detected', 'circuit breaker half-open',
+    'slow query > 800ms', 'rate limit approaching', 'stale read on replica',
+  ],
+  err: [
+    'upstream timeout', 'deserialization failed', 'checksum mismatch', 'lock contention',
+  ],
+  ok: ['migration complete', 'deployment verified', 'canary promoted', 'snapshot validated'],
+  dbg: ['trace span emitted', 'breakpoint hit in reducer', 'memo cache key resolved'],
+};
+const logsEl = document.getElementById('logs');
+function logLine() {
+  if (paused) return;
+  const row = document.createElement('div');
+  row.className = 'row';
+  const r = Math.random();
+  let lvl = 'info';
+  if (r > 0.93) lvl = 'err';
+  else if (r > 0.78) lvl = 'warn';
+  else if (r > 0.70) lvl = 'ok';
+  else if (r > 0.62) lvl = 'dbg';
+  const msg = pick(LOG_MSGS[lvl]);
+  const src = pick(LOG_SRCS);
+  const extra = Math.random() > 0.5 ? ` <span style="color:var(--dimmer)">req=${shortId()} dur=${irand(2,840)}ms</span>` : '';
+  row.innerHTML = `
+    <span class="ts">${ts()}</span>
+    <span class="lvl ${lvl}">${lvl.toUpperCase()}</span>
+    <span class="src">[${src}]</span>
+    <span class="msg">${msg}${extra}</span>`;
+  logsEl.appendChild(row);
+  const max = Math.floor(logsEl.clientHeight / 16) + 2;
+  while (logsEl.childNodes.length > max) logsEl.removeChild(logsEl.firstChild);
+}
+setInterval(logLine, 220);
+for (let i = 0; i < 25; i++) logLine();
+
+// ───────── metrics panel (big numbers + sparks) ─────────
+const metricsEl = document.getElementById('metrics');
+const METRICS = [
+  { label: 'req/s',     base: 4200, range: 800, unit: '',   color: 'var(--green)'  },
+  { label: 'bytes/s',   base: 182,  range: 40,  unit: 'M',  color: 'var(--blue)'   },
+  { label: 'qps.db',    base: 920,  range: 200, unit: '',   color: 'var(--purple)' },
+  { label: 'gpu.util',  base: 72,   range: 18,  unit: '%',  color: 'var(--pink)'   },
+];
+const metricState = METRICS.map(m => ({
+  ...m,
+  val: m.base,
+  hist: Array.from({length: 40}, () => m.base + (Math.random()-0.5)*m.range),
+  delta: 0,
+}));
+function buildMetrics() {
+  metricsEl.innerHTML = '';
+  metricState.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div class="chart-row">
+        <span class="chart-label">${m.label}</span>
+        <span class="chart-value" data-val="${i}">${m.val.toFixed(m.unit==='%'||m.unit==='M'?1:0)}<span style="color:var(--dim);font-size:10px">${m.unit}</span></span>
+        <span class="chart-delta" data-delta="${i}" style="margin-left:auto">—</span>
+      </div>
+      <svg class="spark" data-spark="${i}" viewBox="0 0 200 26" preserveAspectRatio="none" style="height:26px"></svg>
+    `;
+    metricsEl.appendChild(div);
+  });
+}
+buildMetrics();
+function sparkPath(hist, w = 200, h = 26) {
+  const min = Math.min(...hist), max = Math.max(...hist);
+  const span = max - min || 1;
+  return hist.map((v, i) => {
+    const x = (i / (hist.length - 1)) * w;
+    const y = h - ((v - min) / span) * (h - 2) - 1;
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+function updateMetrics() {
+  if (paused) return;
+  metricState.forEach((m, i) => {
+    const drift = (Math.random() - 0.5) * m.range * 0.25;
+    const newVal = Math.max(0, m.val + drift);
+    m.delta = newVal - m.val;
+    m.val = newVal;
+    m.hist.push(m.val); m.hist.shift();
+    const valEl = metricsEl.querySelector(`[data-val="${i}"]`);
+    valEl.childNodes[0].textContent = m.val.toFixed(m.unit==='%'||m.unit==='M'?1:0);
+    const delEl = metricsEl.querySelector(`[data-delta="${i}"]`);
+    const pct = (m.delta / m.base * 100);
+    delEl.className = 'chart-delta ' + (pct > 0.1 ? 'up' : pct < -0.1 ? 'down' : 'flat');
+    delEl.textContent = (pct>0?'▲':pct<0?'▼':'•') + ' ' + Math.abs(pct).toFixed(2) + '%';
+    const svg = metricsEl.querySelector(`[data-spark="${i}"]`);
+    svg.innerHTML = `
+      <path d="${sparkPath(m.hist)}" fill="none" stroke="${m.color}" stroke-width="1.2"/>
+      <path d="${sparkPath(m.hist)} L 200,26 L 0,26 Z" fill="${m.color}" opacity="0.12"/>
+    `;
+  });
+}
+updateMetrics();
+setInterval(updateMetrics, 900);
+
+// ───────── nodes grid ─────────
+const nodesEl = document.getElementById('nodes');
+const NODES = Array.from({length: 64}, (_, i) => ({
+  id: i,
+  name: `${pick(['kr','us','eu','ap','sa'])}-${pad(i,2)}`,
+  state: Math.random() > 0.04 ? 'ok' : (Math.random() > 0.5 ? 'warn' : 'err'),
+}));
+function renderNodes() {
+  nodesEl.innerHTML = '';
+  let ok = 0, warn = 0, err = 0;
+  NODES.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'node ' + n.state;
+    d.textContent = n.name;
+    nodesEl.appendChild(d);
+    if (n.state === 'ok') ok++;
+    else if (n.state === 'warn') warn++;
+    else err++;
+  });
+  document.getElementById('nodes-tag').textContent = `${ok} healthy · ${warn} warn · ${err} err`;
+}
+renderNodes();
+setInterval(() => {
+  if (paused) return;
+  // Flip a few random states occasionally
+  for (let i = 0; i < 3; i++) {
+    const n = NODES[irand(0, NODES.length - 1)];
+    const r = Math.random();
+    n.state = r > 0.1 ? 'ok' : (r > 0.03 ? 'warn' : 'err');
+  }
+  renderNodes();
+}, 2200);
+
+// ───────── job queue ─────────
+const JOB_NAMES = [
+  'etl.events.hourly', 'ml.embed.refresh', 'backup.postgres.wal', 'reindex.search.full',
+  'rollup.metrics.1m', 'compact.segments', 'ingest.stripe.webhook', 'cdn.purge.cache',
+  'audit.export.s3', 'user.segment.compute', 'anomaly.detect.v3', 'report.daily.kpi',
+  'warehouse.sync.dbt', 'shard.rebalance', 'token.rotate.kms', 'snapshot.volumes',
+];
+const OWNERS = ['data-platform', 'mlops', 'sre', 'billing', 'growth', 'security'];
+const JOBS = Array.from({length: 14}, () => makeJob());
+function makeJob() {
+  return {
+    name: pick(JOB_NAMES),
+    owner: pick(OWNERS),
+    status: pick(['run','run','run','wait','ok','err']),
+    progress: rand(2, 98),
+    started: Date.now() - irand(10, 1800) * 1000,
+    heartbeat: Date.now() - irand(0, 12) * 1000,
+  };
+}
+function renderQueue() {
+  const body = document.getElementById('queue-body');
+  body.innerHTML = '';
+  let running = 0;
+  JOBS.forEach(j => {
+    if (j.status === 'run') running++;
+    const tr = document.createElement('tr');
+    const dur = Math.floor((Date.now() - j.started) / 1000);
+    const hb  = Math.floor((Date.now() - j.heartbeat) / 1000);
+    tr.innerHTML = `
+      <td>${j.name}</td>
+      <td class="mono">${j.owner}</td>
+      <td class="status-${j.status}">${j.status}</td>
+      <td>
+        ${j.progress.toFixed(1)}%
+        <div class="prog"><div class="prog-fill" style="width:${j.progress}%;background:${
+          j.status==='err'?'var(--red)':j.status==='wait'?'var(--amber)':j.status==='ok'?'var(--green)':'var(--blue)'
+        }"></div></div>
+      </td>
+      <td class="mono">${pad(Math.floor(dur/60))}:${pad(dur%60)}</td>
+      <td class="mono">${hb}s ago</td>
+    `;
+    body.appendChild(tr);
+  });
+  document.getElementById('queue-tag').textContent = `${running} running · ${JOBS.length} total`;
+}
+renderQueue();
+setInterval(() => {
+  if (paused) return;
+  JOBS.forEach(j => {
+    if (j.status === 'run') {
+      j.progress = Math.min(100, j.progress + rand(0.3, 2.8));
+      j.heartbeat = Date.now() - irand(0, 4) * 1000;
+      if (j.progress >= 100) {
+        j.status = Math.random() > 0.88 ? 'err' : 'ok';
+      }
+    } else if (j.status === 'wait' && Math.random() > 0.6) {
+      j.status = 'run'; j.progress = 0; j.started = Date.now();
+    } else if ((j.status === 'ok' || j.status === 'err') && Math.random() > 0.7) {
+      Object.assign(j, makeJob());
+    }
+  });
+  renderQueue();
+}, 1200);
+
+// ───────── resource cells ─────────
+function jitterCell(id, min, max, unit, barMin, barMax) {
+  const cell = document.getElementById(id);
+  const vEl = cell.querySelector('[data-v]');
+  const bar = cell.querySelector('.bar-fill');
+  const v = rand(min, max);
+  const pct = rand(barMin, barMax);
+  vEl.textContent = v.toFixed(v < 100 ? 1 : 0);
+  bar.style.width = pct + '%';
+  if (pct > 80) { cell.classList.add('warn'); cell.classList.remove('err'); }
+  else if (pct > 92) { cell.classList.add('err'); cell.classList.remove('warn'); }
+  else { cell.classList.remove('warn','err'); }
+}
+setInterval(() => {
+  if (paused) return;
+  jitterCell('cell-cpu', 28, 62, '%', 28, 62);
+  jitterCell('cell-mem', 18, 28, 'GB', 44, 72);
+  jitterCell('cell-net', 520, 980, 'Mb/s', 52, 88);
+  jitterCell('cell-disk', 8.2, 22.4, 'k', 34, 68);
+}, 1400);
+
+// ───────── code editor (fake typing) ─────────
+const CODE_LINES = [
+  { t: '<span class="com">// src/pipeline/stream_aggregator.ts</span>' },
+  { t: '<span class="kw">import</span> { <span class="typ">WindowOp</span>, <span class="typ">Emitter</span> } <span class="kw">from</span> <span class="str">"./core"</span>;' },
+  { t: '<span class="kw">import</span> { <span class="fn">backoff</span> } <span class="kw">from</span> <span class="str">"../util/retry"</span>;' },
+  { t: '' },
+  { t: '<span class="kw">export class</span> <span class="typ">TumblingAggregator</span>&lt;<span class="typ">T</span>&gt; <span class="kw">extends</span> <span class="typ">WindowOp</span>&lt;<span class="typ">T</span>&gt; {' },
+  { t: '  <span class="kw">private</span> buffer: <span class="typ">Map</span>&lt;<span class="typ">string</span>, <span class="typ">T</span>[]&gt; = <span class="kw">new</span> <span class="typ">Map</span>();' },
+  { t: '  <span class="kw">private readonly</span> windowMs: <span class="typ">number</span>;', cls: 'cur' },
+  { t: '  <span class="kw">private readonly</span> emitter: <span class="typ">Emitter</span>&lt;<span class="typ">T</span>[]&gt;;' },
+  { t: '' },
+  { t: '  <span class="kw">constructor</span>(windowMs: <span class="typ">number</span>, emitter: <span class="typ">Emitter</span>&lt;<span class="typ">T</span>[]&gt;) {' },
+  { t: '    <span class="kw">super</span>();' },
+  { t: '    <span class="kw">this</span>.windowMs = windowMs;' },
+  { t: '    <span class="kw">this</span>.emitter = emitter;' },
+  { t: '  }' },
+  { t: '' },
+  { t: '  <span class="kw">async</span> <span class="fn">onEvent</span>(key: <span class="typ">string</span>, evt: <span class="typ">T</span>) {', cls: 'add' },
+  { t: '    <span class="kw">const</span> b = <span class="kw">this</span>.buffer.<span class="fn">get</span>(key) ?? [];', cls: 'add' },
+  { t: '    b.<span class="fn">push</span>(evt);', cls: 'add' },
+  { t: '    <span class="kw">this</span>.buffer.<span class="fn">set</span>(key, b);', cls: 'add' },
+  { t: '    <span class="kw">return</span> <span class="fn">backoff</span>(() =&gt; <span class="kw">this</span>.<span class="fn">flushIfReady</span>(key), <span class="num">3</span>);', cls: 'add' },
+  { t: '  }' },
+  { t: '' },
+  { t: '  <span class="kw">private async</span> <span class="fn">flushIfReady</span>(key: <span class="typ">string</span>) {' },
+  { t: '    <span class="kw">const</span> b = <span class="kw">this</span>.buffer.<span class="fn">get</span>(key);' },
+  { t: '    <span class="kw">if</span> (!b || b.length &lt; <span class="num">32</span>) <span class="kw">return</span>;', cls: 'del' },
+  { t: '    <span class="kw">if</span> (!b || b.length &lt; <span class="kw">this</span>.threshold) <span class="kw">return</span>;', cls: 'add' },
+  { t: '    <span class="kw">await this</span>.emitter.<span class="fn">emit</span>(b);' },
+  { t: '    <span class="kw">this</span>.buffer.<span class="fn">delete</span>(key);' },
+  { t: '  }' },
+  { t: '}' },
+];
+const codeEl = document.getElementById('code');
+function renderCode(highlightIdx) {
+  codeEl.innerHTML = '';
+  CODE_LINES.forEach((l, i) => {
+    const div = document.createElement('div');
+    div.className = 'line' + (l.cls ? ' ' + l.cls : '') + (i === highlightIdx ? ' cur' : '');
+    div.innerHTML = `<span class="ln">${i+1}</span>${l.t}`;
+    codeEl.appendChild(div);
+  });
+}
+let cursorLine = 6;
+renderCode(cursorLine);
+setInterval(() => {
+  if (paused) return;
+  cursorLine = irand(4, CODE_LINES.length - 2);
+  renderCode(cursorLine);
+  document.getElementById('ln').textContent = 120 + cursorLine;
+  document.getElementById('col').textContent = irand(4, 60);
+}, 900);
+
+// ───────── trace panel ─────────
+const TRACE_OPS = ['http.server','http.client','db.query','cache.get','cache.set','rpc.call','auth.verify','queue.send','index.search','inference.predict','s3.put','s3.get','grpc.unary'];
+const traceEl = document.getElementById('trace');
+function traceLine() {
+  if (paused) return;
+  const row = document.createElement('div');
+  row.className = 'row';
+  const dur = rand(0.2, 480);
+  const op = pick(TRACE_OPS);
+  const depth = irand(0, 5);
+  const indent = '  '.repeat(depth);
+  const bar = '▏'.repeat(Math.min(40, Math.max(1, Math.floor(dur / 12))));
+  const color = dur > 300 ? 'c-red' : dur > 100 ? 'c-amber' : 'c-green';
+  row.innerHTML = `<span class="c-dim">${ts()}</span>  <span class="c-purple">${shortId().slice(0,6)}</span> ${indent}<span class="c-cyan">${op}</span> <span class="${color}">${bar}</span> <span class="c-dim">${dur.toFixed(1)}ms</span>`;
+  traceEl.appendChild(row);
+  const max = Math.floor(traceEl.clientHeight / 16) + 2;
+  while (traceEl.childNodes.length > max) traceEl.removeChild(traceEl.firstChild);
+}
+setInterval(traceLine, 180);
+for (let i = 0; i < 20; i++) traceLine();
+
+// ───────── availability spark + small nums ─────────
+const availHist = Array.from({length: 60}, () => 99.8 + Math.random() * 0.2);
+function drawAvail() {
+  if (paused) return;
+  availHist.push(99.8 + Math.random() * 0.2); availHist.shift();
+  const min = 99.75, max = 100;
+  const svg = document.getElementById('spark-avail');
+  const path = availHist.map((v, i) => {
+    const x = (i / (availHist.length - 1)) * 240;
+    const y = 50 - ((v - min) / (max - min)) * 46 - 2;
+    return `${i===0?'M':'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  svg.innerHTML = `
+    <path d="${path}" fill="none" stroke="var(--green)" stroke-width="1.4"/>
+    <path d="${path} L 240,50 L 0,50 Z" fill="var(--green)" opacity="0.12"/>
+  `;
+  document.getElementById('budget-val').textContent = (99.9 + Math.random() * 0.09).toFixed(2);
+  document.getElementById('err-rate').textContent = rand(1.2, 5.8).toFixed(1);
+  document.getElementById('p50').textContent = irand(32, 58);
+  document.getElementById('p99').textContent = irand(220, 340);
+}
+drawAvail();
+setInterval(drawAvail, 1500);
+
+// ───────── deploy counter ─────────
+let deploys = 847;
+setInterval(() => {
+  if (paused) return;
+  if (Math.random() > 0.7) {
+    deploys++;
+    document.getElementById('deploys').textContent = deploys;
+  }
+  document.getElementById('commits').textContent = irand(1,9);
+}, 3000);
+
+// ───────── keyboard ─────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'f' || e.key === 'F') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  } else if (e.key === ' ') {
+    paused = !paused;
+    e.preventDefault();
+  }
+});
+</script>
+
+<script type="module" src="./shared.js"></script>
+</body>
+</html>

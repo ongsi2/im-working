@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>LEXWARE · M&A_SPA_v17_redline.docx</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#f3f2f1;color:#201f1e;font-family:'Segoe UI','Malgun Gothic',sans-serif;font-size:13px;overflow:hidden}
+.app{display:grid;grid-template-rows:28px 78px 1fr 24px;height:100vh}
+.title{background:linear-gradient(180deg,#a4262c,#7a1e22);color:#fff;display:flex;align-items:center;padding:0 10px;font-size:12px;gap:10px}
+.title .dot{width:10px;height:10px;border-radius:50%;background:#fff;opacity:0.3}
+.ribbon{background:#fff;border-bottom:1px solid #d2d0ce;padding:4px 12px}
+.rtabs{display:flex;gap:18px;font-size:12px;color:#605e5c;padding:2px 0 6px;border-bottom:1px solid #edebe9;margin-bottom:6px}
+.rtabs .a{color:#a4262c;font-weight:700;border-bottom:2px solid #a4262c;padding-bottom:4px;margin-bottom:-7px}
+.rtools{display:flex;gap:4px;align-items:flex-end}
+.rgrp{display:flex;gap:4px;padding:0 10px;border-right:1px solid #edebe9;align-items:center;height:42px}
+.rgrp:last-child{border-right:none}
+.rbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;font-size:10px;color:#323130;border-radius:2px;cursor:pointer}
+.rbtn:hover{background:#f3f2f1}
+.rbtn .ico{font-size:14px;color:#a4262c}
+.rbtn.big .ico{font-size:20px}
+.rbtn.big{font-size:11px}
+
+.main{display:grid;grid-template-columns:220px 1fr 320px;overflow:hidden;background:#e5e5e5}
+.nav{background:#faf9f8;border-right:1px solid #d2d0ce;padding:12px;overflow-y:auto;font-size:12px}
+.nav h4{font-size:11px;color:#605e5c;text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px}
+.nav .it{padding:4px 6px;color:#323130;cursor:pointer;border-radius:2px;line-height:1.5}
+.nav .it:hover{background:#edebe9}
+.nav .it.a{background:#c8c6c4;font-weight:600}
+.nav .it.sub{padding-left:18px;font-size:11.5px;color:#605e5c}
+
+.doc-wrap{overflow-y:auto;display:flex;justify-content:center;padding:20px 0;background:#e5e5e5}
+.doc{background:#fff;width:720px;padding:60px 80px;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-family:'Times New Roman',serif;font-size:12pt;line-height:1.7;color:#201f1e;min-height:100%}
+.doc h1{font-size:14pt;font-weight:700;text-align:center;margin-bottom:18px;text-transform:uppercase;letter-spacing:1px}
+.doc h2{font-size:12pt;font-weight:700;margin:20px 0 10px}
+.doc .preamble{font-size:11pt;text-align:justify;margin-bottom:14px}
+.doc p{margin-bottom:12px;text-align:justify;text-indent:0}
+.doc .sec{margin-bottom:14px}
+.doc .sec-t{font-weight:700;margin-bottom:6px}
+.ins{background:#d4eed0;color:#0b6b3a;text-decoration:underline;text-decoration-color:#0b6b3a}
+.del{background:#fde0e0;color:#a4262c;text-decoration:line-through}
+.mark{background:#fff4a3}
+sup.cmt{color:#a4262c;font-weight:700;font-size:9pt;cursor:pointer}
+.num{display:inline-block;width:28px;font-weight:700}
+
+.comments{background:#faf9f8;border-left:1px solid #d2d0ce;overflow-y:auto;padding:12px}
+.comments h4{font-size:11px;color:#605e5c;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cmt-card{background:#fff;border:1px solid #edebe9;border-left:3px solid #a4262c;padding:8px 10px;margin-bottom:8px;font-size:12px}
+.cmt-card.resolved{opacity:0.55;border-left-color:#107c10}
+.cmt-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cmt-av{width:22px;height:22px;border-radius:50%;background:#a4262c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.cmt-name{font-weight:700;font-size:12px}
+.cmt-meta{color:#605e5c;font-size:10.5px;margin-left:auto}
+.cmt-body{color:#323130;line-height:1.5}
+.cmt-ref{color:#a4262c;font-weight:600;font-size:11px;margin-bottom:2px}
+.cmt-reply{margin-top:6px;padding-top:6px;border-top:1px solid #edebe9;padding-left:10px;font-size:11.5px;color:#605e5c;line-height:1.45}
+.cmt-reply .n{color:#323130;font-weight:700}
+.cmt-actions{display:flex;gap:8px;margin-top:6px;font-size:10.5px;color:#a4262c}
+
+.status{background:#a4262c;color:#fff;display:flex;align-items:center;padding:0 10px;font-size:11px;gap:14px}
+.status .sp{margin-left:auto;display:flex;gap:14px}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="계약서_최종_v7.docx" data-favicon="⚖️">
+<div class="app">
+  <div class="title">
+    <div style="display:flex;gap:6px"><span class="dot"></span><span class="dot" style="opacity:0.5"></span><span class="dot"></span></div>
+    <span style="font-weight:700;letter-spacing:0.5px">LEXWARE PRO</span>
+    <span style="opacity:0.85">&nbsp;·&nbsp; M&amp;A_SPA_Novafield_ProjectApollo_v17_redline.docx &nbsp;·&nbsp; [Track Changes: ON · Final Showing Markup]</span>
+    <span style="margin-left:auto;opacity:0.85">Kim Ji-sung, Senior Partner</span>
+  </div>
+
+  <div class="ribbon">
+    <div class="rtabs"><span>파일</span><span>홈</span><span class="a">검토</span><span>삽입</span><span>참조</span><span>서식</span><span>보기</span></div>
+    <div class="rtools">
+      <div class="rgrp">
+        <div class="rbtn big"><div class="ico">✎</div>변경 내용<br>추적</div>
+      </div>
+      <div class="rgrp">
+        <div class="rbtn"><div class="ico">◀</div>이전</div>
+        <div class="rbtn"><div class="ico">▶</div>다음</div>
+        <div class="rbtn big"><div class="ico">✓</div>적용</div>
+        <div class="rbtn big"><div class="ico">✕</div>거부</div>
+      </div>
+      <div class="rgrp">
+        <div class="rbtn big"><div class="ico">💬</div>새 주석</div>
+        <div class="rbtn"><div class="ico">⌫</div>삭제</div>
+        <div class="rbtn"><div class="ico">▲</div>이전</div>
+        <div class="rbtn"><div class="ico">▼</div>다음</div>
+      </div>
+      <div class="rgrp">
+        <div class="rbtn big"><div class="ico">⇄</div>문서<br>비교</div>
+        <div class="rbtn"><div class="ico">◐</div>작성자별<br>표시</div>
+      </div>
+      <div class="rgrp">
+        <div class="rbtn big"><div class="ico">⚖</div>판례<br>조회</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="nav">
+      <h4>문서 탐색</h4>
+      <div class="it">표지 및 당사자</div>
+      <div class="it">제1조 &nbsp;정의</div>
+      <div class="it a">제2조 &nbsp;매매의 목적물 및 대금</div>
+      <div class="it sub">2.1 매매 대금</div>
+      <div class="it sub">2.2 에스크로</div>
+      <div class="it sub">2.3 가격 조정</div>
+      <div class="it">제3조 &nbsp;거래종결(Closing)</div>
+      <div class="it">제4조 &nbsp;진술 및 보증</div>
+      <div class="it sub">4.1 매도인의 진술</div>
+      <div class="it sub">4.2 매수인의 진술</div>
+      <div class="it">제5조 &nbsp;확약(Covenants)</div>
+      <div class="it">제6조 &nbsp;선행조건</div>
+      <div class="it">제7조 &nbsp;면책</div>
+      <div class="it">제8조 &nbsp;해제</div>
+      <div class="it">제9조 &nbsp;일반조항</div>
+      <div class="it">별첨 A. 대상 회사 정보</div>
+      <div class="it">별첨 B. 개시 서한</div>
+
+      <h4 style="margin-top:20px">변경 이력</h4>
+      <div class="it sub" style="color:#0b6b3a">▲ 47개 삽입</div>
+      <div class="it sub" style="color:#a4262c">▼ 32개 삭제</div>
+      <div class="it sub" style="color:#605e5c">💬 14개 주석 · 3개 해결됨</div>
+    </div>
+
+    <div class="doc-wrap">
+      <div class="doc">
+        <h1>주식 매매 계약서</h1>
+        <div class="preamble">
+          본 주식 매매 계약서("본 계약")는 <span class="del">2025년 9월 12일</span><span class="ins">2025년 10월 8일</span><sup class="cmt">[1]</sup>자로, 아래 당사자들 사이에 체결된다: (i) 노바필드 홀딩스 주식회사, 대한민국 법률에 의하여 적법하게 설립되어 존속하는 법인으로서 그 주소지를 서울특별시 강남구 테헤란로 427에 두고 있는 회사(이하 "매도인"); (ii) 아폴로 인베스트먼트 파트너스 엘피, <span class="del">케이맨 제도</span><span class="ins">델라웨어주</span><sup class="cmt">[2]</sup> 법률에 의하여 설립된 유한책임조합(이하 "매수인").
+        </div>
+
+        <h2>제2조 &nbsp; 매매의 목적물 및 대금</h2>
+        <div class="sec">
+          <div class="sec-t">2.1 &nbsp; 매매 대금</div>
+          <p><span class="num">(a)</span> 본 거래의 총 매매대금("기본매매대금")은 <span class="del">금 일천이백억 원(₩120,000,000,000)</span><span class="ins">금 일천삼백오십억 원(₩135,000,000,000)</span><sup class="cmt">[3]</sup>으로 하며, 제2.3조에 따른 가격 조정을 반영하여 최종 확정한다.</p>
+          <p><span class="num">(b)</span> 매수인은 거래종결일에 기본매매대금을 <span class="mark">매도인이 지정하는 은행계좌</span>로 현금 전액 <span class="del">T+2영업일 이내</span><span class="ins">거래종결일 당일</span> 송금함으로써 지급한다.</p>
+          <p><span class="num">(c)</span> <span class="ins">매도인과 매수인은 본 대금 중 금 이백억 원(₩20,000,000,000)을 제2.2조에 따른 에스크로 계정에 예치하여, 거래종결일로부터 <span class="mark">24개월간</span> 유보하는 것에 합의한다.</span><sup class="cmt">[4]</sup></p>
+        </div>
+
+        <div class="sec">
+          <div class="sec-t">2.2 &nbsp; 에스크로</div>
+          <p><span class="num">(a)</span> 제2.1조 (c)항에 따른 에스크로 금액은 <span class="del">국민은행 법인영업점</span><span class="ins">Standard Chartered Hong Kong, Escrow Services Division</span>을 에스크로 대리인으로 하여 별도 계좌에 예치된다.</p>
+          <p><span class="num">(b)</span> 에스크로 대금은 제7조에 따른 매도인의 면책의무, 제4조 진술 및 보증 위반에 따른 <span class="ins">구상</span>청구, 그리고 <span class="ins">국세·관세·준조세의 추징 및 그에 수반하는 가산금·과태료를 포함한</span><sup class="cmt">[5]</sup> 일체의 지급을 담보한다.</p>
+        </div>
+
+        <div class="sec">
+          <div class="sec-t">2.3 &nbsp; 가격 조정</div>
+          <p><span class="num">(a)</span> 매매대금은 거래종결일 현재 대상회사의 <span class="mark">순운전자본(Net Working Capital)</span>, 현금성 자산 및 <span class="ins">순차입금(Net Debt)</span>의 실제 금액을 기준으로 다음과 같이 조정된다: </p>
+          <p style="padding-left:28px"><span class="del">A = 기본매매대금 + (실제 NWC − 기준 NWC) − 순차입금</span></p>
+          <p style="padding-left:28px"><span class="ins">A = 기본매매대금 + (실제 NWC − 기준 NWC) + 초과 현금 − 순차입금 − 이연세금부채</span><sup class="cmt">[6]</sup></p>
+          <p><span class="num">(b)</span> 기준 NWC는 대상회사의 최근 <span class="del">6개월</span><span class="ins">12개월</span> 평균 순운전자본으로 하며, 계산 내역은 별첨 C에 첨부한다.</p>
+        </div>
+
+        <h2>제4조 &nbsp; 진술 및 보증</h2>
+        <p><span class="num">4.1</span> <strong>매도인의 진술.</strong> 매도인은 매수인에게 본 계약의 체결일 및 거래종결일 현재 다음 사항이 각각 진실하고 정확함을 진술하고 보증한다:</p>
+        <p style="padding-left:28px">(a) 매도인은 <span class="mark">대상주식의 유일하고 적법한 소유자</span>이며, 대상주식에 관한 완전하고 유효한 권원을 보유하고 있다. <span class="del">대상주식에는 어떠한 담보권, 질권, 선취특권도 설정되어 있지 아니하다.</span><span class="ins">별첨 B "개시 서한"의 제4.1(a)항에 기재된 담보권을 제외하고,</span><sup class="cmt">[7]</sup> 대상주식에는 어떠한 담보권, 질권, 선취특권도 설정되어 있지 아니하다.</p>
+        <p style="padding-left:28px">(b) 대상회사의 주요계약에는 <span class="mark">지배권 변경 조항</span>이 포함되어 있지 아니하거나, 포함되어 있더라도 본 거래로 인한 동의가 이미 취득되었다. <span class="ins">단, 별첨 D에 기재된 3개 고객 계약에 대한 동의는 거래종결일 전 30일 이내에 취득하도록 매도인이 합리적으로 노력한다.</span></p>
+      </div>
+    </div>
+
+    <div class="comments">
+      <h4>💬 &nbsp; 주석 (14)</h4>
+
+      <div class="cmt-card">
+        <div class="cmt-head"><div class="cmt-av">KJ</div><div class="cmt-name">Kim Ji-sung</div><div class="cmt-meta">오늘 오전 11:42</div></div>
+        <div class="cmt-ref">[1] &nbsp; 계약 체결일 관련</div>
+        <div class="cmt-body">실사 연장 합의에 따라 체결일을 10/8로 수정했습니다. 이사회 결의일과 일치시켜야 합니다.</div>
+        <div class="cmt-actions">↩ 회신 &nbsp; ✓ 해결 &nbsp; @ 태그</div>
+      </div>
+
+      <div class="cmt-card">
+        <div class="cmt-head"><div class="cmt-av" style="background:#0078d4">PH</div><div class="cmt-name">Park Hye-rin</div><div class="cmt-meta">오늘 오전 10:18</div></div>
+        <div class="cmt-ref">[2] &nbsp; 매수인 관할</div>
+        <div class="cmt-body">매수인이 케이맨에서 델라웨어로 재편됨. FIRPTA 면제 여부 확인 필요. <strong>세무팀 검토 요청드립니다.</strong></div>
+        <div class="cmt-reply"><span class="n">Yoon S.</span> · 어제 오후 4:22<br>FIRPTA 적용 안됨. 확인서 제2.4항에 반영하겠습니다.</div>
+        <div class="cmt-actions">↩ 회신 &nbsp; ✓ 해결 &nbsp; @ 태그</div>
+      </div>
+
+      <div class="cmt-card">
+        <div class="cmt-head"><div class="cmt-av" style="background:#107c10">LD</div><div class="cmt-name">Lee Dong-ha</div><div class="cmt-meta">오늘 오전 9:55</div></div>
+        <div class="cmt-ref">[3] &nbsp; 매매대금 인상</div>
+        <div class="cmt-body">Q3 EBITDA 12.5% 초과 달성 → 어닝아웃 트리거 발동. 150억 인상안 확정. <span style="color:#a4262c;font-weight:700">★ 중요</span></div>
+        <div class="cmt-actions">↩ 회신 &nbsp; ✓ 해결</div>
+      </div>
+
+      <div class="cmt-card">
+        <div class="cmt-head"><div class="cmt-av">KJ</div><div class="cmt-name">Kim Ji-sung</div><div class="cmt-meta">오늘 오전 11:50</div></div>
+        <div class="cmt-ref">[4] &nbsp; 에스크로 기간</div>
+        <div class="cmt-body">매수인 측이 <strong>24개월 → 36개월</strong> 연장 요청. 진술·보증보험(W&amp;I) 커버리지와 중복되는 부분은 축소 가능. <span style="background:#fff4a3">검토 중 — 내일 10시 Call</span></div>
+        <div class="cmt-actions">↩ 회신 &nbsp; ✓ 해결</div>
+      </div>
+
+      <div class="cmt-card resolved">
+        <div class="cmt-head"><div class="cmt-av" style="background:#605e5c">YS</div><div class="cmt-name">Yoon Seul-ki</div><div class="cmt-meta">어제 오후 3:14 · ✓ 해결됨</div></div>
+        <div class="cmt-ref">[5] &nbsp; 준조세 포함 여부</div>
+        <div class="cmt-body">국세기본법상 가산세·가산금·과태료 모두 포함하도록 문구 보강했습니다.</div>
+      </div>
+
+      <div class="cmt-card">
+        <div class="cmt-head"><div class="cmt-av" style="background:#0078d4">PH</div><div class="cmt-name">Park Hye-rin</div><div class="cmt-meta">오늘 오전 11:20</div></div>
+        <div class="cmt-ref">[6] &nbsp; NWC 산식</div>
+        <div class="cmt-body">매수인 측 회계실사 결과 반영. 이연세금부채 차감 항목 <strong>반드시 추가</strong>해야 함 (약 42억 영향).</div>
+        <div class="cmt-actions">↩ 회신 &nbsp; ✓ 해결</div>
+      </div>
+
+      <div class="cmt-card">
+        <div class="cmt-head"><div class="cmt-av">KJ</div><div class="cmt-name">Kim Ji-sung</div><div class="cmt-meta">오늘 정오 12:02</div></div>
+        <div class="cmt-ref">[7] &nbsp; 개시 서한 인용</div>
+        <div class="cmt-body">담보권 존재 사실 은폐 시 사기 주장 리스크. 개시 서한 제4.1(a)항에 우리은행 담보 명시 후 보증 예외로 인용. 대법원 2019다273615 판결례 참조.</div>
+        <div class="cmt-actions">↩ 회신 &nbsp; ✓ 해결 &nbsp; 📚 판례</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span>페이지 14 / 87</span>
+    <span>단어 수 32,148</span>
+    <span>한국어 (대한민국)</span>
+    <span>변경 내용 추적: <strong>켜짐</strong></span>
+    <div class="sp">
+      <span>● 자동 저장됨 · 14:22</span>
+      <span>4명 공동 편집 중</span>
+      <span>100%</span>
+    </div>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>

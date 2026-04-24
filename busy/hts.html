@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>KiwoomPro HTS · 영웅문S</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1a1a1a;color:#e0e0e0;font-family:'돋움','Dotum','맑은 고딕',sans-serif;font-size:11px;overflow:hidden}
+.app{display:grid;grid-template-rows:26px 28px 1fr 20px;height:100vh}
+.tb{background:linear-gradient(180deg,#3a3a3a,#1a1a1a);border-bottom:1px solid #000;color:#e0e0e0;display:flex;align-items:center;padding:0 8px;font-size:11px;gap:10px}
+.tb b{color:#ffe040}
+.tb .bal{color:#ff5060}
+.tools{background:#2a2a2a;border-bottom:1px solid #000;display:flex;align-items:center;padding:0 4px;font-size:10.5px;gap:1px}
+.tb2{padding:3px 8px;background:#3a3a3a;border:1px solid #4a4a4a;color:#e0e0e0;cursor:pointer;border-radius:2px;display:flex;align-items:center;gap:3px}
+.tb2:hover{background:#4a4a4a}
+.tb2.a{background:#c04020;border-color:#e05030;color:#fff}
+.sep{width:1px;height:16px;background:#4a4a4a;margin:0 2px}
+
+.main{display:grid;grid-template-columns:230px 280px 1fr 310px 250px;gap:1px;background:#000;padding:1px;overflow:hidden}
+.panel{background:#1e1e1e;border:1px solid #2a2a2a;overflow:hidden;display:flex;flex-direction:column}
+.ph{background:linear-gradient(180deg,#3a3a3a,#2a2a2a);padding:3px 6px;font-size:10.5px;color:#ffc040;font-weight:700;border-bottom:1px solid #000;display:flex;align-items:center;gap:4px}
+.ph .cnt{margin-left:auto;color:#e0e0e0;font-weight:400;font-size:10px}
+.pb{flex:1;overflow:auto}
+
+/* stock search / watchlist */
+.wl th{background:#2a2a2a;color:#a0a0a0;font-size:9.5px;padding:3px 4px;text-align:right;border-bottom:1px solid #000;position:sticky;top:0}
+.wl th:first-child{text-align:left}
+table.wl{width:100%;border-collapse:collapse;font-family:'Consolas',monospace;font-size:10.5px}
+.wl td{padding:2px 4px;border-bottom:1px solid #262626;text-align:right}
+.wl td:first-child{text-align:left;color:#e0e0e0;font-family:'돋움'}
+.wl tr:hover td{background:#2a3440}
+.wl tr.a td{background:#2a3e2a}
+.up{color:#ff5060}
+.dn{color:#4080ff}
+.un{color:#e0e0e0}
+.ul{color:#ff8030}  /* upper limit */
+.dl{color:#00c0ff}  /* lower limit */
+
+/* orderbook */
+.ob{display:grid;grid-template-rows:repeat(20,1fr);font-family:'Consolas',monospace;font-size:10.5px}
+.ob .r{display:grid;grid-template-columns:80px 80px 80px;border-bottom:1px solid #262626;align-items:center}
+.ob .r > div{padding:2px 6px;text-align:right;position:relative}
+.ob .r .vol{position:relative;z-index:2}
+.ob .r .vol .bar{position:absolute;inset:0;z-index:-1}
+.ob .r.ask .bar{background:rgba(64,128,255,0.15);right:0;left:auto}
+.ob .r.bid .bar{background:rgba(255,80,96,0.15);left:0;right:auto}
+.ob .r .pr{font-weight:700;background:#2a2a2a;text-align:center}
+.ob .r.ask .pr{color:#4080ff}
+.ob .r.bid .pr{color:#ff5060}
+.ob .r.cur{background:#333;font-weight:800}
+.ob .r.cur .pr{background:#ffc040;color:#000}
+.ob-hdr{display:grid;grid-template-columns:80px 80px 80px;background:#2a2a2a;color:#a0a0a0;font-size:9px;text-align:center;padding:3px 0;border-bottom:1px solid #000}
+
+/* chart */
+.chart{flex:1;background:#141414;position:relative}
+.chart svg{width:100%;height:100%;display:block}
+
+/* order entry */
+.oe{padding:6px 8px;font-size:10.5px}
+.oe .tog{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:6px}
+.oe .tog .t{padding:5px 0;text-align:center;font-weight:700;font-size:11.5px;cursor:pointer;border:1px solid #4a4a4a;border-radius:2px}
+.oe .tog .t.buy{background:#c0202a;color:#fff;border-color:#e02030}
+.oe .tog .t.sell{background:#3a3a3a;color:#a0a0a0}
+.oe .row{display:grid;grid-template-columns:60px 1fr;align-items:center;gap:6px;margin-bottom:4px}
+.oe label{color:#a0a0a0;font-size:10.5px}
+.oe select,.oe input{background:#0e0e0e;border:1px solid #4a4a4a;color:#fff;padding:3px 5px;font-family:'Consolas',monospace;font-size:11px;width:100%;text-align:right}
+.oe input.t{text-align:left;font-family:'돋움'}
+.oe .qty-buttons{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:2px}
+.oe .qty-buttons button{background:#2a2a2a;border:1px solid #4a4a4a;color:#e0e0e0;padding:2px 0;font-size:10px;cursor:pointer}
+.oe .submit{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:8px}
+.oe .submit button{padding:8px 0;font-size:13px;font-weight:800;border:0;cursor:pointer}
+.oe .submit .b{background:#c0202a;color:#fff}
+.oe .submit .s{background:#2050c0;color:#fff}
+.oe .info{background:#0a0a0a;border:1px solid #2a2a2a;padding:4px 6px;margin-top:6px;font-size:10.5px;line-height:1.7;font-family:'Consolas',monospace}
+.oe .info .lb{color:#a0a0a0}
+.oe .info .v{float:right;color:#fff}
+
+/* positions */
+.pos table{width:100%;border-collapse:collapse;font-family:'Consolas',monospace;font-size:10px}
+.pos th{background:#2a2a2a;color:#a0a0a0;font-size:9.5px;padding:3px 3px;text-align:right;border-bottom:1px solid #000}
+.pos th:first-child{text-align:left}
+.pos td{padding:2px 3px;border-bottom:1px solid #262626;text-align:right}
+.pos td:first-child{text-align:left;font-family:'돋움'}
+
+/* news */
+.news{font-size:10.5px;padding:0 6px}
+.news .nw{padding:4px 0;border-bottom:1px dashed #333}
+.news .nw .t{color:#a0a0a0;font-size:10px;font-family:'Consolas',monospace}
+.news .nw .h{color:#e0e0e0;line-height:1.35}
+.news .nw.hot .h{color:#ff5060}
+.news .nw .src{color:#707070;font-size:9.5px}
+
+/* ticker */
+.ticker{background:#0a0a0a;border-top:1px solid #2a2a2a;padding:2px 6px;font-family:'Consolas',monospace;font-size:10.5px;white-space:nowrap;overflow:hidden}
+.ticker .t{display:inline-block;padding:0 10px;animation:scroll 120s linear infinite}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.sbar{background:#0a0a0a;border-top:1px solid #2a2a2a;display:flex;align-items:center;padding:0 10px;font-size:10px;gap:12px;color:#a0a0a0}
+.sbar .on{color:#4cff88}
+.sbar .w{color:#ffc040}
+</style><link rel="stylesheet" href="../shared.css">
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="HTS · KOSPI 실시간" data-favicon="📉">
+<div class="app">
+  <div class="tb">
+    <span><b>⚡ KiwoomPro HTS 영웅문S 6.4</b></span>
+    <span>계좌: 482-39-8248-14 [위탁] 정민호</span>
+    <span>예수금 <b>12,482,040</b></span>
+    <span>평가금액 <b style="color:#ff5060">284,928,420</b></span>
+    <span class="bal">손익 +8,428,240 (+3.04%)</span>
+    <span style="margin-left:auto">KOSPI <span class="up">2,684.48 ▲18.24 (+0.68%)</span> · KOSDAQ <span class="dn">748.12 ▼4.28 (-0.57%)</span> · 환율 ₩1,348.40</span>
+  </div>
+
+  <div class="tools">
+    <div class="tb2 a">[0100] 현재가</div>
+    <div class="tb2">[0101] 호가주문</div>
+    <div class="tb2">[0150] 종합차트</div>
+    <div class="tb2">[0401] 관심종목</div>
+    <div class="tb2">[0343] 잔고현황</div>
+    <div class="tb2">[0010] 업종시세</div>
+    <div class="tb2">[0600] 체결내역</div>
+    <div class="sep"></div>
+    <div class="tb2">🔍 종목검색</div>
+    <div class="tb2">📊 조건검색</div>
+    <div class="tb2">🔔 예약주문</div>
+    <div class="tb2">📰 뉴스속보</div>
+    <span style="margin-left:auto;color:#a0a0a0;font-size:10.5px">시장 <b style="color:#4cff88">장중</b> &nbsp;|&nbsp; 2024-09-28 (월) 14:18:42 &nbsp;|&nbsp; 잔여 2h 41m</span>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div class="ph">⭐ 관심종목 A그룹 <span class="cnt">28</span></div>
+      <div class="pb">
+        <table class="wl">
+          <thead><tr><th>종목명</th><th>현재가</th><th>대비</th><th>등락</th></tr></thead>
+          <tbody>
+            <tr class="a"><td><b>삼성전자</b></td><td class="up">72,400</td><td class="up">▲1,200</td><td class="up">+1.69%</td></tr>
+            <tr><td>SK하이닉스</td><td class="up">184,800</td><td class="up">▲4,200</td><td class="up">+2.33%</td></tr>
+            <tr><td>LG에너지솔루션</td><td class="dn">428,500</td><td class="dn">▼6,500</td><td class="dn">-1.49%</td></tr>
+            <tr><td>삼성바이오로직스</td><td class="up">918,000</td><td class="up">▲12,000</td><td class="up">+1.32%</td></tr>
+            <tr><td>현대차</td><td class="dn">248,500</td><td class="dn">▼2,000</td><td class="dn">-0.80%</td></tr>
+            <tr><td>기아</td><td class="up">108,400</td><td class="up">▲1,400</td><td class="up">+1.31%</td></tr>
+            <tr><td>NAVER</td><td class="up">184,200</td><td class="up">▲3,800</td><td class="up">+2.10%</td></tr>
+            <tr><td>카카오</td><td class="dn">38,450</td><td class="dn">▼850</td><td class="dn">-2.16%</td></tr>
+            <tr><td>셀트리온</td><td class="un">182,400</td><td class="un">0</td><td class="un">0.00%</td></tr>
+            <tr><td>POSCO홀딩스</td><td class="up">412,000</td><td class="up">▲8,000</td><td class="up">+1.98%</td></tr>
+            <tr><td>KB금융</td><td class="up">84,200</td><td class="up">▲600</td><td class="up">+0.72%</td></tr>
+            <tr><td>신한지주</td><td class="dn">52,400</td><td class="dn">▼200</td><td class="dn">-0.38%</td></tr>
+            <tr><td>HMM</td><td class="ul">24,850</td><td class="ul">↑5,700</td><td class="ul">+29.76%</td></tr>
+            <tr><td>에코프로</td><td class="up">128,400</td><td class="up">▲4,200</td><td class="up">+3.38%</td></tr>
+            <tr><td>엘앤에프</td><td class="dn">148,200</td><td class="dn">▼2,800</td><td class="dn">-1.85%</td></tr>
+            <tr><td>포스코퓨처엠</td><td class="up">284,500</td><td class="up">▲5,500</td><td class="up">+1.97%</td></tr>
+            <tr><td>현대모비스</td><td class="dn">238,000</td><td class="dn">▼1,500</td><td class="dn">-0.63%</td></tr>
+            <tr><td>한화에어로스페이스</td><td class="up">348,500</td><td class="up">▲12,500</td><td class="up">+3.72%</td></tr>
+            <tr><td>LIG넥스원</td><td class="up">184,800</td><td class="up">▲6,800</td><td class="up">+3.82%</td></tr>
+            <tr><td>한미반도체</td><td class="up">128,400</td><td class="up">▲4,400</td><td class="up">+3.55%</td></tr>
+            <tr><td>리노공업</td><td class="dn">242,500</td><td class="dn">▼3,500</td><td class="dn">-1.42%</td></tr>
+            <tr><td>HLB</td><td class="dl">84,200</td><td class="dl">↓18,400</td><td class="dl">-17.93%</td></tr>
+            <tr><td>알테오젠</td><td class="up">342,000</td><td class="up">▲8,000</td><td class="up">+2.40%</td></tr>
+            <tr><td>유한양행</td><td class="up">128,400</td><td class="up">▲2,400</td><td class="up">+1.90%</td></tr>
+            <tr><td>크래프톤</td><td class="dn">284,500</td><td class="dn">▼4,500</td><td class="dn">-1.56%</td></tr>
+            <tr><td>펄어비스</td><td class="up">42,850</td><td class="up">▲1,350</td><td class="up">+3.25%</td></tr>
+            <tr><td>엔씨소프트</td><td class="dn">184,200</td><td class="dn">▼3,800</td><td class="dn">-2.02%</td></tr>
+            <tr><td>넷마블</td><td class="up">48,200</td><td class="up">▲900</td><td class="up">+1.90%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">📊 [005930] 삼성전자 · KOSPI · 거래 단위 1</div>
+      <div style="padding:4px 8px;font-size:10.5px;background:#0e0e0e;border-bottom:1px solid #2a2a2a;display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-family:'Consolas',monospace">
+        <span>현재가 <b class="up" style="font-size:15px">72,400</b></span>
+        <span style="text-align:right">▲1,200 (+1.69%)</span>
+        <span>시가 <span class="up">71,500</span></span>
+        <span style="text-align:right">전일 71,200</span>
+        <span>고가 <span class="up">72,800</span></span>
+        <span style="text-align:right">저가 <span class="dn">71,000</span></span>
+        <span>상한 <span class="ul">92,500</span></span>
+        <span style="text-align:right">하한 <span class="dl">49,900</span></span>
+        <span>거래량 <b>18,428,240</b></span>
+        <span style="text-align:right">거래대금 1.34조</span>
+      </div>
+      <div class="ob-hdr">
+        <div>매도잔량</div><div>호가</div><div>매수잔량</div>
+      </div>
+      <div class="pb ob">
+        <div class="r ask"><div class="vol">184,240<div class="bar" style="width:72%"></div></div><div class="pr">72,900</div><div></div></div>
+        <div class="r ask"><div class="vol">142,820<div class="bar" style="width:56%"></div></div><div class="pr">72,800</div><div></div></div>
+        <div class="r ask"><div class="vol">218,482<div class="bar" style="width:84%"></div></div><div class="pr">72,700</div><div></div></div>
+        <div class="r ask"><div class="vol">88,420<div class="bar" style="width:34%"></div></div><div class="pr">72,600</div><div></div></div>
+        <div class="r ask"><div class="vol">126,428<div class="bar" style="width:48%"></div></div><div class="pr">72,500</div><div></div></div>
+        <div class="r cur ask"><div class="vol">248,428<div class="bar" style="width:98%"></div></div><div class="pr">72,400</div><div></div></div>
+        <div class="r bid"><div></div><div class="pr">72,300</div><div class="vol">318,240<div class="bar" style="width:100%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">72,200</div><div class="vol">184,280<div class="bar" style="width:58%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">72,100</div><div class="vol">148,420<div class="bar" style="width:46%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">72,000</div><div class="vol">284,920<div class="bar" style="width:90%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">71,900</div><div class="vol">124,820<div class="bar" style="width:40%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">71,800</div><div class="vol">98,420<div class="bar" style="width:32%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">71,700</div><div class="vol">142,480<div class="bar" style="width:45%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">71,600</div><div class="vol">68,240<div class="bar" style="width:22%"></div></div></div>
+        <div class="r bid"><div></div><div class="pr">71,500</div><div class="vol">218,480<div class="bar" style="width:70%"></div></div></div>
+        <div style="display:grid;grid-template-columns:80px 80px 80px;background:#1a1a1a;font-family:'Consolas',monospace;font-size:10.5px;padding:3px 0;border-top:2px solid #000;text-align:center">
+          <div class="dn" style="font-weight:700">1,008,408</div>
+          <div style="color:#a0a0a0">잔량</div>
+          <div class="up" style="font-weight:700">1,608,300</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">📈 [005930] 삼성전자 일봉 + 거래량
+        <span class="cnt">일 · 주 · 월 · 년 · 분1 · 분3 · 분5 · 분10 · 분30 · 분60</span>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 700 440" preserveAspectRatio="none">
+          <rect width="700" height="440" fill="#141414"/>
+          <!-- grid -->
+          <g stroke="#2a2a2a" stroke-width="0.4">
+            <line x1="0" y1="60" x2="700" y2="60"/>
+            <line x1="0" y1="120" x2="700" y2="120"/>
+            <line x1="0" y1="180" x2="700" y2="180"/>
+            <line x1="0" y1="240" x2="700" y2="240"/>
+            <line x1="0" y1="300" x2="700" y2="300"/>
+            <line x1="0" y1="360" x2="700" y2="360"/>
+          </g>
+          <!-- price labels -->
+          <g fill="#808080" font-family="Consolas" font-size="9">
+            <text x="680" y="62">76,000</text>
+            <text x="680" y="122">74,000</text>
+            <text x="680" y="182">72,000</text>
+            <text x="680" y="242">70,000</text>
+            <text x="680" y="302">68,000</text>
+          </g>
+          <!-- MA lines -->
+          <polyline fill="none" stroke="#ffc040" stroke-width="1" points="10,250 30,246 50,240 70,234 90,228 110,224 130,220 150,216 170,210 190,206 210,200 230,196 250,194 270,192 290,190 310,188 330,186 350,184 370,182 390,180 410,178 430,176 450,174 470,172 490,170 510,168 530,166 550,164 570,162 590,160 610,158 630,156 650,154 670,152"/>
+          <polyline fill="none" stroke="#ff60ff" stroke-width="1" points="10,260 30,258 50,256 70,254 90,252 110,250 130,248 150,244 170,240 190,236 210,230 230,226 250,220 270,216 290,210 310,204 330,198 350,194 370,192 390,188 410,184 430,180 450,178 470,176 490,174 510,172 530,170 550,168 570,164 590,162 610,162 630,160 650,160 670,158"/>
+
+          <!-- candles (60 candles ~10px each) -->
+          <g font-family="Consolas" font-size="8">
+            <!-- a mix of red (up) and blue (down) candles following price trend -->
+            <!-- up = red #ff5060; down = blue #4080ff -->
+          </g>
+          <g>
+            <!-- helper: generate candles manually -->
+            <!-- 40 candles -->
+            <g stroke-width="1">
+              <!-- each candle: wick + body rect -->
+              <line x1="15" y1="275" x2="15" y2="258" stroke="#4080ff"/><rect x="11" y="262" width="8" height="10" fill="#4080ff"/>
+              <line x1="30" y1="270" x2="30" y2="252" stroke="#ff5060"/><rect x="26" y="256" width="8" height="11" fill="#ff5060"/>
+              <line x1="45" y1="266" x2="45" y2="248" stroke="#ff5060"/><rect x="41" y="252" width="8" height="10" fill="#ff5060"/>
+              <line x1="60" y1="262" x2="60" y2="254" stroke="#4080ff"/><rect x="56" y="256" width="8" height="6" fill="#4080ff"/>
+              <line x1="75" y1="258" x2="75" y2="242" stroke="#ff5060"/><rect x="71" y="246" width="8" height="9" fill="#ff5060"/>
+              <line x1="90" y1="250" x2="90" y2="234" stroke="#ff5060"/><rect x="86" y="238" width="8" height="10" fill="#ff5060"/>
+              <line x1="105" y1="254" x2="105" y2="238" stroke="#4080ff"/><rect x="101" y="240" width="8" height="11" fill="#4080ff"/>
+              <line x1="120" y1="248" x2="120" y2="230" stroke="#ff5060"/><rect x="116" y="234" width="8" height="12" fill="#ff5060"/>
+              <line x1="135" y1="244" x2="135" y2="226" stroke="#ff5060"/><rect x="131" y="230" width="8" height="11" fill="#ff5060"/>
+              <line x1="150" y1="240" x2="150" y2="222" stroke="#4080ff"/><rect x="146" y="224" width="8" height="14" fill="#4080ff"/>
+              <line x1="165" y1="244" x2="165" y2="228" stroke="#4080ff"/><rect x="161" y="232" width="8" height="11" fill="#4080ff"/>
+              <line x1="180" y1="238" x2="180" y2="220" stroke="#ff5060"/><rect x="176" y="224" width="8" height="12" fill="#ff5060"/>
+              <line x1="195" y1="230" x2="195" y2="212" stroke="#ff5060"/><rect x="191" y="216" width="8" height="10" fill="#ff5060"/>
+              <line x1="210" y1="224" x2="210" y2="208" stroke="#ff5060"/><rect x="206" y="212" width="8" height="10" fill="#ff5060"/>
+              <line x1="225" y1="228" x2="225" y2="212" stroke="#4080ff"/><rect x="221" y="214" width="8" height="12" fill="#4080ff"/>
+              <line x1="240" y1="222" x2="240" y2="204" stroke="#ff5060"/><rect x="236" y="208" width="8" height="11" fill="#ff5060"/>
+              <line x1="255" y1="218" x2="255" y2="198" stroke="#ff5060"/><rect x="251" y="202" width="8" height="13" fill="#ff5060"/>
+              <line x1="270" y1="222" x2="270" y2="204" stroke="#4080ff"/><rect x="266" y="206" width="8" height="14" fill="#4080ff"/>
+              <line x1="285" y1="216" x2="285" y2="198" stroke="#ff5060"/><rect x="281" y="202" width="8" height="11" fill="#ff5060"/>
+              <line x1="300" y1="208" x2="300" y2="188" stroke="#ff5060"/><rect x="296" y="192" width="8" height="13" fill="#ff5060"/>
+              <line x1="315" y1="212" x2="315" y2="196" stroke="#4080ff"/><rect x="311" y="198" width="8" height="12" fill="#4080ff"/>
+              <line x1="330" y1="206" x2="330" y2="188" stroke="#ff5060"/><rect x="326" y="192" width="8" height="11" fill="#ff5060"/>
+              <line x1="345" y1="202" x2="345" y2="180" stroke="#ff5060"/><rect x="341" y="184" width="8" height="14" fill="#ff5060"/>
+              <line x1="360" y1="210" x2="360" y2="190" stroke="#4080ff"/><rect x="356" y="192" width="8" height="15" fill="#4080ff"/>
+              <line x1="375" y1="204" x2="375" y2="184" stroke="#ff5060"/><rect x="371" y="188" width="8" height="13" fill="#ff5060"/>
+              <line x1="390" y1="196" x2="390" y2="172" stroke="#ff5060"/><rect x="386" y="176" width="8" height="16" fill="#ff5060"/>
+              <line x1="405" y1="188" x2="405" y2="166" stroke="#ff5060"/><rect x="401" y="170" width="8" height="14" fill="#ff5060"/>
+              <line x1="420" y1="192" x2="420" y2="172" stroke="#4080ff"/><rect x="416" y="174" width="8" height="15" fill="#4080ff"/>
+              <line x1="435" y1="186" x2="435" y2="164" stroke="#ff5060"/><rect x="431" y="168" width="8" height="14" fill="#ff5060"/>
+              <line x1="450" y1="178" x2="450" y2="158" stroke="#ff5060"/><rect x="446" y="162" width="8" height="13" fill="#ff5060"/>
+              <line x1="465" y1="174" x2="465" y2="152" stroke="#ff5060"/><rect x="461" y="156" width="8" height="15" fill="#ff5060"/>
+              <line x1="480" y1="180" x2="480" y2="162" stroke="#4080ff"/><rect x="476" y="164" width="8" height="14" fill="#4080ff"/>
+              <line x1="495" y1="176" x2="495" y2="156" stroke="#ff5060"/><rect x="491" y="160" width="8" height="13" fill="#ff5060"/>
+              <line x1="510" y1="168" x2="510" y2="148" stroke="#ff5060"/><rect x="506" y="152" width="8" height="14" fill="#ff5060"/>
+              <line x1="525" y1="172" x2="525" y2="152" stroke="#4080ff"/><rect x="521" y="154" width="8" height="16" fill="#4080ff"/>
+              <line x1="540" y1="166" x2="540" y2="144" stroke="#ff5060"/><rect x="536" y="148" width="8" height="15" fill="#ff5060"/>
+              <line x1="555" y1="158" x2="555" y2="138" stroke="#ff5060"/><rect x="551" y="142" width="8" height="13" fill="#ff5060"/>
+              <line x1="570" y1="164" x2="570" y2="144" stroke="#4080ff"/><rect x="566" y="146" width="8" height="15" fill="#4080ff"/>
+              <line x1="585" y1="158" x2="585" y2="138" stroke="#ff5060"/><rect x="581" y="142" width="8" height="13" fill="#ff5060"/>
+              <line x1="600" y1="150" x2="600" y2="128" stroke="#ff5060"/><rect x="596" y="132" width="8" height="15" fill="#ff5060"/>
+              <line x1="615" y1="154" x2="615" y2="134" stroke="#4080ff"/><rect x="611" y="136" width="8" height="16" fill="#4080ff"/>
+              <line x1="630" y1="148" x2="630" y2="128" stroke="#ff5060"/><rect x="626" y="132" width="8" height="13" fill="#ff5060"/>
+              <line x1="645" y1="140" x2="645" y2="118" stroke="#ff5060"/><rect x="641" y="122" width="8" height="15" fill="#ff5060"/>
+              <line x1="660" y1="144" x2="660" y2="120" stroke="#4080ff"/><rect x="656" y="124" width="8" height="17" fill="#4080ff"/>
+            </g>
+          </g>
+          <!-- current price line -->
+          <line x1="0" y1="182" x2="670" y2="182" stroke="#ffc040" stroke-width="0.5" stroke-dasharray="3,2"/>
+          <rect x="670" y="176" width="30" height="12" fill="#ffc040"/>
+          <text x="685" y="185" font-family="Consolas" font-size="9" text-anchor="middle" fill="#000" font-weight="700">72,400</text>
+
+          <!-- volume panel -->
+          <g>
+            <rect x="0" y="350" width="700" height="90" fill="#0a0a0a"/>
+            <g>
+              <rect x="11" y="420" width="8" height="12" fill="#4080ff"/>
+              <rect x="26" y="414" width="8" height="18" fill="#ff5060"/>
+              <rect x="41" y="418" width="8" height="14" fill="#ff5060"/>
+              <rect x="56" y="424" width="8" height="8" fill="#4080ff"/>
+              <rect x="71" y="416" width="8" height="16" fill="#ff5060"/>
+              <rect x="86" y="410" width="8" height="22" fill="#ff5060"/>
+              <rect x="101" y="418" width="8" height="14" fill="#4080ff"/>
+              <rect x="116" y="408" width="8" height="24" fill="#ff5060"/>
+              <rect x="131" y="412" width="8" height="20" fill="#ff5060"/>
+              <rect x="146" y="416" width="8" height="16" fill="#4080ff"/>
+              <rect x="161" y="420" width="8" height="12" fill="#4080ff"/>
+              <rect x="176" y="402" width="8" height="30" fill="#ff5060"/>
+              <rect x="191" y="408" width="8" height="24" fill="#ff5060"/>
+              <rect x="206" y="414" width="8" height="18" fill="#ff5060"/>
+              <rect x="221" y="418" width="8" height="14" fill="#4080ff"/>
+              <rect x="236" y="400" width="8" height="32" fill="#ff5060"/>
+              <rect x="251" y="395" width="8" height="37" fill="#ff5060"/>
+              <rect x="266" y="408" width="8" height="24" fill="#4080ff"/>
+              <rect x="281" y="402" width="8" height="30" fill="#ff5060"/>
+              <rect x="296" y="392" width="8" height="40" fill="#ff5060"/>
+              <rect x="311" y="404" width="8" height="28" fill="#4080ff"/>
+              <rect x="326" y="396" width="8" height="36" fill="#ff5060"/>
+              <rect x="341" y="388" width="8" height="44" fill="#ff5060"/>
+              <rect x="356" y="400" width="8" height="32" fill="#4080ff"/>
+              <rect x="371" y="392" width="8" height="40" fill="#ff5060"/>
+              <rect x="386" y="378" width="8" height="54" fill="#ff5060"/>
+              <rect x="401" y="374" width="8" height="58" fill="#ff5060"/>
+              <rect x="416" y="388" width="8" height="44" fill="#4080ff"/>
+              <rect x="431" y="380" width="8" height="52" fill="#ff5060"/>
+              <rect x="446" y="374" width="8" height="58" fill="#ff5060"/>
+              <rect x="461" y="370" width="8" height="62" fill="#ff5060"/>
+              <rect x="476" y="382" width="8" height="50" fill="#4080ff"/>
+              <rect x="491" y="376" width="8" height="56" fill="#ff5060"/>
+              <rect x="506" y="368" width="8" height="64" fill="#ff5060"/>
+              <rect x="521" y="380" width="8" height="52" fill="#4080ff"/>
+              <rect x="536" y="372" width="8" height="60" fill="#ff5060"/>
+              <rect x="551" y="362" width="8" height="70" fill="#ff5060"/>
+              <rect x="566" y="378" width="8" height="54" fill="#4080ff"/>
+              <rect x="581" y="368" width="8" height="64" fill="#ff5060"/>
+              <rect x="596" y="356" width="8" height="76" fill="#ff5060"/>
+              <rect x="611" y="372" width="8" height="60" fill="#4080ff"/>
+              <rect x="626" y="362" width="8" height="70" fill="#ff5060"/>
+              <rect x="641" y="354" width="8" height="78" fill="#ff5060"/>
+              <rect x="656" y="366" width="8" height="66" fill="#4080ff"/>
+            </g>
+            <text x="10" y="360" font-family="Consolas" font-size="8" fill="#808080">거래량</text>
+          </g>
+
+          <!-- indicators label -->
+          <g font-family="Consolas" font-size="9">
+            <text x="10" y="14" fill="#ffc040">MA5 72,280</text>
+            <text x="110" y="14" fill="#ff60ff">MA20 69,840</text>
+            <text x="220" y="14" fill="#60c0ff">MA60 66,420</text>
+            <text x="320" y="14" fill="#a0a0a0">MA120 62,180</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">📋 주문 [005930] 삼성전자</div>
+      <div class="oe">
+        <div class="tog">
+          <div class="t buy">매수</div>
+          <div class="t sell">매도</div>
+        </div>
+        <div class="row"><label>종목</label><input class="t" value="005930 삼성전자" readonly></div>
+        <div class="row"><label>종류</label><select><option>보통(지정가)</option><option>시장가</option><option>조건부지정</option><option>최유리</option><option>최우선</option></select></div>
+        <div class="row"><label>가격</label><input value="72,400"></div>
+        <div class="row"><label>수량</label><input value="100"></div>
+        <div class="qty-buttons">
+          <button>10%</button><button>25%</button><button>50%</button><button>75%</button><button>최대</button>
+        </div>
+        <div class="info" style="margin-top:8px">
+          <div><span class="lb">주문금액</span><span class="v">7,240,000</span></div>
+          <div><span class="lb">수수료 (0.015%)</span><span class="v">1,086</span></div>
+          <div><span class="lb">세금</span><span class="v">—</span></div>
+          <div><span class="lb">정산금액</span><span class="v" style="color:#ff5060;font-weight:700">7,241,086</span></div>
+          <div><span class="lb">주문가능</span><span class="v">12,482,040</span></div>
+          <div><span class="lb">최대수량</span><span class="v">172</span></div>
+        </div>
+        <div class="submit">
+          <button class="b">매수 주문</button>
+          <button class="s">매도 주문</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px">
+          <button style="padding:4px;background:#2a2a2a;color:#e0e0e0;border:1px solid #4a4a4a;font-size:10.5px">정정</button>
+          <button style="padding:4px;background:#2a2a2a;color:#e0e0e0;border:1px solid #4a4a4a;font-size:10.5px">취소</button>
+        </div>
+      </div>
+
+      <div class="ph">📄 미체결 주문 <span class="cnt">3건</span></div>
+      <div class="pb pos">
+        <table>
+          <thead><tr><th>종목</th><th>구분</th><th>주문가</th><th>수량</th><th>미체결</th></tr></thead>
+          <tbody>
+            <tr><td>삼성전자</td><td class="up">매수</td><td>72,000</td><td>100</td><td class="ul">100</td></tr>
+            <tr><td>SK하이닉스</td><td class="dn">매도</td><td>186,000</td><td>50</td><td class="ul">30</td></tr>
+            <tr><td>에코프로</td><td class="up">매수</td><td>125,000</td><td>40</td><td class="ul">40</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">💼 잔고현황 <span class="cnt">8종목</span></div>
+      <div class="pb pos" style="max-height:280px">
+        <table>
+          <thead><tr><th>종목</th><th>보유</th><th>평단가</th><th>손익률</th></tr></thead>
+          <tbody>
+            <tr><td>삼성전자</td><td>1,200</td><td>68,240</td><td class="up">+6.09%</td></tr>
+            <tr><td>SK하이닉스</td><td>280</td><td>162,400</td><td class="up">+13.79%</td></tr>
+            <tr><td>NAVER</td><td>148</td><td>198,500</td><td class="dn">-7.20%</td></tr>
+            <tr><td>삼성바이오</td><td>24</td><td>842,000</td><td class="up">+9.02%</td></tr>
+            <tr><td>한화에어로</td><td>120</td><td>298,000</td><td class="up">+16.94%</td></tr>
+            <tr><td>HMM</td><td>400</td><td>18,200</td><td class="ul">+36.54%</td></tr>
+            <tr><td>에코프로</td><td>80</td><td>142,500</td><td class="dn">-9.89%</td></tr>
+            <tr><td>카카오</td><td>520</td><td>48,200</td><td class="dn">-20.23%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ph">📰 실시간 뉴스 속보</div>
+      <div class="pb news">
+        <div class="nw hot"><div class="t">14:18:02 [단독]</div><div class="h">삼성전자, HBM3E 12단 엔비디아 퀄 완료 · 4분기 양산 본격화</div><div class="src">한국경제</div></div>
+        <div class="nw"><div class="t">14:14:48</div><div class="h">美 FOMC 의사록 공개 임박 · 환율 1,348원 안착</div><div class="src">연합인포맥스</div></div>
+        <div class="nw"><div class="t">14:12:22</div><div class="h">HMM 상한가 임박 · 中 경기부양책 기대감 해운주 급등</div><div class="src">이데일리</div></div>
+        <div class="nw hot"><div class="t">14:08:14 [공시]</div><div class="h">한화에어로스페이스 · 폴란드 K9 자주포 추가수주 2.1조</div><div class="src">DART</div></div>
+        <div class="nw"><div class="t">14:04:28</div><div class="h">외국인 코스피 +4,820억 순매수 · 기관 -2,140억</div><div class="src">매일경제</div></div>
+        <div class="nw"><div class="t">13:58:02</div><div class="h">HLB 하한가 · FDA 간암신약 BLA 재검토 요청</div><div class="src">뉴스핌</div></div>
+        <div class="nw"><div class="t">13:52:18</div><div class="h">카카오, AI기업가치 재평가 · 증권가 목표가 하향</div><div class="src">서울경제</div></div>
+        <div class="nw"><div class="t">13:48:02</div><div class="h">반도체 장비주 동반 급등 · 한미반도체 +3.55%</div><div class="src">파이낸셜뉴스</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker">
+    <span class="t">
+      <span class="un">KOSPI</span> <span class="up">2,684.48 ▲18.24</span> &nbsp;·&nbsp;
+      <span class="un">KOSDAQ</span> <span class="dn">748.12 ▼4.28</span> &nbsp;·&nbsp;
+      <span class="un">S&amp;P500</span> <span class="up">5,648.40 +0.82%</span> &nbsp;·&nbsp;
+      <span class="un">NASDAQ</span> <span class="up">18,420.14 +1.24%</span> &nbsp;·&nbsp;
+      <span class="un">NIKKEI</span> <span class="dn">38,842.20 -0.34%</span> &nbsp;·&nbsp;
+      <span class="un">상해</span> <span class="up">3,128.42 +2.18%</span> &nbsp;·&nbsp;
+      <span class="un">USD/KRW</span> 1,348.40 &nbsp;·&nbsp;
+      <span class="un">JPY/KRW</span> 934.12 &nbsp;·&nbsp;
+      <span class="un">WTI</span> <span class="up">$74.82 +0.48</span> &nbsp;·&nbsp;
+      <span class="un">GOLD</span> <span class="up">$2,682 +18</span> &nbsp;·&nbsp;
+      <span class="un">BTC/USD</span> <span class="up">68,420 +2.14%</span> &nbsp;·&nbsp;
+      <span class="un">ETH/USD</span> <span class="dn">3,248 -0.88%</span> &nbsp;·&nbsp;
+      <span class="un">국채10Y</span> 3.284% &nbsp;·&nbsp;
+      <span class="un">VIX</span> <span class="dn">14.28 ▼0.82</span>
+    </span>
+  </div>
+
+  <div class="sbar">
+    <span class="on">● 시세서버 연결 (MAIN-02)</span>
+    <span>실시간 등록 28건</span>
+    <span>계좌 482-39-8248-14</span>
+    <span>거래수수료 0.015% · 세금 0.23%</span>
+    <span>체결알림 ON</span>
+    <span class="w">⚠ 예약주문 2건 대기</span>
+    <span style="margin-left:auto">버전 6.4.218 · 최종로그인 09-28 09:02:14</span>
+  </div>
+</div>
+<script type="module" src="../shared.js"></script>
+</body></html>
