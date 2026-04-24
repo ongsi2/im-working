@@ -1,0 +1,19 @@
+/* shared.css — realism overlay styles */
+/* z-index strata:
+   overlays pointer-events: none by default
+   99997 status-strip (hub only)
+   99998 os-top / os-dock
+   99999 toast / ghost-cursor
+   100000 settings drawer / FAB
+*/
+
+.busy-os-top, .busy-os-dock, .busy-toast, .busy-ghost-cursor,
+.busy-hub-fab, .busy-settings-drawer, .busy-status-strip,
+.busy-badge, .busy-vitals-editing, .busy-vitals-caret {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+/* Hide helper */
+.busy-hidden { display: none !important; }
