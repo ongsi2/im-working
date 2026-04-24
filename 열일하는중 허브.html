@@ -172,6 +172,18 @@
 </style>
 </head>
 <body data-title="열일하는중 허브" data-favicon="🎛">
+<div class="busy-status-strip" id="busy-status-strip">
+  <span class="dot" id="busy-strip-dot"></span>
+  <span id="busy-strip-rot">로테이션 OFF</span>
+  <span>·</span>
+  <span id="busy-strip-next">다음 --:--</span>
+  <span>·</span>
+  <span id="busy-strip-intensity">강도 보통</span>
+  <span>·</span>
+  <span id="busy-strip-sound">사운드 ON</span>
+  <span>·</span>
+  <span id="busy-strip-panic">패닉: 📧</span>
+</div>
 <div class="wrap">
   <header>
     <div>
@@ -1568,9 +1580,11 @@ function clk() {
 setInterval(clk,1000); clk();
 
 document.addEventListener('keydown', (e) => {
+  if (e.target.matches('input, textarea, [contenteditable]')) return;
   const k = e.key;
-  if (/^[1-9]$/.test(k) || k==='0' || k==='-' || k==='=') {
-    const card = document.querySelector(`[data-key="${k}"]`);
+  const valid = /^[1-9]$/.test(k) || ['0','-','=','q','w','e','r','t','y','u','i','o','p','[',']'].includes(k.toLowerCase());
+  if (valid) {
+    const card = document.querySelector(`[data-key="${k.toLowerCase()}"]`);
     if (card) window.location.href = card.href;
   }
 });
@@ -1718,6 +1732,42 @@ document.addEventListener('keydown', (e) => {
   } // end initDrawer
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDrawer);
   else initDrawer();
+})();
+
+// Busy v0.1 — status strip render loop
+(function() {
+  function initStrip() {
+    document.body.classList.add('busy-has-strip');
+    const dot  = document.getElementById('busy-strip-dot');
+    const rotS = document.getElementById('busy-strip-rot');
+    const nxt  = document.getElementById('busy-strip-next');
+    const itS  = document.getElementById('busy-strip-intensity');
+    const sndS = document.getElementById('busy-strip-sound');
+    const pnc  = document.getElementById('busy-strip-panic');
+    if (!dot) return;
+
+    function render() {
+      const s = window.Busy?.settings;
+      if (!s) return;
+      const rotState = JSON.parse(sessionStorage.getItem('busy.rotation') || 'null');
+      dot.classList.remove('on','panic');
+      if (rotState?.pausedUntil && rotState.pausedUntil > Date.now()) dot.classList.add('panic');
+      else if (rotState?.enabled) dot.classList.add('on');
+      rotS.textContent = '로테이션 ' + (rotState?.enabled ? 'ON' : 'OFF');
+      if (rotState?.nextAt) {
+        const left = Math.max(0, rotState.nextAt - Date.now());
+        const mm = Math.floor(left / 60000), ss = Math.floor((left % 60000) / 1000);
+        nxt.textContent = `다음 ${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+      } else nxt.textContent = '다음 --:--';
+      itS.textContent = '강도 ' + {low:'차분',med:'보통',high:'광기'}[s.intensity];
+      sndS.textContent = '사운드 ' + (s.sound.enabled ? 'ON' : 'OFF');
+      pnc.textContent = '패닉: ' + s.panicScene.replace('busy/','').replace('.html','');
+    }
+    setInterval(render, 1000);
+    render();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initStrip);
+  else initStrip();
 })();
 </script>
 <button class="busy-hub-fab" id="busy-hub-fab" type="button">

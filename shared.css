@@ -205,3 +205,19 @@ body.busy-has-chrome.busy-has-dock { padding-bottom: 56px; }
 .busy-settings-drawer .footer button {
   flex: 1; padding: 8px; background: #2a2d34; color: #ddd; border: 0; border-radius: 6px; cursor: pointer;
 }
+
+/* Status strip */
+.busy-status-strip {
+  position: fixed; top: 24px; left: 0; right: 0; height: 24px;
+  z-index: 99997;
+  background: linear-gradient(90deg, rgba(0,0,0,0.7), rgba(0,0,0,0.6));
+  color: #ccc; font-size: 11px; padding: 4px 14px;
+  display: flex; gap: 12px; align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: system-ui, sans-serif;
+}
+.busy-status-strip .dot { width: 8px; height: 8px; border-radius: 50%; background: #888; }
+.busy-status-strip .dot.on { background: #4bce63; box-shadow: 0 0 6px #4bce63; }
+.busy-status-strip .dot.panic { background: #ff3344; }
+body.busy-has-chrome .busy-status-strip { top: 24px; }
+body.busy-has-strip { padding-top: 48px; }
