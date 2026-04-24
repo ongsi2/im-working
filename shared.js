@@ -10,6 +10,7 @@ import { mount as mountSound, unlock as unlockSound } from './shared-core/sound.
 import * as Rotator from './shared-core/rotator.mjs';
 import * as WakeLock from './shared-core/wake-lock.mjs';
 import * as PiP from './shared-core/pip.mjs';
+import * as Start from './shared-core/start.mjs';
 
 // Global namespace
 const Busy = {
@@ -35,3 +36,5 @@ Busy.Rotator = Rotator;
 try { WakeLock.mount(); } catch (e) { console.warn('[Busy] WakeLock failed', e); }
 Busy.WakeLock = WakeLock;
 Busy.PiP = PiP;
+Busy.start = () => Start.startEverything(Busy.settings);
+Busy.stop  = () => Start.stopEverything();
