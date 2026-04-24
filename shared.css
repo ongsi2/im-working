@@ -140,3 +140,26 @@ body.busy-has-chrome.busy-has-dock { padding-bottom: 56px; }
 @keyframes busy-flash {
   0% { background: #fff3a0; } 100% { background: inherit; }
 }
+
+/* Hub FAB — start button */
+.busy-hub-fab {
+  position: fixed; bottom: 72px; right: 32px; z-index: 100000;
+  width: 88px; height: 88px; border-radius: 50%;
+  background: linear-gradient(135deg, #f8d569, #d4a43a);
+  color: #1a1405; font-weight: 700; font-size: 14px;
+  border: 0; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+  animation: busy-pulse 2.4s ease-in-out infinite;
+}
+.busy-hub-fab:hover { transform: scale(1.05); }
+.busy-hub-fab .emoji { font-size: 26px; }
+@keyframes busy-pulse {
+  0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 0 rgba(248,213,105,0.7); }
+  50%      { box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 16px rgba(248,213,105,0); }
+}
+.busy-hub-fab.started {
+  width: 48px; height: 28px; border-radius: 14px;
+  font-size: 12px; animation: none; bottom: 32px; right: 32px;
+}
+.busy-hub-fab.started .emoji { font-size: 14px; }

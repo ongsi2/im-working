@@ -1574,6 +1574,28 @@ document.addEventListener('keydown', (e) => {
     if (card) window.location.href = card.href;
   }
 });
+
+// Busy v0.1 — start FAB handler
+(function(){
+  const fab = document.getElementById('busy-hub-fab');
+  if (!fab) return;
+  fab.addEventListener('click', async () => {
+    if (!window.Busy?.start) return;
+    await window.Busy.start();
+    fab.classList.add('started');
+    fab.innerHTML = '<span class="emoji">⏸</span><span>정지</span>';
+    fab.onclick = async () => {
+      if (!window.Busy?.stop) return;
+      await window.Busy.stop();
+      location.reload();
+    };
+  });
+})();
 </script>
+<button class="busy-hub-fab" id="busy-hub-fab" type="button">
+  <span class="emoji">🎬</span>
+  <span>시작</span>
+</button>
+<script type="module" src="./shared.js"></script>
 </body>
 </html>
