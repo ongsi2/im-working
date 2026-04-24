@@ -7,7 +7,7 @@ const Busy = {
   VERSION: '0.1.0',
   emit,
   on,
-  state: {},
+  state: {},        // runtime state bucket written by individual modules
   settings: null,   // populated by settings.mjs in Task 2
 };
 window.Busy = Busy;
