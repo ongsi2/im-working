@@ -27,13 +27,30 @@ export async function startEverything(settings) {
     try { results.pip = await PiP.enter(); } catch { results.pip = false; }
   } else { results.pip = false; }
 
-  // Rotation
-  settings.rotation.enabled = true;
-  saveSettings(settings);
-  Rotator.beginRotation(settings);
-  results.rotation = true;
+  // Rotation — only start if user explicitly enabled it in settings.
+  // Default behavior: stay on whatever scene the user picked.
+  if (settings.rotation.enabled) {
+    Rotator.beginRotation(settings);
+    results.rotation = true;
+  } else {
+    results.rotation = false;
+  }
 
   console.info('[Busy] started', results);
+  return results;
+}
+
+/** Activate immersive mode (FS + audio + WL) on the current scene without
+ *  starting rotation. Called by `F` keypress from any scene. */
+export async function focusCurrent(settings) {
+  const results = {};
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    results.fullscreen = true;
+  } catch { results.fullscreen = false; }
+  try { await unlockSound(); results.audio = true; } catch { results.audio = false; }
+  try { results.wakeLock = await WakeLock.request(); } catch { results.wakeLock = false; }
+  console.info('[Busy] focus', results);
   return results;
 }
 

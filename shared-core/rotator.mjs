@@ -64,6 +64,37 @@ export const ALL_SCENES = [
   'busy/wms.html', 'busy/latex.html', 'busy/hts.html',
 ];
 
+// Role-based scene groupings — used when settings.rotation.role is set.
+// Each role represents a coherent "one person's job" so the rotation looks
+// believable across scenes (vs. ATC + DAW + legal review absurdity).
+export const ROLE_GROUPS = {
+  office:    ['busy/email.html', 'busy/calendar.html', 'busy/messenger.html', 'busy/erp.html', 'busy/ppt.html'],
+  dev:       ['열일하는중.html', 'busy/issuetracker.html', 'busy/messenger.html', 'busy/devops.html', 'busy/notebook.html'],
+  finance:   ['busy/trader.html', 'busy/hts.html', 'busy/crypto.html', 'busy/email.html'],
+  creative:  ['busy/design.html', 'busy/ppt.html', 'busy/videoedit.html', 'busy/daw.html', 'busy/3dmodel.html'],
+  research:  ['busy/notebook.html', 'busy/latex.html', 'busy/translator.html'],
+  ops:       ['busy/atc.html', 'busy/soc.html', 'busy/wms.html', 'busy/hts.html'],
+  pro:       ['busy/medical.html', 'busy/legal.html'],
+  mixed:     null, // null = use ALL_SCENES (광인 모드)
+};
+
+export const ROLE_LABELS = {
+  office: '🧑‍💼 사무직',
+  dev: '👨‍💻 개발자',
+  finance: '💰 금융',
+  creative: '🎨 창작',
+  research: '🔬 연구',
+  ops: '🛡️ 관제',
+  pro: '🏥 전문직',
+  mixed: '🎲 혼합 (광인)',
+};
+
+/** Resolve which scene set to rotate through given a role + blacklist. */
+export function resolveSceneSet(role, blacklist = []) {
+  const base = (role && ROLE_GROUPS[role]) || ALL_SCENES;
+  return base.filter((s) => !blacklist.includes(s));
+}
+
 function resolveSceneUrl(path) {
   const inBusy = location.pathname.includes('/busy/');
   return (inBusy ? '../' : './') + path;
@@ -118,11 +149,13 @@ function bootRotation(settings) {
 
 /** Called by start.mjs when user clicks "시작". */
 export function beginRotation(settings) {
-  const order = buildOrder(ALL_SCENES, settings.rotation.blacklist);
+  const sceneSet = resolveSceneSet(settings.rotation.role, settings.rotation.blacklist);
+  const order = buildOrder(sceneSet, []);
   const state = {
     enabled: true,
     order,
     cursor: 0,
+    role: settings.rotation.role,
     baseSec: settings.rotation.baseSec,
     jitterPct: settings.rotation.jitterPct,
     blacklist: settings.rotation.blacklist,

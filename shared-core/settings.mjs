@@ -10,6 +10,7 @@ export const defaults = Object.freeze({
     enabled: false,
     baseSec: 75,                // 180 | 75 | 35
     jitterPct: 0.25,
+    role: 'office',             // 'office' | 'dev' | 'finance' | 'creative' | 'research' | 'ops' | 'pro' | 'mixed'
     blacklist: [],
   },
   sound: { enabled: true },

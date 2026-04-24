@@ -1591,12 +1591,26 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Busy v0.1 — start FAB handler
+// Click → activate immersive (FS + audio + WL + PiP) and navigate into the
+// user's chosen role group. With rotation OFF (default), user lands on one
+// random scene from the role and stays there. With rotation ON, the rotation
+// timer takes over once the scene loads.
 (function(){
   const fab = document.getElementById('busy-hub-fab');
   if (!fab) return;
   fab.addEventListener('click', async () => {
     if (!window.Busy?.start) return;
     await window.Busy.start();
+
+    const s = window.Busy.settings;
+    const set = window.Busy.Rotator?.resolveSceneSet?.(s.rotation.role, s.rotation.blacklist) || [];
+    if (set.length > 0) {
+      const target = set[Math.floor(Math.random() * set.length)];
+      location.href = './' + target;
+      return;
+    }
+
+    // Fallback: nothing to navigate to — morph FAB to stop pill
     fab.classList.add('started');
     fab.innerHTML = '<span class="emoji">⏸</span><span>정지</span>';
     fab.onclick = async () => {
@@ -1669,6 +1683,8 @@ document.addEventListener('keydown', (e) => {
       c.classList.toggle('active', c.dataset.v === settings.osChrome));
     document.querySelectorAll('[data-group="rotation.baseSec"] .chip').forEach(c =>
       c.classList.toggle('active', Number(c.dataset.v) === settings.rotation.baseSec));
+    document.querySelectorAll('[data-group="rotation.role"] .chip').forEach(c =>
+      c.classList.toggle('active', c.dataset.v === settings.rotation.role));
     document.getElementById('busy-set-rotation-enabled').checked = !!settings.rotation.enabled;
     document.getElementById('busy-set-sound-enabled').checked = !!settings.sound.enabled;
     document.getElementById('busy-set-volume').value = settings.volume * 100;
@@ -1786,6 +1802,7 @@ document.addEventListener('keydown', (e) => {
   </div>
 
   <h3>오토 로테이션</h3>
+  <div style="font-size:11px;opacity:0.6;margin-bottom:6px;">기본 OFF — 카드 클릭 시 그 씬에만 머무름. ON 시 직업 그룹 안에서 순환.</div>
   <div class="row">
     <label>활성화</label>
     <input type="checkbox" id="busy-set-rotation-enabled">
@@ -1796,6 +1813,19 @@ document.addEventListener('keydown', (e) => {
       <span class="chip" data-v="180">3분</span>
       <span class="chip" data-v="75">75초</span>
       <span class="chip" data-v="35">35초</span>
+    </div>
+  </div>
+  <div style="margin-top:8px;">
+    <div style="font-size:11px;opacity:0.7;margin-bottom:4px;">직업 그룹 (이 안에서만 순환)</div>
+    <div class="options" data-group="rotation.role">
+      <span class="chip" data-v="office">🧑‍💼 사무직</span>
+      <span class="chip" data-v="dev">👨‍💻 개발자</span>
+      <span class="chip" data-v="finance">💰 금융</span>
+      <span class="chip" data-v="creative">🎨 창작</span>
+      <span class="chip" data-v="research">🔬 연구</span>
+      <span class="chip" data-v="ops">🛡️ 관제</span>
+      <span class="chip" data-v="pro">🏥 전문직</span>
+      <span class="chip" data-v="mixed">🎲 혼합 (광인)</span>
     </div>
   </div>
 
