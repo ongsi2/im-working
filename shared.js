@@ -12,6 +12,7 @@ import * as WakeLock from './shared-core/wake-lock.mjs';
 import * as PiP from './shared-core/pip.mjs';
 import * as Start from './shared-core/start.mjs';
 import { mountVitals } from './shared-vitals.js';
+import { mount as mountKeys } from './shared-core/keys.mjs';
 
 // Global namespace
 const Busy = {
@@ -40,3 +41,4 @@ Busy.PiP = PiP;
 Busy.start = () => Start.startEverything(Busy.settings);
 Busy.stop  = () => Start.stopEverything();
 try { mountVitals(Busy.settings); } catch (e) { console.warn('[Busy] vitals failed', e); }
+try { mountKeys(Busy.settings); } catch (e) { console.warn('[Busy] Keys failed', e); }
