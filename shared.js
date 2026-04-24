@@ -8,6 +8,8 @@ import { mount as mountToast, show as showToast } from './shared-core/toast.mjs'
 import { mount as mountCursor } from './shared-core/cursor.mjs';
 import { mount as mountSound, unlock as unlockSound } from './shared-core/sound.mjs';
 import * as Rotator from './shared-core/rotator.mjs';
+import * as WakeLock from './shared-core/wake-lock.mjs';
+import * as PiP from './shared-core/pip.mjs';
 
 // Global namespace
 const Busy = {
@@ -30,3 +32,6 @@ try { mountSound(Busy.settings); } catch (e) { console.warn('[Busy] Sound failed
 Busy.unlockSound = unlockSound;
 try { Rotator.mount(Busy.settings); } catch (e) { console.warn('[Busy] Rotator failed', e); }
 Busy.Rotator = Rotator;
+try { WakeLock.mount(); } catch (e) { console.warn('[Busy] WakeLock failed', e); }
+Busy.WakeLock = WakeLock;
+Busy.PiP = PiP;
