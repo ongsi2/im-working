@@ -109,3 +109,16 @@ body.busy-has-chrome.busy-has-dock { padding-bottom: 56px; }
   font-family: system-ui, sans-serif;
 }
 .busy-vitals-save-badge.show { opacity: 1; }
+
+/* Ghost cursor */
+.busy-ghost-cursor {
+  position: fixed; top: 0; left: 0; z-index: 99999;
+  width: 14px; height: 20px; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 20'%3E%3Cpath fill='%23fff' stroke='%23000' stroke-width='0.9' d='M1 1 L1 16 L5 12.5 L7.5 18 L9.5 17 L7 12 L12 12 Z'/%3E%3C/svg%3E");
+  background-size: contain;
+  transform: translate(0, 0);
+  will-change: transform;
+  transition: transform 0.12s linear;
+  opacity: 0.85;
+}
+.busy-ghost-cursor.jumping { transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1); }

@@ -5,6 +5,8 @@ import { load as loadSettings } from './shared-core/settings.mjs';
 import { mount as mountIdentity } from './shared-core/identity-tag.mjs';
 import { mount as mountOSChrome } from './shared-core/os-chrome.mjs';
 import { mount as mountToast, show as showToast } from './shared-core/toast.mjs';
+import { mount as mountCursor } from './shared-core/cursor.mjs';
+import { mount as mountSound, unlock as unlockSound } from './shared-core/sound.mjs';
 
 // Global namespace
 const Busy = {
@@ -22,3 +24,6 @@ try { mountIdentity(); } catch (e) { console.warn('[Busy] IdentityTag failed', e
 try { mountOSChrome(Busy.settings); } catch (e) { console.warn('[Busy] OSChrome failed', e); }
 try { mountToast(Busy.settings); } catch (e) { console.warn('[Busy] Toast failed', e); }
 Busy.showToast = showToast;
+try { mountCursor(Busy.settings); } catch (e) { console.warn('[Busy] Cursor failed', e); }
+try { mountSound(Busy.settings); } catch (e) { console.warn('[Busy] Sound failed', e); }
+Busy.unlockSound = unlockSound;
