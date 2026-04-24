@@ -1,0 +1,7 @@
+docs/
+.git/
+tests/
+scripts/
+*.md
+_design/
+.playwright-mcp/

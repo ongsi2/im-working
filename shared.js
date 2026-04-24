@@ -1,5 +1,13 @@
 // shared.js — realism layer entry point
 
+// Inject noindex meta at runtime so we don't edit 25 files
+(function() {
+  const m = document.createElement('meta');
+  m.name = 'robots';
+  m.content = 'noindex, nofollow';
+  document.head.appendChild(m);
+})();
+
 import { emit, on } from './shared-core/eventbus.mjs';
 import { load as loadSettings } from './shared-core/settings.mjs';
 import { mount as mountIdentity } from './shared-core/identity-tag.mjs';
