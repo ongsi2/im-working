@@ -1591,11 +1591,195 @@ document.addEventListener('keydown', (e) => {
     };
   });
 })();
+
+// Busy v0.1 — settings drawer (wired after markup via DOMContentLoaded guard)
+(function() {
+  function initDrawer() {
+  const drawer = document.getElementById('busy-settings-drawer');
+  const toggle = document.getElementById('busy-settings-toggle');
+  const close  = document.getElementById('busy-settings-close');
+  if (!drawer) return;
+
+  const open = () => drawer.classList.add('open');
+  const shut = () => drawer.classList.remove('open');
+
+  toggle.addEventListener('click', open);
+  close.addEventListener('click', shut);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') shut(); });
+  document.addEventListener('click', (e) => {
+    if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== toggle) shut();
+  });
+
+  // Populate panic scene dropdown
+  const SCENES = [
+    {p:'열일하는중.html', n:'SYS.MONITOR'},
+    {p:'busy/trader.html', n:'MARKETS'},
+    {p:'busy/ppt.html', n:'DECK'},
+    {p:'busy/email.html', n:'INBOX (기본)'},
+    {p:'busy/calendar.html', n:'CALENDAR'},
+    {p:'busy/design.html', n:'DESIGN'},
+    {p:'busy/messenger.html', n:'MESSENGER'},
+    {p:'busy/issuetracker.html', n:'ISSUES'},
+    {p:'busy/crypto.html', n:'CRYPTO'},
+    {p:'busy/devops.html', n:'DEVOPS'},
+    {p:'busy/videoedit.html', n:'VIDEO'},
+    {p:'busy/cad.html', n:'CAD'},
+    {p:'busy/legal.html', n:'LEGAL'},
+    {p:'busy/medical.html', n:'MEDICAL'},
+    {p:'busy/daw.html', n:'DAW'},
+    {p:'busy/3dmodel.html', n:'3D'},
+    {p:'busy/notebook.html', n:'NOTEBOOK'},
+    {p:'busy/atc.html', n:'ATC'},
+    {p:'busy/soc.html', n:'SOC'},
+    {p:'busy/translator.html', n:'CAT'},
+    {p:'busy/erp.html', n:'ERP'},
+    {p:'busy/wms.html', n:'WMS'},
+    {p:'busy/latex.html', n:'LATEX'},
+    {p:'busy/hts.html', n:'HTS'},
+  ];
+  const panicSel = document.getElementById('busy-set-panic');
+  SCENES.forEach(s => { const o = document.createElement('option'); o.value = s.p; o.textContent = s.n; panicSel.appendChild(o); });
+
+  const blGrid = document.getElementById('busy-scene-blacklist');
+  SCENES.forEach(s => {
+    const lbl = document.createElement('label');
+    lbl.innerHTML = `<input type="checkbox" data-scene="${s.p}"> ${s.n}`;
+    blGrid.appendChild(lbl);
+  });
+
+  function readUI(settings) {
+    document.querySelectorAll('[data-group="intensity"] .chip').forEach(c =>
+      c.classList.toggle('active', c.dataset.v === settings.intensity));
+    document.querySelectorAll('[data-group="osChrome"] .chip').forEach(c =>
+      c.classList.toggle('active', c.dataset.v === settings.osChrome));
+    document.querySelectorAll('[data-group="rotation.baseSec"] .chip').forEach(c =>
+      c.classList.toggle('active', Number(c.dataset.v) === settings.rotation.baseSec));
+    document.getElementById('busy-set-rotation-enabled').checked = !!settings.rotation.enabled;
+    document.getElementById('busy-set-sound-enabled').checked = !!settings.sound.enabled;
+    document.getElementById('busy-set-volume').value = settings.volume * 100;
+    document.getElementById('busy-set-wakelock-enabled').checked = !!settings.wakeLock.enabled;
+    document.getElementById('busy-set-pip-enabled').checked = !!settings.pip.enabled;
+    document.getElementById('busy-set-ghost-enabled').checked = !!settings.ghostCursor.enabled;
+    panicSel.value = settings.panicScene;
+    document.querySelectorAll('#busy-scene-blacklist input[type="checkbox"]').forEach(cb => {
+      cb.checked = settings.rotation.blacklist.includes(cb.dataset.scene);
+    });
+  }
+
+  async function syncUI() {
+    const { save } = await import('./shared-core/settings.mjs');
+    readUI(window.Busy.settings);
+    function commit() { save(window.Busy.settings); }
+
+    document.querySelectorAll('[data-group] .chip').forEach(c => c.addEventListener('click', () => {
+      const group = c.parentElement.dataset.group;
+      const val = c.dataset.v;
+      const parsed = isNaN(Number(val)) ? val : Number(val);
+      if (group.includes('.')) {
+        const [a, b] = group.split('.');
+        window.Busy.settings[a][b] = parsed;
+      } else window.Busy.settings[group] = parsed;
+      readUI(window.Busy.settings); commit();
+    }));
+    document.getElementById('busy-set-rotation-enabled').addEventListener('change', (e) => {
+      window.Busy.settings.rotation.enabled = e.target.checked; commit();
+    });
+    document.getElementById('busy-set-sound-enabled').addEventListener('change', (e) => {
+      window.Busy.settings.sound.enabled = e.target.checked; commit();
+    });
+    document.getElementById('busy-set-volume').addEventListener('input', (e) => {
+      window.Busy.settings.volume = e.target.value / 100; commit();
+    });
+    document.getElementById('busy-set-wakelock-enabled').addEventListener('change', (e) => {
+      window.Busy.settings.wakeLock.enabled = e.target.checked; commit();
+    });
+    document.getElementById('busy-set-pip-enabled').addEventListener('change', (e) => {
+      window.Busy.settings.pip.enabled = e.target.checked; commit();
+    });
+    document.getElementById('busy-set-ghost-enabled').addEventListener('change', (e) => {
+      window.Busy.settings.ghostCursor.enabled = e.target.checked; commit();
+    });
+    panicSel.addEventListener('change', (e) => { window.Busy.settings.panicScene = e.target.value; commit(); });
+    document.querySelectorAll('#busy-scene-blacklist input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const list = window.Busy.settings.rotation.blacklist;
+        if (cb.checked) { if (!list.includes(cb.dataset.scene)) list.push(cb.dataset.scene); }
+        else { const i = list.indexOf(cb.dataset.scene); if (i >= 0) list.splice(i, 1); }
+        commit();
+      });
+    });
+    document.getElementById('busy-set-reset').addEventListener('click', async () => {
+      const { reset } = await import('./shared-core/settings.mjs');
+      reset(); location.reload();
+    });
+  }
+  if (window.Busy?.settings) syncUI();
+  else window.addEventListener('DOMContentLoaded', syncUI);
+  } // end initDrawer
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDrawer);
+  else initDrawer();
+})();
 </script>
 <button class="busy-hub-fab" id="busy-hub-fab" type="button">
   <span class="emoji">🎬</span>
   <span>시작</span>
 </button>
+<button class="busy-settings-toggle" id="busy-settings-toggle" title="설정">⚙</button>
+<aside class="busy-settings-drawer" id="busy-settings-drawer">
+  <button class="close" id="busy-settings-close">×</button>
+  <h3>강도</h3>
+  <div class="options" data-group="intensity">
+    <span class="chip" data-v="low">차분함</span>
+    <span class="chip" data-v="med">보통</span>
+    <span class="chip" data-v="high">광기</span>
+  </div>
+
+  <h3>오토 로테이션</h3>
+  <div class="row">
+    <label>활성화</label>
+    <input type="checkbox" id="busy-set-rotation-enabled">
+  </div>
+  <div class="row">
+    <label>주기</label>
+    <div class="options" data-group="rotation.baseSec">
+      <span class="chip" data-v="180">3분</span>
+      <span class="chip" data-v="75">75초</span>
+      <span class="chip" data-v="35">35초</span>
+    </div>
+  </div>
+
+  <h3>패닉 씬 (. 키)</h3>
+  <select id="busy-set-panic" style="width:100%;padding:6px;background:#2a2d34;color:#ddd;border:0;border-radius:6px;"></select>
+
+  <h3>제외할 씬 (로테이션 중 건너뜀)</h3>
+  <div class="scene-grid" id="busy-scene-blacklist"></div>
+
+  <h3>사운드</h3>
+  <div class="row">
+    <label>활성화</label>
+    <input type="checkbox" id="busy-set-sound-enabled">
+  </div>
+  <div class="row">
+    <label>볼륨</label>
+    <input type="range" min="0" max="100" id="busy-set-volume">
+  </div>
+
+  <h3>OS 크롬</h3>
+  <div class="options" data-group="osChrome">
+    <span class="chip" data-v="mac">macOS</span>
+    <span class="chip" data-v="win">Windows</span>
+    <span class="chip" data-v="off">끔</span>
+  </div>
+
+  <h3>그 외</h3>
+  <div class="row"><label>Wake Lock</label><input type="checkbox" id="busy-set-wakelock-enabled"></div>
+  <div class="row"><label>Picture-in-Picture</label><input type="checkbox" id="busy-set-pip-enabled"></div>
+  <div class="row"><label>유령 커서</label><input type="checkbox" id="busy-set-ghost-enabled"></div>
+
+  <div class="footer">
+    <button id="busy-set-reset">초기화</button>
+  </div>
+</aside>
 <script type="module" src="./shared.js"></script>
 </body>
 </html>
