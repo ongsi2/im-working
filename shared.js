@@ -4,6 +4,7 @@ import { emit, on } from './shared-core/eventbus.mjs';
 import { load as loadSettings } from './shared-core/settings.mjs';
 import { mount as mountIdentity } from './shared-core/identity-tag.mjs';
 import { mount as mountOSChrome } from './shared-core/os-chrome.mjs';
+import { mount as mountToast, show as showToast } from './shared-core/toast.mjs';
 
 // Global namespace
 const Busy = {
@@ -19,3 +20,5 @@ console.info(`[Busy] shared.js v${Busy.VERSION} boot`);
 console.info(`[Busy] settings loaded · intensity=${Busy.settings.intensity}`);
 try { mountIdentity(); } catch (e) { console.warn('[Busy] IdentityTag failed', e); }
 try { mountOSChrome(Busy.settings); } catch (e) { console.warn('[Busy] OSChrome failed', e); }
+try { mountToast(Busy.settings); } catch (e) { console.warn('[Busy] Toast failed', e); }
+Busy.showToast = showToast;
