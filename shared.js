@@ -7,6 +7,7 @@ import { mount as mountOSChrome } from './shared-core/os-chrome.mjs';
 import { mount as mountToast, show as showToast } from './shared-core/toast.mjs';
 import { mount as mountCursor } from './shared-core/cursor.mjs';
 import { mount as mountSound, unlock as unlockSound } from './shared-core/sound.mjs';
+import * as Rotator from './shared-core/rotator.mjs';
 
 // Global namespace
 const Busy = {
@@ -27,3 +28,5 @@ Busy.showToast = showToast;
 try { mountCursor(Busy.settings); } catch (e) { console.warn('[Busy] Cursor failed', e); }
 try { mountSound(Busy.settings); } catch (e) { console.warn('[Busy] Sound failed', e); }
 Busy.unlockSound = unlockSound;
+try { Rotator.mount(Busy.settings); } catch (e) { console.warn('[Busy] Rotator failed', e); }
+Busy.Rotator = Rotator;
