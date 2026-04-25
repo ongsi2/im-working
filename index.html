@@ -1595,7 +1595,12 @@ document.addEventListener('keydown', (e) => {
 // user's chosen role group. With rotation OFF (default), user lands on one
 // random scene from the role and stays there. With rotation ON, the rotation
 // timer takes over once the scene loads.
+//
+// NOTE: This inline <script> runs BEFORE the FAB markup is parsed (script
+// is at top of body, FAB is later). Wrap in DOMContentLoaded so getElementById
+// can find the button.
 (function(){
+  function initFab() {
   const fab = document.getElementById('busy-hub-fab');
   if (!fab) return;
 
@@ -1636,6 +1641,9 @@ document.addEventListener('keydown', (e) => {
       location.reload();
     };
   });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFab);
+  else initFab();
 })();
 
 // Busy v0.1 — settings drawer (wired after markup via DOMContentLoaded guard)

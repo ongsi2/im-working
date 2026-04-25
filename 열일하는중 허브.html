@@ -1589,8 +1589,9 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Busy v0.1 — start FAB handler with dynamic role label
+// Busy v0.1 — start FAB handler with dynamic role label (DOMContentLoaded-guarded)
 (function(){
+  function initFab() {
   const fab = document.getElementById('busy-hub-fab');
   if (!fab) return;
   const ROLE_SHORT = {
@@ -1627,6 +1628,9 @@ document.addEventListener('keydown', (e) => {
       location.reload();
     };
   });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFab);
+  else initFab();
 })();
 
 // Busy v0.1 — settings drawer (wired after markup via DOMContentLoaded guard)
