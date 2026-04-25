@@ -21,6 +21,8 @@ import * as PiP from './shared-core/pip.mjs';
 import * as Start from './shared-core/start.mjs';
 import { mountVitals } from './shared-vitals.js';
 import { mount as mountKeys } from './shared-core/keys.mjs';
+import { mount as mountFirstHint } from './shared-core/first-visit-hint.mjs';
+import { mount as mountFakeShortcuts } from './shared-core/fake-shortcuts.mjs';
 
 // Global namespace
 const Busy = {
@@ -50,3 +52,5 @@ Busy.start = () => Start.startEverything(Busy.settings);
 Busy.stop  = () => Start.stopEverything();
 try { mountVitals(Busy.settings); } catch (e) { console.warn('[Busy] vitals failed', e); }
 try { mountKeys(Busy.settings); } catch (e) { console.warn('[Busy] Keys failed', e); }
+try { mountFirstHint(); } catch (e) { console.warn('[Busy] FirstHint failed', e); }
+try { mountFakeShortcuts(); } catch (e) { console.warn('[Busy] FakeShortcuts failed', e); }

@@ -5,7 +5,8 @@
 // spec §4.1 #8 (global ambient save badge independent of toasts).
 
 import { emit } from './eventbus.mjs';
-import { randomToast } from './toast-pool.mjs';
+import { randomToast, randomToastInScenes } from './toast-pool.mjs';
+import { ROLE_GROUPS } from './rotator.mjs';
 
 const INTERVAL_BY_INTENSITY = {
   low:  [180, 420],
@@ -81,14 +82,28 @@ function scheduleNext() {
   const delaySec = min + Math.random() * (max - min);
   scheduleTimer = setTimeout(() => {
     if (document.body.dataset.suppress?.includes('toast')) { scheduleNext(); return; }
-    show(randomToast());
+    let toast;
+    if (settings.rotation?.enabled && settings.rotation.role && settings.rotation.role !== 'mixed') {
+      const allowed = ROLE_GROUPS[settings.rotation.role] || [];
+      toast = randomToastInScenes(allowed);
+    } else {
+      toast = randomToast();
+    }
+    show(toast);
     scheduleNext();
   }, delaySec * 1000);
 }
 
+function isHub() {
+  // Hub pages are index.html / 열일하는중 허브.html — both at root with no scene data-app
+  const p = location.pathname;
+  return p === '/' || /\/index\.html$/.test(p) || /허브\.html$/.test(decodeURIComponent(p));
+}
+
 function scheduleSaveBadge() {
   // Global "자동 저장됨" ambient badge per spec §4.1 #8.
-  // Independent of toast system — appears in a different location (bottom-center).
+  // Skip on hub — hub is a card grid, not a "document being saved".
+  if (isHub()) return;
   const delay = (40 + Math.random() * 80) * 1000;
   saveBadgeTimer = setTimeout(() => {
     const b = document.createElement('div');

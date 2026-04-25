@@ -8,6 +8,7 @@ let clockTimer = null;
 let battTimer = null;
 let wifiTimer = null;
 let dockTimer = null;
+let rotationTimer = null;
 let battPct = 100;
 
 const DOCK_APPS = [
@@ -33,6 +34,7 @@ function renderTop(el, skin) {
       <span class="dnd" title="방해 금지">🌙</span>
       <span class="wifi" title="Wi-Fi">📶</span>
       <span class="battery" title="배터리"><span data-role="batt-pct">100</span>%</span>
+      <span class="rotation" data-role="rotation" style="display:none;font-variant-numeric:tabular-nums;opacity:0.7;"></span>
       <span class="clock" data-role="clock">00:00</span>
     </div>
   `;
@@ -43,9 +45,53 @@ function tickClock() {
   topEl.querySelector('[data-role="clock"]').textContent = fmtTime(new Date());
 }
 
+function tickRotation() {
+  if (!topEl) return;
+  const span = topEl.querySelector('[data-role="rotation"]');
+  let state = null;
+  try { state = JSON.parse(sessionStorage.getItem('busy.rotation') || 'null'); } catch {}
+  if (!state?.enabled || !state.nextAt) {
+    span.style.display = 'none'; return;
+  }
+  const left = Math.max(0, state.nextAt - Date.now());
+  const mm = Math.floor(left / 60000), ss = Math.floor((left % 60000) / 1000);
+  span.textContent = `⟳ ${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  span.style.display = '';
+}
+
+// Battery model — persist across scene loads + realistic drain rate.
+// Drain: ~1% per 5 min (= ~12%/h, similar to real laptops).
+// Starting %: time-of-day aware. Workday morning = high (90~99%),
+// late afternoon = mid (50~75%), evening/night = lower (30~55%).
+const BATT_KEY = 'busy.battery';
+
+function startingBatteryPct() {
+  const h = new Date().getHours();
+  if (h >= 8 && h < 12)  return 90 + Math.floor(Math.random() * 10);   // morning 90~99
+  if (h >= 12 && h < 17) return 65 + Math.floor(Math.random() * 25);   // mid-day 65~89
+  if (h >= 17 && h < 22) return 35 + Math.floor(Math.random() * 25);   // evening 35~59
+  return 25 + Math.floor(Math.random() * 30);                          // night/early 25~54
+}
+
+function loadBattery() {
+  try {
+    const raw = sessionStorage.getItem(BATT_KEY);
+    if (raw) {
+      const v = parseInt(raw, 10);
+      if (!isNaN(v) && v >= 1 && v <= 100) return v;
+    }
+  } catch {}
+  return startingBatteryPct();
+}
+
+function saveBattery(v) {
+  try { sessionStorage.setItem(BATT_KEY, String(v)); } catch {}
+}
+
 function tickBattery() {
   if (!topEl) return;
   battPct = Math.max(3, battPct - 1);
+  saveBattery(battPct);
   topEl.querySelector('[data-role="batt-pct"]').textContent = String(battPct);
   if (battPct <= 15) {
     const el = topEl.querySelector('.battery');
@@ -106,9 +152,17 @@ export function mount(settings) {
   tickClock();
   clockTimer = setInterval(tickClock, 1000);
 
-  battPct = 85 + Math.floor(Math.random() * 15);
-  tickBattery();
-  battTimer = setInterval(tickBattery, 60 * 1000);
+  tickRotation();
+  rotationTimer = setInterval(tickRotation, 1000);
+
+  battPct = loadBattery();
+  topEl.querySelector('[data-role="batt-pct"]').textContent = String(battPct);
+  if (battPct <= 15) {
+    const el = topEl.querySelector('.battery');
+    el.title = '충전 중'; el.style.color = '#ffb020';
+  }
+  // Slow drain: 1% per 5 minutes (~12%/h, realistic).
+  battTimer = setInterval(tickBattery, 5 * 60 * 1000);
 
   scheduleWifiFlicker();
 
@@ -121,6 +175,7 @@ export function unmount() {
   if (battTimer) clearInterval(battTimer);
   if (wifiTimer) clearTimeout(wifiTimer);
   if (dockTimer) clearTimeout(dockTimer);
+  if (rotationTimer) clearInterval(rotationTimer);
   topEl?.remove(); topEl = null;
   dockEl?.remove(); dockEl = null;
   document.body.classList.remove('busy-has-chrome', 'busy-has-dock');

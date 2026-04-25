@@ -9,7 +9,7 @@ let escTimer = null;
 export function mount(settings) {
   document.addEventListener('keydown', (e) => {
     // Ignore when typing in inputs
-    if (e.target.matches('input, textarea, [contenteditable]')) return;
+    if (e.target instanceof Element && e.target.matches('input, textarea, [contenteditable]')) return;
 
     // . → panic
     if (e.key === '.' || e.key === '>') {

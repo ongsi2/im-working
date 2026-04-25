@@ -66,3 +66,9 @@ export const POOL = [
 export function randomToast() {
   return POOL[Math.floor(Math.random() * POOL.length)];
 }
+
+export function randomToastInScenes(allowedScenes) {
+  const filtered = POOL.filter(t => t.target === null || allowedScenes.includes(t.target));
+  if (filtered.length === 0) return randomToast();
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}

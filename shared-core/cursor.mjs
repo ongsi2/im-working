@@ -54,6 +54,25 @@ export function mount(settings) {
     phaseStart = ts;
     fromX = curX; fromY = curY;
     const W = window.innerWidth, H = window.innerHeight;
+    const useElement = Math.random() < 0.4;
+    if (useElement) {
+      const targets = [...document.querySelectorAll('button, a, td, input, .cell, [class*="row"], [class*="item"], li')]
+        .filter(el => {
+          if (el.closest('.busy-os-top, .busy-os-dock, .busy-toast-container, .busy-settings-drawer, .busy-hub-fab, .busy-status-strip')) return false;
+          const r = el.getBoundingClientRect();
+          return r.width > 8 && r.height > 8 && r.top >= 0 && r.left >= 0 && r.bottom <= H && r.right <= W;
+        });
+      if (targets.length > 0) {
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        const r = t.getBoundingClientRect();
+        toX = r.left + r.width * (0.3 + Math.random() * 0.4);
+        toY = r.top + r.height * (0.3 + Math.random() * 0.4);
+        const d = Math.hypot(toX - fromX, toY - fromY);
+        phaseDuration = Math.min(750, 160 + d * 1.1);
+        return;
+      }
+      // fall through to random if no targets
+    }
     const isLong = Math.random() < 0.3;
     if (isLong) {
       toX = 40 + Math.random() * Math.max(0, W - 80);
