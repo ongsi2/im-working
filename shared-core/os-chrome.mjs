@@ -20,6 +20,32 @@ const DOCK_APPS = [
   { icon: '💻', name: 'Terminal' },
 ];
 
+const APP_TO_DOCK_INDEX = {
+  Slack: 0, Mail: 1, Notion: 2, Excel: 3, Chrome: 4, Terminal: 5,
+  // Aliases — map other scene apps to the closest dock app
+  'Jira': 4,        // Chrome (it's a web app)
+  'Figma': 4,       // Chrome
+  'Keynote': 2,     // Notion-ish (presentation)
+  'Calendar': 1,    // Mail (often bundled)
+  'Bloomberg': 4,   // Chrome
+  'Binance': 4,     // Chrome
+  'Lens': 5,        // Terminal
+  'Final Cut': 2,   // Notion (creative tool placeholder)
+  'AutoCAD': 2,
+  'Word': 2,
+  'EMR': 4,
+  'memoQ': 2,
+  'Overleaf': 4,
+  'Jupyter': 5,
+  'SAP': 4,
+  'WMS': 4,
+  'ATC': 5,
+  'SIEM': 5,
+  'HTS': 4,
+  'Logic Pro': 2,
+  'Blender': 2,
+};
+
 function pad(n) { return String(n).padStart(2, '0'); }
 function fmtTime(d) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 
@@ -28,7 +54,8 @@ function renderTop(el, skin) {
   el.innerHTML = `
     <div class="left">
       <span class="logo"></span>
-      <span class="app-name" data-role="app-name"></span>
+      <span class="app-name" data-role="app-name" style="font-weight:600;"></span>
+      <span class="doc-name" data-role="doc-name" style="opacity:0.55;"></span>
     </div>
     <div class="right">
       <span class="dnd" title="방해 금지">🌙</span>
@@ -134,6 +161,13 @@ function mountDock(skin) {
     }, wait);
   };
   scheduleDock();
+
+  const currentApp = document.body.dataset.app;
+  if (currentApp && APP_TO_DOCK_INDEX[currentApp] !== undefined) {
+    const idx = APP_TO_DOCK_INDEX[currentApp];
+    const target = dockEl.querySelector(`.dock-app[data-idx="${idx}"]`);
+    if (target) target.classList.add('active');
+  }
 }
 
 export function mount(settings) {
@@ -146,8 +180,11 @@ export function mount(settings) {
   document.body.appendChild(topEl);
   document.body.classList.add('busy-has-chrome');
 
-  const appName = document.body.dataset.title || document.title;
+  const appName = document.body.dataset.app || document.body.dataset.title || document.title;
   topEl.querySelector('[data-role="app-name"]').textContent = appName;
+
+  const docName = document.body.dataset.title || '';
+  topEl.querySelector('[data-role="doc-name"]').textContent = docName !== appName ? docName : '';
 
   tickClock();
   clockTimer = setInterval(tickClock, 1000);

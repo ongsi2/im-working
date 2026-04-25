@@ -18,6 +18,32 @@
 /* Hide helper */
 .busy-hidden { display: none !important; }
 
+/* First-visit shortcut hint banner */
+.busy-first-hint {
+  position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 30px);
+  z-index: 99999; opacity: 0;
+  display: flex; gap: 14px; align-items: center;
+  background: rgba(28,28,32,0.95); color: #e6e6e6;
+  padding: 10px 16px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  font-family: system-ui, sans-serif; font-size: 12px;
+  transition: opacity 320ms ease, transform 320ms ease;
+  pointer-events: auto;
+}
+.busy-first-hint.show { opacity: 1; transform: translate(-50%, 0); }
+.busy-first-hint kbd {
+  display: inline-block; padding: 2px 6px; margin-right: 4px;
+  background: #2a2d34; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px; font-size: 11px; font-family: ui-monospace, monospace;
+  color: #fff;
+}
+.busy-first-hint .hint-close {
+  background: transparent; color: #888; border: 0; cursor: pointer;
+  font-size: 18px; line-height: 1; padding: 0 0 0 4px;
+}
+.busy-first-hint .hint-close:hover { color: #fff; }
+
 /* OS top bar */
 .busy-os-top {
   position: fixed; top: 0; left: 0; right: 0; height: 24px;
@@ -221,3 +247,22 @@ body.busy-has-chrome.busy-has-dock { padding-bottom: 56px; }
 .busy-status-strip .dot.panic { background: #ff3344; }
 body.busy-has-chrome .busy-status-strip { top: 24px; }
 body.busy-has-strip { padding-top: 48px; }
+
+/* Card role colors — visual grouping */
+.card[data-busy-role="office"]   { border-left: 3px solid #5a88e6; }
+.card[data-busy-role="dev"]      { border-left: 3px solid #4bce63; }
+.card[data-busy-role="finance"]  { border-left: 3px solid #f5b94a; }
+.card[data-busy-role="creative"] { border-left: 3px solid #c065e6; }
+.card[data-busy-role="research"] { border-left: 3px solid #5ad8d8; }
+.card[data-busy-role="ops"]      { border-left: 3px solid #ff7059; }
+.card[data-busy-role="pro"]      { border-left: 3px solid #d97a9a; }
+
+/* Dock active scene indicator */
+.busy-os-dock .dock-app.active::after {
+  content: ''; position: absolute; bottom: -2px; left: 50%;
+  transform: translateX(-50%); width: 4px; height: 4px;
+  border-radius: 50%; background: #fff; opacity: 0.85;
+}
+.busy-os-dock[data-skin="win"] .dock-app.active::after {
+  background: #2a73d2;
+}
