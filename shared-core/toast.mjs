@@ -7,6 +7,7 @@
 import { emit } from './eventbus.mjs';
 import { randomToast, randomToastInScenes } from './toast-pool.mjs';
 import { ROLE_GROUPS } from './rotator.mjs';
+import { reactTo as cursorReactTo } from './cursor.mjs';
 
 const INTERVAL_BY_INTENSITY = {
   low:  [180, 420],
@@ -54,7 +55,18 @@ function render(t) {
     });
   }
   container.appendChild(el);
-  requestAnimationFrame(() => el.classList.add('show'));
+  requestAnimationFrame(() => {
+    el.classList.add('show');
+    // After toast settles, "the user notices it" — ghost cursor drifts
+    // toward it ~40% of the time. Adds the impression that the cursor
+    // is reacting to events instead of behaving independently.
+    setTimeout(() => {
+      const r = el.getBoundingClientRect();
+      try {
+        cursorReactTo(r.left + r.width / 2, r.top + r.height / 2, 0.4);
+      } catch {}
+    }, 220 + Math.random() * 400);
+  });
   setTimeout(() => {
     el.classList.remove('show');
     setTimeout(() => {

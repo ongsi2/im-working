@@ -1,5 +1,22 @@
 // shared-core/vitals-dashboard.mjs
 import { pickIntensityRange, scheduleRandom, pickRandom } from './vitals-core.mjs';
+import { getPos as getCursorPos } from './cursor.mjs';
+
+/** Pick element weighted by proximity to ghost cursor. 40% ambient random. */
+function pickNearCursor(arr) {
+  if (!arr.length) return null;
+  if (Math.random() < 0.4) return pickRandom(arr);
+  const pos = getCursorPos();
+  if (!pos) return pickRandom(arr);
+  const ranked = arr
+    .map((el) => {
+      const r = el.getBoundingClientRect();
+      return { el, d: Math.hypot(r.left + r.width / 2 - pos.x, r.top + r.height / 2 - pos.y) };
+    })
+    .sort((a, b) => a.d - b.d);
+  const topThird = ranked.slice(0, Math.max(1, Math.ceil(ranked.length / 3)));
+  return topThird[Math.floor(Math.random() * topThird.length)].el;
+}
 
 const TICK_BY_INTENSITY  = { low: [2, 5], med: [1, 3], high: [0.3, 1.5] };
 const LOG_BY_INTENSITY   = { low: [20, 60], med: [5, 15], high: [2, 6] };
@@ -73,7 +90,8 @@ export function mount(settings) {
   scheduleRandom(
     () => {
       const nums = findNumbers();
-      if (nums.length) tickNumber(pickRandom(nums));
+      const n = pickNearCursor(nums);
+      if (n) tickNumber(n);
     },
     () => pickIntensityRange(TICK_BY_INTENSITY, settings.intensity),
   );

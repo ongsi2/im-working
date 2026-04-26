@@ -1,5 +1,6 @@
 // shared-core/vitals-table.mjs
 import { pickIntensityRange, scheduleRandom, pickRandom } from './vitals-core.mjs';
+import { getPos as getCursorPos } from './cursor.mjs';
 
 const FLASH_BY_INTENSITY  = { low: [5, 15], med: [2, 8],   high: [0.5, 3] };
 const TOTAL_BY_INTENSITY  = { low: [15, 30], med: [10, 20], high: [3, 10] };
@@ -9,6 +10,26 @@ function findCells() {
   return [...document.querySelectorAll('td, [data-value], .cell, .num')].filter(
     (el) => el.offsetParent !== null && /\d/.test(el.textContent)
   );
+}
+
+/** Pick a cell, weighted toward those near the ghost cursor.
+ *  60% of the time we restrict to the closest 1/3 of cells; 40% pure random.
+ *  Falls back to plain random if cursor position is unknown. */
+function pickCellNearCursor(cells) {
+  if (!cells.length) return null;
+  if (Math.random() < 0.4) return pickRandom(cells);  // ambient noise
+  const pos = getCursorPos();
+  if (!pos) return pickRandom(cells);
+  const ranked = cells
+    .map((c) => {
+      const r = c.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      return { c, d: Math.hypot(cx - pos.x, cy - pos.y) };
+    })
+    .sort((a, b) => a.d - b.d);
+  const topThird = ranked.slice(0, Math.max(1, Math.ceil(ranked.length / 3)));
+  return topThird[Math.floor(Math.random() * topThird.length)].c;
 }
 
 function bumpNumber(el) {
@@ -44,8 +65,8 @@ export function mount(settings) {
   scheduleRandom(
     () => {
       const cells = findCells();
-      if (!cells.length) return;
-      const c = pickRandom(cells);
+      const c = pickCellNearCursor(cells);
+      if (!c) return;
       c.classList.add('busy-vitals-flash');
       setTimeout(() => c.classList.remove('busy-vitals-flash'), 1100);
     },
@@ -54,12 +75,12 @@ export function mount(settings) {
 
   scheduleRandom(
     () => {
-      const cells = findCells().filter((c) => c.closest('tfoot, .total, [class*="sum"]'));
-      if (cells.length) bumpNumber(pickRandom(cells));
-      else {
-        const all = findCells();
-        if (all.length) bumpNumber(pickRandom(all));
-      }
+      // Total-row bumps still prefer footer cells (semantic), but near
+      // cursor when multiple totals exist.
+      const totals = findCells().filter((c) => c.closest('tfoot, .total, [class*="sum"]'));
+      const pool = totals.length ? totals : findCells();
+      const c = pickCellNearCursor(pool);
+      if (c) bumpNumber(c);
     },
     () => pickIntensityRange(TOTAL_BY_INTENSITY, settings.intensity),
   );
