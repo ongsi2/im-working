@@ -117,15 +117,10 @@ export function mount(settings) {
       curX = fromX + (toX - fromX) * eased;
       curY = fromY + (toY - fromY) * eased;
     }
-    // dwell: curX/curY stay put; tremor is visual only below
-
-    let rx = curX, ry = curY;
-    if (phase === 'dwell') {
-      // micro tremor — tiny hand shake, not drift
-      rx += Math.sin(ts * 0.004) * 0.7 + Math.sin(ts * 0.013) * 0.5;
-      ry += Math.cos(ts * 0.0037) * 0.7 + Math.cos(ts * 0.012) * 0.5;
-    }
-    el.style.transform = `translate(${rx}px, ${ry}px)`;
+    // dwell: cursor sits PERFECTLY still — real mice don't drift when
+    // your hand rests on them. The previous tremor made it look like the
+    // cursor was floating mid-air. Total stillness reads as more realistic.
+    el.style.transform = `translate(${curX}px, ${curY}px)`;
     savePos(curX, curY);
 
     raf = requestAnimationFrame(step);
