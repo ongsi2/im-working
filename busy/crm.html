@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sales Pipeline · Salesforce</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:"Salesforce Sans","SF Pro Text",-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13px;background:#f3f3f3;color:#1a1a1a}
+
+/* TOP NAV */
+.topnav{height:44px;background:#032d60;display:flex;align-items:center;padding:0 12px;gap:0;flex-shrink:0;position:relative;z-index:100;border-bottom:1px solid #021b3b}
+.tn-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;border-radius:4px;flex-shrink:0;font-size:17px;opacity:.85;position:relative}
+.tn-icon:hover{background:rgba(255,255,255,.12);opacity:1}
+.sf-logo{display:flex;align-items:center;gap:7px;color:#fff;font-size:14px;font-weight:700;padding:0 10px;flex-shrink:0}
+.search-bar{flex:1;max-width:400px;margin:0 14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.24);border-radius:4px;height:30px;display:flex;align-items:center;padding:0 10px;gap:7px;color:rgba(255,255,255,.75);font-size:12.5px;cursor:text}
+.nav-tabs{display:flex;align-items:center;gap:1px;flex:1}
+.nav-tabs .tab{padding:0 14px;height:44px;display:flex;align-items:center;color:rgba(255,255,255,.8);font-size:13px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.nav-tabs .tab:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-tabs .tab.active{color:#fff;border-bottom-color:#1589ee}
+.nav-right{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto}
+.notif-badge{position:absolute;top:3px;right:2px;background:#e52207;color:#fff;border-radius:8px;font-size:9.5px;font-weight:700;padding:1px 4px;line-height:1.4;min-width:16px;text-align:center;animation:badgePulse 2s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.user-btn{height:30px;padding:0 10px;display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;cursor:pointer;color:#fff;font-size:12.5px;font-weight:600}
+.user-btn:hover{background:rgba(255,255,255,.18)}
+.av{width:22px;height:22px;background:#1589ee;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* LAYOUT */
+.app-body{display:flex;height:calc(100vh - 44px);overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:200px;flex-shrink:0;background:#fff;border-right:1px solid #dddbda;display:flex;flex-direction:column;overflow:hidden}
+.sb-hdr{padding:11px 14px 9px;font-size:11px;font-weight:700;color:#3e3e3c;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #f3f3f3}
+.sb-nav{flex:1;overflow-y:auto;padding:6px 0}
+.ni{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;cursor:pointer;font-size:13px;color:#3e3e3c;border-left:3px solid transparent}
+.ni:hover{background:#f3f3f3;color:#0070d2}
+.ni.active{background:#e8f4ff;color:#0070d2;border-left-color:#0070d2;font-weight:600}
+.ni .lbl{display:flex;align-items:center;gap:5px;flex:1}
+.badge{background:#e8f0fe;color:#0070d2;border-radius:10px;font-size:10.5px;padding:1px 6px;font-weight:600}
+.sb-nav .sub{padding-left:12px}
+.sb-nav .sub .ni{font-size:12.5px;padding:5px 14px 5px 0}
+.divider{height:1px;background:#f3f3f3;margin:5px 0}
+.sec-lbl{padding:8px 14px 3px;font-size:10.5px;font-weight:700;color:#706e6b;text-transform:uppercase;letter-spacing:.6px}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.main-hdr{padding:12px 18px 0;background:#fff;border-bottom:1px solid #dddbda;flex-shrink:0}
+.breadcrumb{font-size:11.5px;color:#706e6b;margin-bottom:6px}
+.breadcrumb a{color:#0070d2;text-decoration:none}
+.row-sb{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
+.row-sb h1{font-size:18px;font-weight:700;color:#032d60}
+.actions{display:flex;gap:8px}
+.btn{padding:5px 14px;border-radius:4px;font-size:13px;cursor:pointer;border:1px solid #dddbda;background:#fff;color:#3e3e3c;font-weight:500}
+.btn:hover{background:#f4f4f4}
+.btn-p{background:#0070d2;color:#fff;border-color:#0070d2}
+.btn-p:hover{background:#005fb2}
+.tabs-bar{display:flex;align-items:center}
+.tabs-bar .tab{padding:8px 18px;cursor:pointer;font-size:13px;color:#706e6b;border-bottom:2px solid transparent}
+.tabs-bar .tab:hover{color:#032d60}
+.tabs-bar .tab.active{color:#0070d2;border-bottom-color:#0070d2;font-weight:600}
+
+/* KANBAN */
+.kanban-area{flex:1;overflow-x:auto;overflow-y:hidden;padding:14px 18px;display:flex;flex-direction:column}
+.kanban-board{display:flex;gap:14px;flex:1;align-items:flex-start;min-width:680px}
+.col{flex:1;min-width:178px;max-width:215px;display:flex;flex-direction:column;max-height:100%}
+.col-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f8f8f8;border:1px solid #dddbda;border-radius:6px 6px 0 0;border-bottom:none}
+.col-hdr .ct{font-size:11.5px;font-weight:700;color:#3e3e3c;text-transform:uppercase;letter-spacing:.3px}
+.col-cnt{background:#e8f0fe;color:#0070d2;border-radius:10px;font-size:10.5px;padding:1px 7px;font-weight:700}
+.col-cards{background:#f8f8f8;border:1px solid #dddbda;border-top:none;border-radius:0 0 6px 6px;padding:6px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #dddbda;border-radius:6px;padding:10px 11px;cursor:pointer;position:relative;transition:box-shadow .15s,border-color .15s}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#b0b0b0}
+.card.hot{border:2px solid #0070d2;animation:cardPulse 3s ease-in-out infinite}
+@keyframes cardPulse{0%,100%{border-color:#0070d2;box-shadow:0 0 0 0 rgba(0,112,210,0)}50%{border-color:#1589ee;box-shadow:0 0 0 3px rgba(0,112,210,.15)}}
+.card.won{background:#f4fcf4;border-color:#a4d9a4}
+.card-ttl{font-size:12.5px;font-weight:600;color:#032d60;margin-bottom:5px;line-height:1.3}
+.card-amt{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.card-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#706e6b}
+.card-owner{display:flex;align-items:center;gap:4px}
+.mav{width:16px;height:16px;background:#1589ee;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700}
+.pbar{margin-top:6px;height:3px;background:#e8e8e8;border-radius:2px;overflow:hidden}
+.pbar-f{height:100%;background:#0070d2;border-radius:2px}
+.won .pbar-f{background:#2e844a}
+.flash{font-size:10px;color:#f0780a;font-weight:600;margin-top:4px;display:none;animation:fadeFlash 2.5s ease forwards}
+@keyframes fadeFlash{0%{opacity:0;transform:translateY(-3px)}5%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+
+/* LOST BAR */
+.lost-bar{flex-shrink:0;margin-top:12px;padding:8px 14px;background:#fff8f3;border:1px solid #fedac2;border-radius:6px;font-size:12.5px;color:#c23934;font-weight:500;display:flex;align-items:center;gap:8px}
+
+/* DETAIL PANEL */
+.detail{width:280px;flex-shrink:0;background:#fff;border-left:1px solid #dddbda;display:flex;flex-direction:column;overflow:hidden}
+.dp-hdr{padding:14px 16px 12px;border-bottom:1px solid #f3f3f3}
+.dp-hdr .acct{font-size:14px;font-weight:700;color:#032d60;margin-bottom:2px}
+.dp-hdr .sub{font-size:12px;color:#706e6b}
+.dp-hdr .amt{font-size:22px;font-weight:700;color:#1a1a1a;margin-top:6px}
+.dp-body{flex:1;overflow-y:auto;padding:0 16px 16px}
+.dp-sec{margin-top:14px}
+.dp-sec-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#706e6b;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #f3f3f3}
+.frow{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px}
+.flbl{font-size:12px;color:#706e6b;font-weight:500}
+.fval{font-size:12.5px;color:#1a1a1a;font-weight:600;text-align:right}
+.fval a{color:#0070d2;text-decoration:none}
+.fval a:hover{text-decoration:underline}
+
+/* STAGE BAR */
+.stg-bar{margin-top:4px;margin-bottom:10px}
+.stg-lbls{display:flex;justify-content:space-between;font-size:10px;color:#706e6b;margin-bottom:4px}
+.stg-trk{height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden}
+.stg-fill{height:100%;background:linear-gradient(90deg,#0070d2,#1589ee);border-radius:3px;transition:width .6s}
+
+/* PROB BAR */
+.prob-wrap{margin:6px 0 10px}
+.prob-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.prob-lbl{font-size:12px;color:#706e6b;font-weight:500}
+.prob-val{font-size:13px;font-weight:700;color:#0070d2}
+.prob-trk{height:8px;background:#e8e8e8;border-radius:4px;overflow:hidden}
+.prob-fill{height:100%;background:linear-gradient(90deg,#0070d2,#1589ee);border-radius:4px;transition:width .8s}
+
+/* SPARKLINE */
+.spark-wrap{margin:8px 0 10px;padding:8px;background:#f8f9fb;border-radius:4px;border:1px solid #e8e8e8}
+.spark-ttl{font-size:11px;color:#706e6b;margin-bottom:5px;font-weight:600}
+.spark-wrap svg{display:block;width:100%}
+
+/* ACTIVITY */
+.act-list{list-style:none}
+.act-li{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #f3f3f3;font-size:12px}
+.act-li:last-child{border-bottom:none}
+.dot{width:8px;height:8px;background:#0070d2;border-radius:50%;flex-shrink:0;margin-top:3px}
+.dot.new-dot{background:#f0780a;animation:dotBlink .6s ease alternate infinite}
+@keyframes dotBlink{from{opacity:1}to{opacity:.3}}
+.act-txt{flex:1;line-height:1.4}
+.act-dt{font-size:11px;color:#a0a0a0;flex-shrink:0}
+.add-btn{width:100%;margin-top:10px;padding:7px;background:#fff;border:1px solid #0070d2;border-radius:4px;color:#0070d2;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:background .15s}
+.add-btn:hover{background:#e8f4ff}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#c8c8c8;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#a0a0a0}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="table" data-title="Sales Pipeline · Salesforce" data-favicon="🟦" data-app="Salesforce">
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="tn-icon">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="currentColor"><rect x="0" y="0" width="4" height="4" rx="1"/><rect x="5.5" y="0" width="4" height="4" rx="1"/><rect x="11" y="0" width="4" height="4" rx="1"/><rect x="0" y="5.5" width="4" height="4" rx="1"/><rect x="5.5" y="5.5" width="4" height="4" rx="1"/><rect x="11" y="5.5" width="4" height="4" rx="1"/><rect x="0" y="11" width="4" height="4" rx="1"/><rect x="5.5" y="11" width="4" height="4" rx="1"/><rect x="11" y="11" width="4" height="4" rx="1"/></svg>
+  </div>
+  <div class="sf-logo">
+    <svg width="20" height="20" viewBox="0 0 20 20"><ellipse cx="7.5" cy="11" rx="4" ry="5.5" fill="#00a1e0"/><ellipse cx="13" cy="9" rx="4.5" ry="5.5" fill="#1589ee" transform="rotate(-10 13 9)"/></svg>
+    Salesforce
+  </div>
+  <div class="search-bar">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+    거래처, 영업 기회 검색...
+  </div>
+  <div class="nav-tabs">
+    <div class="tab">홈</div>
+    <div class="tab active">파이프라인</div>
+    <div class="tab">거래처</div>
+    <div class="tab">보고서</div>
+    <div class="tab">캘린더</div>
+  </div>
+  <div class="nav-right">
+    <div class="tn-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+    </div>
+    <div class="tn-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-badge">4</span>
+    </div>
+    <div class="tn-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+    <div class="user-btn"><div class="av">김</div>김PM ▾</div>
+  </div>
+</nav>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-hdr">앱 런처</div>
+  <nav class="sb-nav">
+    <div class="ni"><span class="lbl">▸ 잠재고객</span><span class="badge">12</span></div>
+    <div class="ni"><span class="lbl">▸ 거래처</span><span class="badge">89</span></div>
+    <div class="ni active"><span class="lbl">▾ 영업 기회</span></div>
+    <div class="sub">
+      <div class="ni active"><span class="lbl">• 전체 기회</span></div>
+      <div class="ni"><span class="lbl">• 내 기회</span></div>
+      <div class="ni"><span class="lbl">• Q2 클로징</span></div>
+    </div>
+    <div class="ni"><span class="lbl">▸ 케이스</span><span class="badge">7</span></div>
+    <div class="ni"><span class="lbl">▸ 할 일</span><span class="badge">23</span></div>
+    <div class="divider"></div>
+    <div class="sec-lbl">분석</div>
+    <div class="ni"><span class="lbl">▸ 보고서</span></div>
+    <div class="ni"><span class="lbl">▸ 대시보드</span></div>
+    <div class="divider"></div>
+    <div class="sec-lbl">관리</div>
+    <div class="ni"><span class="lbl">▸ 제품 카탈로그</span></div>
+    <div class="ni"><span class="lbl">▸ 가격 정책</span></div>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="main-hdr">
+    <div class="breadcrumb"><a href="#">홈</a> › <a href="#">영업 기회</a> › 파이프라인</div>
+    <div class="row-sb">
+      <h1>영업 파이프라인 — Q2 2026</h1>
+      <div class="actions">
+        <button class="btn">필터</button>
+        <button class="btn">칸반</button>
+        <button class="btn btn-p">+ 새 기회</button>
+      </div>
+    </div>
+    <div class="tabs-bar">
+      <div class="tab active">칸반 보기</div>
+      <div class="tab">목록 보기</div>
+      <div class="tab">예측</div>
+      <div class="tab">활동 타임라인</div>
+    </div>
+  </div>
+
+  <div class="kanban-area">
+    <div class="kanban-board">
+
+      <!-- Col 1: 잠재 -->
+      <div class="col">
+        <div class="col-hdr"><span class="ct">잠재 (Lead)</span><span class="col-cnt">5</span></div>
+        <div class="col-cards">
+          <div class="card" id="ca1">
+            <div class="card-ttl">A지점 도시락 사업</div>
+            <div class="card-amt">₩12,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav">김</span>김지영</span><span>14일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:20%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="ca2">
+            <div class="card-ttl">B본부 ERP 도입</div>
+            <div class="card-amt">₩8,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#7c5cbf">박</span>박민수</span><span>8일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:15%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="ca3">
+            <div class="card-ttl">C공단 통신망 구축</div>
+            <div class="card-amt">₩28,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#2e7d32">한</span>한서연</span><span>21일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:25%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="ca4">
+            <div class="card-ttl">D유통 POS 교체</div>
+            <div class="card-amt">₩15,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#c62828">이</span>이재민</span><span>5일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:18%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="ca5">
+            <div class="card-ttl">E학원 학적 시스템</div>
+            <div class="card-amt">₩6,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav">김</span>김PM</span><span>3일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:10%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 2: 검토 -->
+      <div class="col">
+        <div class="col-hdr"><span class="ct">검토 (Qualified)</span><span class="col-cnt">4</span></div>
+        <div class="col-cards">
+          <div class="card" id="cb1">
+            <div class="card-ttl">F병원 EMR 확장</div>
+            <div class="card-amt">₩42,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#c62828">이</span>이수민</span><span>18일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:45%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="cb2">
+            <div class="card-ttl">G그룹 클라우드 마이그</div>
+            <div class="card-amt">₩78,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#7c5cbf">박</span>박지훈</span><span>31일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:55%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="cb3">
+            <div class="card-ttl">H시 CCTV 통합 관제</div>
+            <div class="card-amt">₩32,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#e65100">송</span>송민지</span><span>12일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:40%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="cb4">
+            <div class="card-ttl">I재단 멤버십 앱</div>
+            <div class="card-amt">₩18,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#2e7d32">한</span>한서연</span><span>7일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:35%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 3: 협상 -->
+      <div class="col">
+        <div class="col-hdr"><span class="ct">협상 (Negotiate)</span><span class="col-cnt">3</span></div>
+        <div class="col-cards">
+          <div class="card hot" id="cc1">
+            <div class="card-ttl">한국전자 산업 ERP</div>
+            <div class="card-amt">₩45,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav">김</span>김PM</span><span>19일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:80%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="cc2">
+            <div class="card-ttl">J보험사 데이터레이크</div>
+            <div class="card-amt">₩120,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#7c5cbf">박</span>박지훈</span><span>44일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:70%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card" id="cc3">
+            <div class="card-ttl">K물산 BI 도입</div>
+            <div class="card-amt">₩25,000,000</div>
+            <div class="card-meta"><span class="card-owner"><span class="mav" style="background:#c62828">이</span>이재민</span><span>9일</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:65%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 4: 성사 -->
+      <div class="col">
+        <div class="col-hdr">
+          <span class="ct" style="color:#2e844a">성사 (Won)</span>
+          <span class="col-cnt" style="background:#e8f9e9;color:#2e844a">2</span>
+        </div>
+        <div class="col-cards">
+          <div class="card won" id="cd1">
+            <div class="card-ttl">L호텔 PMS 구축</div>
+            <div class="card-amt">₩68,000,000</div>
+            <div class="card-meta"><span style="color:#2e844a;font-weight:600">✓ 04/24 성사</span><span style="color:#2e844a">완료</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:100%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+          <div class="card won" id="cd2">
+            <div class="card-ttl">M로지스틱스 WMS</div>
+            <div class="card-amt">₩52,000,000</div>
+            <div class="card-meta"><span style="color:#2e844a;font-weight:600">✓ 04/22 성사</span><span style="color:#2e844a">완료</span></div>
+            <div class="pbar"><div class="pbar-f" style="width:100%"></div></div>
+            <div class="flash">방금 업데이트됨</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /kanban-board -->
+    <div class="lost-bar">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c23934" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="#c23934"/></svg>
+      이번 분기 실패: <strong>3건</strong> · ₩12,000,000
+      <span style="margin-left:auto;color:#706e6b;font-size:11.5px;cursor:pointer">내역 보기 ›</span>
+    </div>
+  </div>
+</main>
+
+<!-- DETAIL PANEL -->
+<aside class="detail">
+  <div class="dp-hdr">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="acct">한국전자 산업 ERP</div>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#706e6b" stroke-width="2" style="cursor:pointer"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </div>
+    <div class="sub">한국전자 산업 · 협상 단계</div>
+    <div class="amt">₩45,000,000</div>
+  </div>
+  <div class="dp-body">
+
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">영업 단계</div>
+      <div class="stg-bar">
+        <div class="stg-lbls"><span>잠재</span><span>검토</span><span style="color:#0070d2;font-weight:700">협상</span><span>성사</span></div>
+        <div class="stg-trk"><div class="stg-fill" style="width:67%"></div></div>
+      </div>
+    </div>
+
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">기본 정보</div>
+      <div class="frow"><span class="flbl">거래처</span><span class="fval"><a href="#">한국전자 산업</a></span></div>
+      <div class="frow"><span class="flbl">클로징 예정일</span><span class="fval">2026-05-15</span></div>
+      <div class="frow"><span class="flbl">담당자</span><span class="fval" style="display:flex;align-items:center;gap:4px;justify-content:flex-end"><span class="mav">김</span>김PM</span></div>
+      <div class="frow"><span class="flbl">영업 유형</span><span class="fval">신규 사업</span></div>
+      <div class="frow"><span class="flbl">리드 소스</span><span class="fval">인바운드 문의</span></div>
+    </div>
+
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">확률</div>
+      <div class="prob-wrap">
+        <div class="prob-hdr"><span class="prob-lbl">성사 확률</span><span class="prob-val" id="probVal">80%</span></div>
+        <div class="prob-trk"><div class="prob-fill" id="probFill" style="width:80%"></div></div>
+      </div>
+    </div>
+
+    <div class="dp-sec">
+      <div class="spark-wrap">
+        <div class="spark-ttl">확률 추이 (최근 7일)</div>
+        <svg id="sparkSvg" viewBox="0 0 220 50" height="50" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1589ee" stop-opacity=".28"/>
+              <stop offset="100%" stop-color="#1589ee" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path id="sparkArea" fill="url(#sg)"/>
+          <path id="sparkLine" fill="none" stroke="#0070d2" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">최근 활동</div>
+      <ul class="act-list" id="actList">
+        <li class="act-li"><span class="dot"></span><span class="act-txt">화상 미팅 완료</span><span class="act-dt">04/26</span></li>
+        <li class="act-li"><span class="dot"></span><span class="act-txt">제안서 v3 발송</span><span class="act-dt">04/24</span></li>
+        <li class="act-li"><span class="dot"></span><span class="act-txt">가격 협상 진행</span><span class="act-dt">04/22</span></li>
+        <li class="act-li"><span class="dot"></span><span class="act-txt">RFP 수령 · 분석</span><span class="act-dt">04/18</span></li>
+        <li class="act-li"><span class="dot"></span><span class="act-txt">최초 킥오프 미팅</span><span class="act-dt">04/15</span></li>
+      </ul>
+      <button class="add-btn">+ 활동 추가</button>
+    </div>
+
+  </div>
+</aside>
+
+</div><!-- /app-body -->
+
+<script>
+(function(){
+  'use strict';
+  var W=220,H=50,P=4;
+  var pts=[58,61,63,65,70,74,78,80];
+
+  function drawSpark(){
+    var mn=Math.min.apply(null,pts)-5, mx=Math.max.apply(null,pts)+5;
+    var n=pts.length;
+    var xy=pts.map(function(v,i){return[P+(i/(n-1))*(W-P*2), H-P-((v-mn)/(mx-mn))*(H-P*2)];});
+    var lp=xy.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ');
+    var ap=lp+' L'+xy[n-1][0].toFixed(1)+' '+H+' L'+xy[0][0].toFixed(1)+' '+H+' Z';
+    document.getElementById('sparkLine').setAttribute('d',lp);
+    document.getElementById('sparkArea').setAttribute('d',ap);
+  }
+  drawSpark();
+  setInterval(function(){
+    var last=pts[pts.length-1];
+    pts.push(Math.round(Math.max(30,Math.min(99,last+(Math.random()-.5)*3))*10)/10);
+    if(pts.length>10)pts.shift();
+    drawSpark();
+  },4000);
+
+  // Probability pulse
+  var base=80;
+  setInterval(function(){
+    var p=Math.round(Math.max(70,Math.min(95,base+(Math.random()-.5)*4)));
+    document.getElementById('probFill').style.width=p+'%';
+    document.getElementById('probVal').textContent=p+'%';
+  },3500);
+
+  // Card flash
+  var ids=['ca1','ca2','ca3','ca4','ca5','cb1','cb2','cb3','cb4','cc1','cc2','cc3','cd1','cd2'];
+  function flashCard(){
+    var el=document.getElementById(ids[Math.floor(Math.random()*ids.length)]);
+    if(!el)return;
+    var f=el.querySelector('.flash');
+    if(!f)return;
+    f.style.display='block';f.style.animation='none';
+    void f.offsetWidth;
+    f.style.animation='fadeFlash 2.5s ease forwards';
+    setTimeout(function(){f.style.display='none';},2700);
+  }
+  (function tick(){setTimeout(function(){flashCard();tick();},6000+Math.random()*8000);})();
+
+  // Activity feed
+  var names=['이수민','박지훈','송민지','한서연','이재민','박민수','김지영'];
+  var acts=['님이 메모 추가','님이 문서 첨부','님이 통화 기록','님이 이메일 발송','님이 미팅 예약'];
+  (function tick2(){
+    setTimeout(function(){
+      var n=names[Math.floor(Math.random()*names.length)];
+      var a=acts[Math.floor(Math.random()*acts.length)];
+      var d=(Math.floor(Math.random()*2)?'04':'05')+'/'+(20+Math.floor(Math.random()*10));
+      var list=document.getElementById('actList');
+      var li=document.createElement('li'); li.className='act-li';
+      li.innerHTML='<span class="dot new-dot"></span><span class="act-txt">'+n+a+'</span><span class="act-dt">'+d+'</span>';
+      list.insertBefore(li,list.firstChild);
+      while(list.children.length>5)list.removeChild(list.lastChild);
+      setTimeout(function(){var d=li.querySelector('.dot');if(d)d.classList.remove('new-dot');},3000);
+      tick2();
+    },25000+Math.random()*15000);
+  })();
+})();
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

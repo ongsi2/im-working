@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>prod-rds · DBeaver</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1e1e1e;--panel:#252526;--panel2:#2d2d30;--panel3:#333337;
+  --border:#3e3e42;--border2:#2d2d30;
+  --text:#cccccc;--dim:#858585;--dimmer:#5a5a5a;
+  --blue:#0e72eb;--blue2:#1d8fe1;--blue3:#264f78;
+  --green:#4ec9b0;--green2:#7ecf85;--green3:#b5cea8;
+  --red:#f44747;--amber:#dcdcaa;
+  --purple:#c586c0;--orange:#ce9178;
+  --mono:'Consolas','Cascadia Code','Menlo',monospace;
+  --ui:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --accent:#007acc;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--ui);font-size:12.5px;overflow:hidden;}
+
+/* ── APP SHELL ── */
+.app{display:grid;grid-template-rows:30px 26px 1fr 22px;height:100vh;}
+
+/* ── MENU BAR ── */
+.menubar{
+  background:#1a1a1a;border-bottom:1px solid #111;
+  display:flex;align-items:center;padding:0 12px;gap:0;
+  justify-content:space-between;
+}
+.menu-left{display:flex;align-items:center;gap:0;}
+.menu-item{
+  padding:4px 10px;font-size:12px;color:var(--text);cursor:default;
+  border-radius:3px;user-select:none;
+}
+.menu-item:hover{background:var(--panel2);}
+.menu-right{display:flex;align-items:center;gap:12px;font-size:11.5px;}
+.conn-badge{
+  display:flex;align-items:center;gap:5px;
+  background:var(--panel2);border:1px solid var(--border);
+  padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:11px;
+}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:#4caf50;
+  box-shadow:0 0 5px rgba(76,175,80,0.7);flex-shrink:0;}
+.run-btn{
+  display:flex;align-items:center;gap:4px;
+  background:var(--blue);color:#fff;
+  padding:2px 8px;border-radius:3px;font-size:11px;cursor:pointer;
+  border:none;
+}
+.stop-btn{
+  display:flex;align-items:center;gap:4px;
+  background:var(--panel2);color:var(--text);
+  padding:2px 7px;border-radius:3px;font-size:11px;cursor:pointer;
+  border:1px solid var(--border);
+}
+.tab-count{font-size:11px;color:var(--dim);padding:2px 6px;}
+
+/* ── TAB STRIP ── */
+.tabs{
+  background:#2d2d30;border-bottom:1px solid #111;
+  display:flex;align-items:stretch;overflow:hidden;
+}
+.tab{
+  display:flex;align-items:center;gap:5px;
+  padding:0 12px;font-size:11.5px;color:var(--dim);
+  border-right:1px solid #1a1a1a;cursor:pointer;
+  min-width:0;white-space:nowrap;font-family:var(--mono);
+  position:relative;
+}
+.tab:hover{background:#333337;color:var(--text);}
+.tab.active{
+  background:#1e1e1e;color:var(--text);
+  border-bottom:2px solid var(--blue);margin-bottom:-1px;
+}
+.tab .tab-x{color:var(--dimmer);font-size:10px;margin-left:2px;}
+.tab .tab-x:hover{color:var(--text);}
+.tab-modified{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+.tab-new{
+  display:flex;align-items:center;padding:0 12px;
+  color:var(--dim);font-size:13px;cursor:pointer;
+}
+.tab-new:hover{color:var(--text);}
+
+/* ── MAIN BODY ── */
+.main{display:grid;grid-template-columns:240px 1fr;overflow:hidden;}
+
+/* ── TREE PANEL ── */
+.tree-panel{
+  background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.tree-header{
+  padding:5px 10px;border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:600;color:var(--dim);
+  text-transform:uppercase;letter-spacing:0.5px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tree-body{flex:1;overflow-y:auto;overflow-x:hidden;}
+.tree-body::-webkit-scrollbar{width:6px;}
+.tree-body::-webkit-scrollbar-track{background:transparent;}
+.tree-body::-webkit-scrollbar-thumb{background:#3e3e42;border-radius:3px;}
+
+.tree-node{
+  display:flex;align-items:center;gap:0;
+  padding:2px 0;font-size:12px;cursor:pointer;
+  user-select:none;white-space:nowrap;
+  min-height:20px;
+}
+.tree-node:hover{background:#2a2d2e;}
+.tree-node.active{background:#37373d;}
+.tree-node.selected{background:var(--blue3) !important;color:#fff;}
+
+.tree-indent{display:inline-block;flex-shrink:0;}
+.tree-arrow{width:16px;flex-shrink:0;text-align:center;font-size:9px;color:var(--dim);}
+.tree-icon{width:18px;flex-shrink:0;text-align:center;font-size:13px;}
+.tree-name{flex:1;overflow:hidden;text-overflow:ellipsis;padding-right:4px;}
+.tree-badge{
+  font-size:10px;color:var(--dimmer);font-family:var(--mono);
+  padding-right:8px;flex-shrink:0;
+}
+.tree-conn{
+  padding:6px 0 2px 6px;font-size:12px;font-weight:600;color:var(--text);
+}
+.tree-conn.collapsed .conn-label{color:var(--dim);}
+.tree-schema{padding-left:10px;}
+.tree-table{padding-left:26px;}
+.tree-subtable{padding-left:42px;}
+
+.tree-section-header{
+  padding:3px 0 1px 26px;font-size:10.5px;font-weight:600;
+  color:var(--dim);display:flex;align-items:center;gap:4px;
+}
+
+.tree-add-conn{
+  margin:8px 10px;padding:5px 10px;
+  border:1px dashed var(--border);border-radius:3px;
+  color:var(--dim);font-size:11.5px;text-align:center;cursor:pointer;
+}
+.tree-add-conn:hover{background:var(--panel2);color:var(--text);}
+
+/* ── CENTER PANEL ── */
+.center-panel{
+  display:flex;flex-direction:column;overflow:hidden;background:var(--bg);
+}
+
+/* ── EDITOR AREA ── */
+.editor-wrap{
+  flex:0 0 auto;min-height:200px;
+  display:flex;flex-direction:column;
+  border-bottom:1px solid var(--border);
+}
+.editor-titlebar{
+  padding:4px 12px;background:var(--panel2);border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px;
+}
+.editor-titlebar span{font-weight:600;color:var(--text);}
+.editor-body{
+  display:flex;flex:1;overflow:hidden;background:#1e1e1e;
+  font-family:var(--mono);font-size:13px;line-height:1.65;
+}
+.line-numbers{
+  padding:8px 0;min-width:42px;text-align:right;
+  background:#1e1e1e;color:#495162;font-size:12px;
+  line-height:1.65;user-select:none;border-right:1px solid #2d2d30;
+  flex-shrink:0;
+}
+.line-numbers span{display:block;padding-right:10px;}
+.code-area{
+  padding:8px 14px;flex:1;overflow:auto;
+  background:#1e1e1e;color:#d4d4d4;
+  white-space:pre;
+}
+.code-area::-webkit-scrollbar{width:6px;height:6px;}
+.code-area::-webkit-scrollbar-thumb{background:#3e3e42;}
+
+/* SQL syntax colors */
+.kw{color:#569cd6;}       /* keywords */
+.kw2{color:#c586c0;}      /* GROUP BY, ORDER BY, LIMIT */
+.fn{color:#dcdcaa;}       /* functions */
+.str{color:#ce9178;}      /* strings */
+.num{color:#b5cea8;}      /* numbers */
+.cmt{color:#7ecf85;}      /* comments */
+.id{color:#9cdcfe;}       /* identifiers / aliases */
+.tbl{color:#4ec9b0;}      /* table names */
+.op{color:#d4d4d4;}       /* operators */
+.cursor-blink{
+  display:inline-block;width:2px;height:14px;background:#aeafad;
+  vertical-align:text-bottom;margin-left:1px;
+  animation:blink 1.1s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+.editor-footer{
+  padding:3px 12px;background:var(--panel2);border-top:1px solid var(--border);
+  font-size:11px;color:#4ec9b0;display:flex;align-items:center;gap:6px;
+}
+
+/* ── ACTION ROW ── */
+.action-row{
+  padding:5px 12px;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.action-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:3px;font-size:11.5px;cursor:pointer;
+  border:1px solid transparent;font-family:var(--ui);
+}
+.action-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.action-btn.primary:hover{background:var(--blue2);}
+.action-btn.secondary{background:var(--panel2);color:var(--text);border-color:var(--border);}
+.action-btn.secondary:hover{background:var(--panel3);}
+.action-sep{width:1px;height:20px;background:var(--border);margin:0 2px;}
+.action-spacer{flex:1;}
+.result-meta{font-size:11.5px;color:var(--dim);font-family:var(--mono);}
+.result-meta .cnt{color:var(--green2);}
+.result-meta .ms{color:var(--green3);}
+.result-meta .cache{color:var(--dimmer);}
+
+/* ── RESULT PANEL ── */
+.result-panel{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;
+}
+.result-header{
+  padding:5px 12px;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.result-title{font-size:12px;font-weight:600;color:var(--text);}
+.result-tabs{display:flex;gap:0;flex-shrink:0;}
+.result-tab{
+  padding:4px 12px;font-size:11.5px;color:var(--dim);cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.result-tab:hover{color:var(--text);}
+.result-tab.active{color:var(--text);border-bottom-color:var(--blue);}
+
+.grid-wrap{flex:1;overflow:auto;min-height:0;}
+.grid-wrap::-webkit-scrollbar{width:8px;height:8px;}
+.grid-wrap::-webkit-scrollbar-track{background:#1e1e1e;}
+.grid-wrap::-webkit-scrollbar-thumb{background:#3e3e42;border-radius:2px;}
+
+table.result-grid{
+  width:100%;border-collapse:collapse;
+  font-family:var(--mono);font-size:12px;
+}
+table.result-grid thead th{
+  position:sticky;top:0;background:#252526;
+  padding:5px 10px;text-align:left;font-weight:600;
+  border-bottom:2px solid var(--border);border-right:1px solid var(--border);
+  color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:0.3px;
+  user-select:none;z-index:2;white-space:nowrap;
+}
+table.result-grid thead th.num-col{text-align:right;}
+table.result-grid tbody tr{border-bottom:1px solid rgba(62,62,66,0.4);}
+table.result-grid tbody tr:nth-child(even){background:rgba(37,37,38,0.5);}
+table.result-grid tbody tr:hover{background:#2a2d2e;}
+table.result-grid tbody tr.selected{background:#264f78 !important;color:#fff;}
+table.result-grid tbody tr.selected td{color:#e0e0e0;}
+table.result-grid tbody td{
+  padding:4px 10px;border-right:1px solid rgba(62,62,66,0.3);
+  white-space:nowrap;
+}
+table.result-grid tbody td.num-col{text-align:right;color:var(--green3);}
+table.result-grid tbody td.bool-true{color:#4ec9b0;}
+table.result-grid tbody td.bool-false{color:var(--red);}
+table.result-grid tbody td.id-col{color:var(--green3);}
+table.result-grid tbody td.row-num{color:var(--dimmer);text-align:right;}
+table.result-grid tbody td.email-col{color:#9cdcfe;}
+table.result-grid tbody td.date-col{color:var(--orange);}
+
+/* flash animation for vitals */
+@keyframes cell-flash{0%{background:#1e4e60;}50%{background:#265e72;}100%{background:inherit;}}
+.cell-flash{animation:cell-flash 0.6s ease-out;}
+
+/* grid pagination */
+.grid-pagination{
+  padding:4px 12px;background:var(--panel);border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--dim);
+  flex-shrink:0;
+}
+.page-btn{
+  padding:1px 8px;border:1px solid var(--border);border-radius:2px;
+  background:var(--panel2);color:var(--text);font-size:11px;cursor:pointer;
+}
+.page-btn:hover{background:var(--panel3);}
+.page-info{font-family:var(--mono);}
+.page-size{
+  margin-left:auto;display:flex;align-items:center;gap:5px;
+}
+.page-size select{
+  background:var(--panel2);border:1px solid var(--border);
+  color:var(--text);font-size:11px;padding:1px 4px;border-radius:2px;
+}
+
+/* ── STATUS BAR ── */
+.statusbar{
+  background:#007acc;color:#fff;
+  display:flex;align-items:center;gap:0;
+  font-size:11px;font-family:var(--mono);
+  overflow:hidden;flex-shrink:0;
+}
+.sb-item{
+  padding:0 10px;height:100%;display:flex;align-items:center;gap:5px;
+  border-right:1px solid rgba(255,255,255,0.15);white-space:nowrap;
+}
+.sb-item:last-child{border-right:none;}
+.sb-spacer{flex:1;}
+.sb-conn{background:rgba(0,0,0,0.2);}
+.sb-tx{padding:0 10px;}
+.sb-tx.executing{background:rgba(255,200,0,0.25);color:#ffe082;}
+.sb-warn{color:#ffe082;}
+
+/* scrollbar for tree */
+.tree-body::-webkit-scrollbar{width:5px;}
+.tree-body::-webkit-scrollbar-thumb{background:#3e3e42;}
+
+/* splitter handle */
+.splitter{
+  height:4px;background:var(--border);cursor:ns-resize;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.splitter:hover{background:var(--blue);}
+.splitter::after{content:'';width:30px;height:2px;background:var(--dimmer);border-radius:2px;}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="table" data-title="prod-rds · DBeaver" data-favicon="🗄" data-app="DBeaver">
+
+<div class="app">
+
+  <!-- ══ MENU BAR ══ -->
+  <div class="menubar">
+    <div class="menu-left">
+      <div class="menu-item" style="font-weight:700;color:#fff;padding-right:14px;font-size:13px;">🗄</div>
+      <div class="menu-item">파일</div>
+      <div class="menu-item">편집</div>
+      <div class="menu-item">보기</div>
+      <div class="menu-item">데이터베이스</div>
+      <div class="menu-item">SQL</div>
+      <div class="menu-item">도구</div>
+      <div class="menu-item">창</div>
+      <div class="menu-item">도움말</div>
+    </div>
+    <div class="menu-right">
+      <div class="conn-badge">
+        <span class="conn-dot"></span>
+        🔌 prod-rds (us-east-1)
+      </div>
+      <button class="run-btn">▷ 실행</button>
+      <button class="stop-btn">⏹ 중지</button>
+      <span class="tab-count">📋 5 탭</span>
+    </div>
+  </div>
+
+  <!-- ══ TAB STRIP ══ -->
+  <div class="tabs">
+    <div class="tab active">
+      <span class="tab-modified"></span>
+      분석.sql
+      <span class="tab-x">✕</span>
+    </div>
+    <div class="tab">
+      월매출.sql
+      <span class="tab-x">✕</span>
+    </div>
+    <div class="tab">
+      회원증가.sql
+      <span class="tab-x">✕</span>
+    </div>
+    <div class="tab">
+      재고.sql
+      <span class="tab-x">✕</span>
+    </div>
+    <div class="tab-new">＋ 새 쿼리</div>
+  </div>
+
+  <!-- ══ MAIN BODY ══ -->
+  <div class="main">
+
+    <!-- ── TREE PANEL ── -->
+    <div class="tree-panel">
+      <div class="tree-header">
+        <span>Database Navigator</span>
+        <span style="cursor:pointer;color:var(--dimmer)">⊞</span>
+      </div>
+      <div class="tree-body" id="tree-body">
+
+        <!-- prod-rds -->
+        <div class="tree-node" style="padding-left:4px;">
+          <span class="tree-arrow">▾</span>
+          <span class="tree-icon">🗄</span>
+          <span class="tree-name" style="font-weight:600;color:#4fc1ff;">prod-rds</span>
+          <span class="tree-badge" style="color:#4caf50;font-size:10px;">●</span>
+        </div>
+        <!-- public schema -->
+        <div class="tree-node" style="padding-left:20px;">
+          <span class="tree-arrow">▾</span>
+          <span class="tree-icon" style="font-size:11px;">📁</span>
+          <span class="tree-name">public</span>
+          <span class="tree-badge" style="color:#9cdcfe;">28</span>
+        </div>
+        <!-- tables section -->
+        <div style="padding-left:42px;padding-top:2px;padding-bottom:1px;font-size:10px;color:var(--dimmer);letter-spacing:0.3px;text-transform:uppercase;">Tables</div>
+        <div class="tree-node active" id="tree-users" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">users</span>
+          <span class="tree-badge" id="users-count">124,832</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">orders</span>
+          <span class="tree-badge" id="orders-count">892,541</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">products</span>
+          <span class="tree-badge">3,247</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">sessions</span>
+          <span class="tree-badge" id="sessions-count">84,231</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">payments</span>
+          <span class="tree-badge">445,221</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">subscriptions</span>
+          <span class="tree-badge">12,948</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">notifications</span>
+          <span class="tree-badge" id="notif-count">1,284,002</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">audit_logs</span>
+          <span class="tree-badge">4,812,447</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">user_profiles</span>
+          <span class="tree-badge">124,201</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">categories</span>
+          <span class="tree-badge">847</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">coupons</span>
+          <span class="tree-badge">15,320</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▢</span>
+          <span class="tree-name">inventory</span>
+          <span class="tree-badge">9,183</span>
+        </div>
+
+        <!-- Views -->
+        <div class="tree-node" style="padding-left:20px;">
+          <span class="tree-arrow">▾</span>
+          <span class="tree-icon" style="font-size:11px;">📑</span>
+          <span class="tree-name">Views</span>
+          <span class="tree-badge">8</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▣</span>
+          <span class="tree-name">daily_active_users</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▣</span>
+          <span class="tree-name">revenue_by_region</span>
+        </div>
+        <div class="tree-node" style="padding-left:36px;">
+          <span class="tree-arrow" style="width:10px;"></span>
+          <span class="tree-icon" style="font-size:11px;">▣</span>
+          <span class="tree-name">monthly_cohorts</span>
+        </div>
+
+        <!-- Functions -->
+        <div class="tree-node" style="padding-left:20px;">
+          <span class="tree-arrow">▸</span>
+          <span class="tree-icon" style="font-size:11px;">ƒ</span>
+          <span class="tree-name">Functions</span>
+          <span class="tree-badge">12</span>
+        </div>
+
+        <!-- Triggers -->
+        <div class="tree-node" style="padding-left:20px;">
+          <span class="tree-arrow">▸</span>
+          <span class="tree-icon" style="font-size:11px;">⚡</span>
+          <span class="tree-name">Triggers</span>
+          <span class="tree-badge">4</span>
+        </div>
+
+        <!-- Indexes -->
+        <div class="tree-node" style="padding-left:20px;">
+          <span class="tree-arrow">▸</span>
+          <span class="tree-icon" style="font-size:11px;">⬡</span>
+          <span class="tree-name">Indexes</span>
+          <span class="tree-badge">47</span>
+        </div>
+
+        <div style="height:10px;"></div>
+
+        <!-- staging (collapsed) -->
+        <div class="tree-node" style="padding-left:4px;">
+          <span class="tree-arrow">▸</span>
+          <span class="tree-icon">🗄</span>
+          <span class="tree-name" style="color:var(--dim);">staging</span>
+          <span class="tree-badge" style="color:#d7a264;font-size:10px;">●</span>
+        </div>
+        <div style="height:4px;"></div>
+        <!-- dev (collapsed) -->
+        <div class="tree-node" style="padding-left:4px;">
+          <span class="tree-arrow">▸</span>
+          <span class="tree-icon">🗄</span>
+          <span class="tree-name" style="color:var(--dim);">dev</span>
+          <span class="tree-badge" style="color:var(--dimmer);font-size:10px;">●</span>
+        </div>
+
+        <div class="tree-add-conn">＋ 새 연결</div>
+      </div>
+    </div>
+
+    <!-- ── CENTER PANEL ── -->
+    <div class="center-panel">
+
+      <!-- EDITOR -->
+      <div class="editor-wrap" style="height:46%;">
+        <div class="editor-titlebar">
+          <span>▽ Query Editor</span>
+          <span style="color:var(--dimmer);margin-left:4px;">—</span>
+          <span style="margin-left:8px;">분석.sql</span>
+          <span style="flex:1;"></span>
+          <span style="color:var(--dimmer);">PostgreSQL 17 · prod-rds · public</span>
+        </div>
+        <div class="editor-body">
+          <div class="line-numbers" id="line-nums">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+            <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span>
+          </div>
+          <div class="code-area" id="code-area"><span class="cmt">-- 분석 쿼리 v3 · 신규 가입자 주문 현황 (2026-04)</span>
+<span class="cmt">-- 작성: ongsya · 최종 수정: 2026-04-27 09:42</span>
+<span class="kw2">SELECT</span>
+    <span class="id">u</span><span class="op">.</span><span class="id">id</span><span class="op">,</span>
+    <span class="id">u</span><span class="op">.</span><span class="id">email</span><span class="op">,</span>
+    <span class="id">u</span><span class="op">.</span><span class="id">created_at</span><span class="op">,</span>
+    <span class="id">u</span><span class="op">.</span><span class="id">active</span><span class="op">,</span>
+    <span class="fn">COUNT</span><span class="op">(</span><span class="id">o</span><span class="op">.</span><span class="id">id</span><span class="op">)</span>            <span class="kw">AS</span> <span class="id">order_count</span><span class="op">,</span>
+    <span class="fn">COALESCE</span><span class="op">(</span><span class="fn">SUM</span><span class="op">(</span><span class="id">o</span><span class="op">.</span><span class="id">total_amount</span><span class="op">),</span> <span class="num">0</span><span class="op">)</span>  <span class="kw">AS</span> <span class="id">revenue</span>
+<span class="kw2">FROM</span> <span class="tbl">users</span> <span class="id">u</span>
+<span class="kw2">LEFT JOIN</span> <span class="tbl">orders</span> <span class="id">o</span>
+    <span class="kw">ON</span> <span class="id">o</span><span class="op">.</span><span class="id">user_id</span> <span class="op">=</span> <span class="id">u</span><span class="op">.</span><span class="id">id</span>
+   <span class="kw">AND</span> <span class="id">o</span><span class="op">.</span><span class="id">status</span> <span class="op">!=</span> <span class="str">'cancelled'</span>
+<span class="kw2">WHERE</span>
+    <span class="id">u</span><span class="op">.</span><span class="id">created_at</span> <span class="op">&gt;</span> <span class="str">'2026-04-01'</span>
+<span class="kw">  AND</span> <span class="id">u</span><span class="op">.</span><span class="id">created_at</span> <span class="op">&lt;</span> <span class="str">'2026-05-01'</span>
+<span class="kw">  AND</span> <span class="id">u</span><span class="op">.</span><span class="id">active</span> <span class="op">=</span> <span class="kw">TRUE</span>
+<span class="kw2">GROUP BY</span>
+    <span class="id">u</span><span class="op">.</span><span class="id">id</span><span class="op">,</span> <span class="id">u</span><span class="op">.</span><span class="id">email</span><span class="op">,</span> <span class="id">u</span><span class="op">.</span><span class="id">created_at</span><span class="op">,</span> <span class="id">u</span><span class="op">.</span><span class="id">active</span>
+<span class="kw2">ORDER BY</span> <span class="num">5</span> <span class="kw2">DESC</span>
+<span class="kw2">LIMIT</span> <span class="num">100</span><span class="op">;</span><span class="cursor-blink"></span></div>
+        </div>
+        <div class="editor-footer">
+          <span>✓</span>
+          <span>Valid SQL · PostgreSQL 17 dialect · 줄 21, 열 8</span>
+        </div>
+      </div>
+
+      <!-- ACTION ROW -->
+      <div class="action-row">
+        <button class="action-btn primary">▷ 실행 <span style="opacity:0.6;font-size:10.5px;">(Ctrl+Enter)</span></button>
+        <button class="action-btn secondary">⏹ 중지</button>
+        <div class="action-sep"></div>
+        <button class="action-btn secondary">📋 EXPLAIN</button>
+        <button class="action-btn secondary">💾 저장</button>
+        <button class="action-btn secondary">📤 결과 내보내기 ▾</button>
+        <div class="action-spacer"></div>
+        <div class="result-meta">
+          <span class="cnt" id="row-count">87</span>
+          <span style="color:var(--dimmer);"> rows · </span>
+          <span class="ms" id="exec-ms">142</span>
+          <span style="color:var(--dimmer);">ms · </span>
+          <span class="cache">캐시</span>
+        </div>
+      </div>
+
+      <!-- RESULT PANEL -->
+      <div class="result-panel">
+        <div class="result-header">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="result-tabs">
+              <div class="result-tab active">▣ Result</div>
+              <div class="result-tab">ⓘ Plan</div>
+              <div class="result-tab">📊 Stats</div>
+              <div class="result-tab">📜 Output</div>
+            </div>
+          </div>
+          <div class="result-title" id="result-title">Result · <span id="result-count">87</span> rows · <span id="result-ms">142</span>ms</div>
+        </div>
+
+        <div class="grid-wrap">
+          <table class="result-grid" id="result-table">
+            <thead>
+              <tr>
+                <th style="width:36px;">#</th>
+                <th class="num-col" style="width:70px;">id</th>
+                <th style="min-width:180px;">email</th>
+                <th style="min-width:155px;">created_at</th>
+                <th style="width:64px;">active</th>
+                <th class="num-col" style="width:90px;">order_count</th>
+                <th class="num-col" style="min-width:100px;">revenue</th>
+              </tr>
+            </thead>
+            <tbody id="result-body">
+              <tr class="selected">
+                <td class="row-num">1</td>
+                <td class="id-col num-col">4382</td>
+                <td class="email-col">kim@example.com</td>
+                <td class="date-col">2026-04-26 09:23:11</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">12</td>
+                <td class="num-col">842,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">2</td>
+                <td class="id-col num-col">4383</td>
+                <td class="email-col">lee@example.com</td>
+                <td class="date-col">2026-04-26 10:14:07</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">8</td>
+                <td class="num-col">591,500</td>
+              </tr>
+              <tr>
+                <td class="row-num">3</td>
+                <td class="id-col num-col">4384</td>
+                <td class="email-col">park@example.com</td>
+                <td class="date-col">2026-04-25 11:42:33</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">15</td>
+                <td class="num-col">1,240,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">4</td>
+                <td class="id-col num-col">4385</td>
+                <td class="email-col">choi@example.com</td>
+                <td class="date-col">2026-04-25 14:08:55</td>
+                <td class="bool-false">false</td>
+                <td class="num-col">3</td>
+                <td class="num-col">185,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">5</td>
+                <td class="id-col num-col">4386</td>
+                <td class="email-col">han@example.com</td>
+                <td class="date-col">2026-04-25 15:33:22</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">22</td>
+                <td class="num-col">2,105,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">6</td>
+                <td class="id-col num-col">4387</td>
+                <td class="email-col">jang@example.com</td>
+                <td class="date-col">2026-04-24 09:01:44</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">17</td>
+                <td class="num-col">1,380,500</td>
+              </tr>
+              <tr>
+                <td class="row-num">7</td>
+                <td class="id-col num-col">4388</td>
+                <td class="email-col">yoon@corp.co.kr</td>
+                <td class="date-col">2026-04-24 10:22:19</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">9</td>
+                <td class="num-col">673,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">8</td>
+                <td class="id-col num-col">4389</td>
+                <td class="email-col">shin@kakao.biz</td>
+                <td class="date-col">2026-04-23 16:48:02</td>
+                <td class="bool-false">false</td>
+                <td class="num-col">1</td>
+                <td class="num-col">55,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">9</td>
+                <td class="id-col num-col">4390</td>
+                <td class="email-col">bae@naver.com</td>
+                <td class="date-col">2026-04-23 11:35:47</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">6</td>
+                <td class="num-col">412,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">10</td>
+                <td class="id-col num-col">4391</td>
+                <td class="email-col">oh@gmail.com</td>
+                <td class="date-col">2026-04-22 08:14:33</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">11</td>
+                <td class="num-col">784,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">11</td>
+                <td class="id-col num-col">4392</td>
+                <td class="email-col">kwon@example.com</td>
+                <td class="date-col">2026-04-22 13:57:09</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">19</td>
+                <td class="num-col">1,562,500</td>
+              </tr>
+              <tr>
+                <td class="row-num">12</td>
+                <td class="id-col num-col">4393</td>
+                <td class="email-col">lim@enterprise.kr</td>
+                <td class="date-col">2026-04-21 17:22:41</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">7</td>
+                <td class="num-col">490,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">13</td>
+                <td class="id-col num-col">4394</td>
+                <td class="email-col">jung@startup.io</td>
+                <td class="date-col">2026-04-20 09:04:52</td>
+                <td class="bool-false">false</td>
+                <td class="num-col">2</td>
+                <td class="num-col">130,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">14</td>
+                <td class="id-col num-col">4395</td>
+                <td class="email-col">kang@fintech.kr</td>
+                <td class="date-col">2026-04-20 14:31:08</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">24</td>
+                <td class="num-col">2,388,000</td>
+              </tr>
+              <tr>
+                <td class="row-num">15</td>
+                <td class="id-col num-col">4396</td>
+                <td class="email-col">hong@saas.co.kr</td>
+                <td class="date-col">2026-04-19 10:48:27</td>
+                <td class="bool-true">true</td>
+                <td class="num-col">14</td>
+                <td class="num-col">1,094,000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid-pagination">
+          <button class="page-btn">← prev</button>
+          <span class="page-info">1 / 4</span>
+          <button class="page-btn">next →</button>
+          <div class="page-size">
+            <span>페이지 크기</span>
+            <select><option>25</option><option>50</option><option>100</option></select>
+          </div>
+          <span style="margin-left:16px;color:var(--dimmer);">행 1–25 / 87</span>
+        </div>
+      </div>
+
+    </div><!-- /center-panel -->
+  </div><!-- /main -->
+
+  <!-- ══ STATUS BAR ══ -->
+  <div class="statusbar">
+    <div class="sb-item sb-conn">
+      ⚡ prod-rds.us-east-1.rds.amazonaws.com
+    </div>
+    <div class="sb-item">
+      PostgreSQL 17.2
+    </div>
+    <div class="sb-item">
+      UTF8
+    </div>
+    <div class="sb-item" id="sb-tx">
+      tx idle (auto-commit ON)
+    </div>
+    <div class="sb-spacer"></div>
+    <div class="sb-item">
+      마지막 쿼리: <span id="sb-ms">142</span>ms
+    </div>
+    <div class="sb-item">
+      메모리 <span id="sb-mem">64</span>MB
+    </div>
+    <div class="sb-item">
+      cursor 3:14
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+(function(){
+  // ── CURSOR BLINK: handled by CSS ──
+
+  // ── LATENCY NOISE ──
+  const sbMs   = document.getElementById('sb-ms');
+  const execMs = document.getElementById('exec-ms');
+  const resultMs = document.getElementById('result-ms');
+  function randMs(base, spread){return base + Math.floor((Math.random()-0.5)*2*spread);}
+  function updateLatency(){
+    const v = randMs(142, 60);
+    const clamped = Math.max(80, Math.min(220, v));
+    sbMs.textContent = clamped;
+    execMs.textContent = clamped;
+    resultMs.textContent = clamped;
+  }
+  setInterval(updateLatency, 5000);
+
+  // ── MEMORY NOISE ──
+  const sbMem = document.getElementById('sb-mem');
+  function updateMem(){
+    sbMem.textContent = (64 + Math.floor((Math.random()-0.5)*6));
+  }
+  setInterval(updateMem, 7000);
+
+  // ── TRANSACTION STATE CYCLE ──
+  const sbTx = document.getElementById('sb-tx');
+  const txStates = [
+    {text:'tx idle (auto-commit ON)', cls:''},
+    {text:'executing…', cls:'executing'},
+    {text:'tx idle (auto-commit ON)', cls:''}
+  ];
+  let txPhase = 0;
+  function cycleTx(){
+    txPhase = (txPhase + 1) % txStates.length;
+    sbTx.textContent = txStates[txPhase].text;
+    sbTx.className = 'sb-item' + (txStates[txPhase].cls ? ' ' + txStates[txPhase].cls : '');
+    // auto-advance executing → idle after short delay
+    if(txStates[txPhase].cls === 'executing'){
+      setTimeout(()=>{
+        txPhase = (txPhase + 1) % txStates.length;
+        sbTx.textContent = txStates[txPhase].text;
+        sbTx.className = 'sb-item';
+      }, 2200);
+    }
+  }
+  setInterval(cycleTx, 30000);
+
+  // ── RESULT ROW COUNT TICK ──
+  const rowCount  = document.getElementById('row-count');
+  const resultCount = document.getElementById('result-count');
+  let baseRows = 87;
+  function tickRows(){
+    const delta = Math.random() < 0.5 ? 1 : -1;
+    baseRows = Math.max(85, Math.min(90, baseRows + delta));
+    rowCount.textContent = baseRows;
+    resultCount.textContent = baseRows;
+  }
+  setInterval(tickRows, 14000 + Math.random()*8000);
+
+  // ── TREE ROW COUNT TICKS ──
+  const treeCounters = [
+    {el: document.getElementById('users-count'),   base: 124832, fmt: v => v.toLocaleString('ko-KR')},
+    {el: document.getElementById('orders-count'),  base: 892541, fmt: v => v.toLocaleString('ko-KR')},
+    {el: document.getElementById('sessions-count'),base: 84231,  fmt: v => v.toLocaleString('ko-KR')},
+    {el: document.getElementById('notif-count'),   base: 1284002,fmt: v => v.toLocaleString('ko-KR')},
+  ];
+  function tickTree(){
+    const item = treeCounters[Math.floor(Math.random()*treeCounters.length)];
+    item.base += Math.floor(Math.random()*3);
+    item.el.textContent = item.fmt(item.base);
+  }
+  setInterval(tickTree, 6000 + Math.random()*4000);
+
+  // ── ACTIVE TREE ROW CYCLE ──
+  const tableNodes = document.querySelectorAll('.tree-body .tree-node');
+  let activeTreeIdx = 0;
+  // Find initial active node index
+  tableNodes.forEach((n,i)=>{ if(n.classList.contains('active')) activeTreeIdx = i; });
+  const treeClickable = [];
+  tableNodes.forEach((n,i)=>{
+    const name = n.querySelector('.tree-name');
+    if(name && ['users','orders','products','sessions','payments','subscriptions','notifications','audit_logs','user_profiles'].includes(name.textContent)){
+      treeClickable.push(n);
+    }
+  });
+  let activeTreeNode = treeClickable[0];
+  function cyclTreeActive(){
+    if(!treeClickable.length) return;
+    if(activeTreeNode) activeTreeNode.classList.remove('active');
+    const next = treeClickable[Math.floor(Math.random()*treeClickable.length)];
+    next.classList.add('active');
+    activeTreeNode = next;
+  }
+  setInterval(cyclTreeActive, 12000);
+
+  // ── RESULT GRID SELECTED ROW ──
+  const rows = document.querySelectorAll('#result-body tr');
+  let selRow = rows[0];
+  function cycleSelected(){
+    if(selRow) selRow.classList.remove('selected');
+    selRow = rows[Math.floor(Math.random()*rows.length)];
+    selRow.classList.add('selected');
+    // flash a cell in that row
+    const cells = selRow.querySelectorAll('td');
+    if(cells.length > 1){
+      const cell = cells[1 + Math.floor(Math.random()*(cells.length-1))];
+      cell.classList.add('cell-flash');
+      setTimeout(()=>cell.classList.remove('cell-flash'), 700);
+    }
+  }
+  setInterval(cycleSelected, 9000 + Math.random()*6000);
+
+})();
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

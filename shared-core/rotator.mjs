@@ -62,18 +62,21 @@ export const ALL_SCENES = [
   'busy/3dmodel.html', 'busy/notebook.html', 'busy/atc.html',
   'busy/soc.html', 'busy/translator.html', 'busy/erp.html',
   'busy/wms.html', 'busy/latex.html', 'busy/hts.html',
+  // page 2 scenes
+  'busy/crm.html', 'busy/bi.html', 'busy/gis.html',
+  'busy/photo.html', 'busy/zoom.html', 'busy/dba.html',
 ];
 
 // Role-based scene groupings — used when settings.rotation.role is set.
 // Each role represents a coherent "one person's job" so the rotation looks
 // believable across scenes (vs. ATC + DAW + legal review absurdity).
 export const ROLE_GROUPS = {
-  office:    ['busy/email.html', 'busy/calendar.html', 'busy/messenger.html', 'busy/erp.html', 'busy/ppt.html'],
-  dev:       ['열일하는중.html', 'busy/issuetracker.html', 'busy/messenger.html', 'busy/devops.html', 'busy/notebook.html'],
-  finance:   ['busy/trader.html', 'busy/hts.html', 'busy/crypto.html', 'busy/email.html'],
-  creative:  ['busy/design.html', 'busy/ppt.html', 'busy/videoedit.html', 'busy/daw.html', 'busy/3dmodel.html'],
-  research:  ['busy/notebook.html', 'busy/latex.html', 'busy/translator.html'],
-  ops:       ['busy/atc.html', 'busy/soc.html', 'busy/wms.html', 'busy/hts.html'],
+  office:    ['busy/email.html', 'busy/calendar.html', 'busy/messenger.html', 'busy/erp.html', 'busy/ppt.html', 'busy/crm.html', 'busy/bi.html', 'busy/zoom.html'],
+  dev:       ['열일하는중.html', 'busy/issuetracker.html', 'busy/messenger.html', 'busy/devops.html', 'busy/notebook.html', 'busy/dba.html'],
+  finance:   ['busy/trader.html', 'busy/hts.html', 'busy/crypto.html', 'busy/email.html', 'busy/bi.html'],
+  creative:  ['busy/design.html', 'busy/ppt.html', 'busy/videoedit.html', 'busy/daw.html', 'busy/3dmodel.html', 'busy/photo.html'],
+  research:  ['busy/notebook.html', 'busy/latex.html', 'busy/translator.html', 'busy/dba.html'],
+  ops:       ['busy/atc.html', 'busy/soc.html', 'busy/wms.html', 'busy/hts.html', 'busy/gis.html'],
   pro:       ['busy/medical.html', 'busy/legal.html'],
   mixed:     null, // null = use ALL_SCENES (광인 모드)
 };

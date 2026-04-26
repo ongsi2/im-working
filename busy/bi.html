@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Q2 매출 분석 대시보드 · Tableau</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e1820;--panel:#1a2530;--panel2:#1e2c3a;--border:#2a3540;
+  --text:#c8d8e8;--dim:#7a9ab8;--dimmer:#4a6478;
+  --blue:#42a5f5;--green:#7ecf85;--red:#ef5350;--amber:#ffb020;
+  --blue-dim:#1a3a5a;--green-dim:#1a3a20;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,'Segoe UI',sans-serif;font-size:12px;overflow:hidden;}
+.app{display:grid;grid-template-rows:44px 1fr;height:100vh;}
+
+/* TOP BAR */
+.topbar{background:#111f2e;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;font-size:12px;}
+.topbar .logo{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.2px;white-space:nowrap;}
+.topbar .logo .icon{font-size:16px;}
+.topbar .title{color:var(--text);font-weight:600;font-size:12.5px;}
+.topbar .sep{color:var(--dimmer);padding:0 2px;}
+.topbar .spacer{flex:1;}
+.topbar .pills{display:flex;gap:6px;align-items:center;}
+.pill{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:3px 10px 3px 10px;font-size:11px;color:var(--dim);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+.pill:hover{border-color:var(--blue);color:var(--text);}
+.pill .arrow{color:var(--dimmer);font-size:10px;}
+.refresh-badge{display:flex;align-items:center;gap:5px;color:var(--green);font-size:11px;margin-left:6px;}
+.refresh-badge .spin{display:inline-block;animation:spin 3s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.topbar .user{display:flex;align-items:center;gap:6px;margin-left:8px;cursor:pointer;padding:3px 8px;border-radius:12px;border:1px solid transparent;}
+.topbar .user:hover{border-color:var(--border);}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#42a5f5,#1565c0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.topbar .export-btn{padding:4px 10px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--dim);cursor:pointer;font-size:11px;}
+.topbar .export-btn:hover{color:var(--text);border-color:var(--blue);}
+
+/* MAIN */
+.main{display:grid;grid-template-columns:200px 1fr;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{background:#111f2e;border-right:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+.sidebar h3{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.filter-group{display:flex;flex-direction:column;gap:5px;}
+.filter-label{font-size:10.5px;color:var(--dimmer);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;}
+.filter-select{background:var(--panel2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11.5px;padding:5px 8px;width:100%;cursor:pointer;outline:none;}
+.filter-select:focus{border-color:var(--blue);}
+.check-list{display:flex;flex-direction:column;gap:4px;}
+.check-item{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--dim);cursor:pointer;padding:2px 4px;border-radius:4px;}
+.check-item:hover{color:var(--text);background:var(--panel2);}
+.check-item input[type=checkbox]{accent-color:var(--blue);cursor:pointer;}
+.check-item.checked{color:var(--text);}
+.sidebar-actions{display:flex;gap:6px;margin-top:4px;}
+.btn-apply{flex:1;background:var(--blue);color:#fff;border:none;border-radius:5px;padding:7px 0;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-apply:hover{background:#5cb8ff;}
+.btn-reset{flex:1;background:var(--panel2);color:var(--dim);border:1px solid var(--border);border-radius:5px;padding:7px 0;font-size:12px;cursor:pointer;}
+.btn-reset:hover{color:var(--text);}
+
+/* CONTENT */
+.content{overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.kpi-tile{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:0 2px 12px rgba(0,0,0,.35);position:relative;overflow:hidden;}
+.kpi-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-tile.blue::before{background:var(--blue);}
+.kpi-tile.green::before{background:var(--green);}
+.kpi-tile.amber::before{background:var(--amber);}
+.kpi-tile.purple::before{background:#ab47bc;}
+.kpi-label{font-size:10.5px;color:var(--dimmer);text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
+.kpi-val{font-family:'Consolas','Menlo',monospace;font-size:26px;font-weight:700;line-height:1.1;letter-spacing:-0.5px;}
+.kpi-val.blue{color:var(--blue);}
+.kpi-val.green{color:var(--green);}
+.kpi-val.amber{color:var(--amber);}
+.kpi-val.purple{color:#ab47bc;}
+.kpi-sub{font-size:11px;color:var(--dim);margin-top:1px;}
+.kpi-badge{display:inline-block;background:var(--green-dim);color:var(--green);border:1px solid rgba(126,207,133,.3);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;margin-top:3px;width:fit-content;}
+.kpi-badge.warn{background:rgba(255,176,32,.1);color:var(--amber);border-color:rgba(255,176,32,.3);}
+
+/* CHART GRID */
+.chart-grid{display:grid;grid-template-columns:1fr 320px;gap:10px;}
+.chart-grid2{display:grid;grid-template-columns:1fr 320px;gap:10px;}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.3px;}
+.panel-meta{font-size:10.5px;color:var(--dimmer);}
+.chart-area{flex:1;position:relative;}
+
+/* LINE CHART */
+.line-chart-wrap{height:160px;position:relative;}
+svg.lc{width:100%;height:100%;}
+.lc .grid-line{stroke:rgba(255,255,255,.05);stroke-width:1;}
+.lc .axis-label{fill:var(--dimmer);font-size:9px;font-family:system-ui;}
+.lc .line-path{fill:none;stroke:var(--blue);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;}
+.lc .line-path-target{fill:none;stroke:var(--amber);stroke-width:1.5;stroke-dasharray:4 3;stroke-linejoin:round;}
+.lc .area-fill{fill:url(#areaGrad);opacity:.4;}
+.lc .dot-tracker{fill:var(--blue);filter:drop-shadow(0 0 4px var(--blue));}
+.lc .legend-rect{rx:2;ry:2;}
+
+/* DONUT */
+.donut-wrap{height:160px;display:flex;align-items:center;justify-content:center;gap:12px;}
+svg.donut-svg{overflow:visible;}
+.donut-legend{display:flex;flex-direction:column;gap:6px;}
+.legend-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.legend-val{font-family:'Consolas','Menlo',monospace;color:var(--text);margin-left:auto;padding-left:8px;}
+
+/* BAR CHART */
+.bar-chart-wrap{height:160px;position:relative;}
+svg.bc{width:100%;height:100%;}
+.bc .bar-rect{rx:2;ry:2;transition:height .6s;}
+.bc .grid-line{stroke:rgba(255,255,255,.05);stroke-width:1;}
+.bc .bar-label{fill:var(--dimmer);font-size:9px;font-family:system-ui;text-anchor:middle;}
+.bc .bar-val{fill:var(--dim);font-size:8.5px;font-family:'Consolas','Menlo',monospace;text-anchor:middle;}
+
+/* HEATMAP */
+.heatmap-wrap{display:flex;flex-direction:column;gap:4px;}
+.hm-row{display:flex;align-items:center;gap:4px;}
+.hm-label{font-size:10px;color:var(--dimmer);width:28px;text-align:right;flex-shrink:0;}
+.hm-col-labels{display:flex;gap:4px;padding-left:32px;margin-bottom:2px;}
+.hm-col-label{flex:1;font-size:9.5px;color:var(--dimmer);text-align:center;}
+.hm-cell{flex:1;height:26px;border-radius:3px;cursor:pointer;transition:opacity .3s,filter .3s;border:1px solid transparent;}
+.hm-cell:hover{opacity:.85;filter:brightness(1.3);border-color:rgba(255,255,255,.15);}
+.hm-cell.flash{animation:hm-flash .6s ease-out;}
+@keyframes hm-flash{0%{filter:brightness(1);}50%{filter:brightness(2.2);}100%{filter:brightness(1);}}
+
+/* TABLE */
+.tbl-wrap{overflow:auto;max-height:180px;}
+table.data-tbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+.data-tbl th{position:sticky;top:0;background:#152030;color:var(--dimmer);font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.7px;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.data-tbl td{padding:6px 10px;border-bottom:1px solid rgba(42,53,64,.5);}
+.data-tbl tr:nth-child(odd) td{background:rgba(26,37,48,.5);}
+.data-tbl tr:hover td{background:rgba(66,165,245,.07);}
+.data-tbl td.num{font-family:'Consolas','Menlo',monospace;text-align:right;}
+.data-tbl td.rank{color:var(--dimmer);text-align:center;width:36px;}
+.data-tbl td.pos{color:var(--green);}
+.data-tbl td.neg{color:var(--red);}
+.delta-arrow{display:inline-block;font-size:10px;transition:all .3s;}
+
+/* STATUS BAR */
+.statusbar{display:none;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--dimmer);}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="Q2 매출 대시보드 · Tableau" data-favicon="📊" data-app="Tableau">
+
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <span class="icon">▤</span>
+      <span class="title">Q2 매출 분석 대시보드 — Final v3</span>
+    </div>
+    <span class="sep">|</span>
+    <div class="pills">
+      <span class="pill">기간 <span class="arrow">▾</span><strong style="color:var(--text);margin-left:2px;">Q2 2026</strong></span>
+      <span class="pill">권역 <span class="arrow">▾</span></span>
+      <span class="pill">채널 <span class="arrow">▾</span></span>
+    </div>
+    <div class="refresh-badge">
+      <span class="spin">🔄</span>
+      <span id="refresh-label">5분마다 자동 갱신 · 최종: <span id="refresh-time">--:--</span></span>
+    </div>
+    <div class="spacer"></div>
+    <span class="export-btn">↑ 내보내기</span>
+    <div class="user">
+      <div class="user-avatar">최</div>
+      <span style="font-size:11.5px;">최수영 ▾</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h3>Filters</h3>
+
+      <div class="filter-group">
+        <div class="filter-label">기간</div>
+        <select class="filter-select">
+          <option>Q2 2026</option>
+          <option>Q1 2026</option>
+          <option>Q4 2025</option>
+          <option>YTD 2026</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">권역</div>
+        <div class="check-list" id="region-list">
+          <label class="check-item checked"><input type="checkbox" checked> 서울</label>
+          <label class="check-item checked"><input type="checkbox" checked> 부산</label>
+          <label class="check-item"><input type="checkbox"> 대구</label>
+          <label class="check-item"><input type="checkbox"> 인천</label>
+          <label class="check-item"><input type="checkbox"> 광주</label>
+          <label class="check-item"><input type="checkbox"> 대전</label>
+          <label class="check-item"><input type="checkbox"> 기타</label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">채널</div>
+        <div class="check-list">
+          <label class="check-item checked"><input type="checkbox" checked> 온라인</label>
+          <label class="check-item checked"><input type="checkbox" checked> 오프라인</label>
+          <label class="check-item"><input type="checkbox"> 파트너</label>
+          <label class="check-item"><input type="checkbox"> 직영</label>
+          <label class="check-item"><input type="checkbox"> 기타</label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">카테고리</div>
+        <div class="check-list">
+          <label class="check-item checked"><input type="checkbox" checked> 전자제품</label>
+          <label class="check-item checked"><input type="checkbox" checked> 가전</label>
+          <label class="check-item checked"><input type="checkbox" checked> 식품</label>
+          <label class="check-item"><input type="checkbox"> 의류</label>
+          <label class="check-item"><input type="checkbox"> 가구</label>
+          <label class="check-item"><input type="checkbox"> 화장품</label>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="btn-apply">적용 ▶</button>
+        <button class="btn-reset">초기화</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- KPI ROW -->
+      <div class="kpi-row">
+        <div class="kpi-tile blue">
+          <div class="kpi-label">YTD 매출</div>
+          <div class="kpi-val blue" id="kpi-revenue">₩1.84B</div>
+          <div class="kpi-sub">+12.4% vs Q2'25</div>
+          <div class="kpi-badge">목표 달성 ✓</div>
+        </div>
+        <div class="kpi-tile green">
+          <div class="kpi-label">YoY 성장률</div>
+          <div class="kpi-val green" id="kpi-yoy">+12.4%</div>
+          <div class="kpi-sub">전분기 대비 +1.8pp</div>
+          <div class="kpi-badge">목표 +10% 달성</div>
+        </div>
+        <div class="kpi-tile amber">
+          <div class="kpi-label">전환율</div>
+          <div class="kpi-val amber" id="kpi-conv">3.42%</div>
+          <div class="kpi-sub">▲ 0.18pp vs 평균</div>
+          <div class="kpi-badge warn">업계 평균 상회</div>
+        </div>
+        <div class="kpi-tile purple">
+          <div class="kpi-label">신규 매출 (이번 주)</div>
+          <div class="kpi-val purple" id="kpi-new">₩42M</div>
+          <div class="kpi-sub">목표 ₩38M · 초과 달성</div>
+          <div class="kpi-badge" style="background:rgba(171,71,188,.15);color:#ce93d8;border-color:rgba(171,71,188,.3);">+10.5%</div>
+        </div>
+      </div>
+
+      <!-- LINE + DONUT -->
+      <div class="chart-grid">
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">📈 일별 매출 추이 (90일)</span>
+            <span class="panel-meta">단위: 백만원 &nbsp;
+              <span style="color:var(--blue);">━</span> 실적 &nbsp;
+              <span style="color:var(--amber);">- -</span> 목표
+            </span>
+          </div>
+          <div class="line-chart-wrap">
+            <svg class="lc" id="line-svg" viewBox="0 0 600 150" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#42a5f5" stop-opacity=".5"/>
+                  <stop offset="100%" stop-color="#42a5f5" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- grid lines -->
+              <line class="grid-line" x1="40" y1="10" x2="595" y2="10"/>
+              <line class="grid-line" x1="40" y1="40" x2="595" y2="40"/>
+              <line class="grid-line" x1="40" y1="70" x2="595" y2="70"/>
+              <line class="grid-line" x1="40" y1="100" x2="595" y2="100"/>
+              <line class="grid-line" x1="40" y1="130" x2="595" y2="130"/>
+              <!-- y axis labels -->
+              <text class="axis-label" x="35" y="13" text-anchor="end">28M</text>
+              <text class="axis-label" x="35" y="43" text-anchor="end">22M</text>
+              <text class="axis-label" x="35" y="73" text-anchor="end">16M</text>
+              <text class="axis-label" x="35" y="103" text-anchor="end">10M</text>
+              <text class="axis-label" x="35" y="133" text-anchor="end">4M</text>
+              <!-- x axis labels -->
+              <text class="axis-label" x="80"  y="145">4월</text>
+              <text class="axis-label" x="230" y="145">5월</text>
+              <text class="axis-label" x="390" y="145">6월</text>
+              <text class="axis-label" x="540" y="145">7월</text>
+              <!-- area + line paths inserted by JS -->
+              <path class="area-fill" id="lc-area" d=""/>
+              <path class="line-path-target" id="lc-target" d=""/>
+              <path class="line-path" id="lc-path" d=""/>
+              <circle class="dot-tracker" id="lc-dot" r="4" cx="40" cy="100"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">🍩 권역별 매출 비중</span>
+            <span class="panel-meta">Q2 2026</span>
+          </div>
+          <div class="donut-wrap">
+            <svg class="donut-svg" id="donut-svg" width="130" height="130" viewBox="-65 -65 130 130">
+              <!-- slices drawn by JS -->
+            </svg>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BAR + HEATMAP -->
+      <div class="chart-grid2">
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">📊 카테고리별 매출</span>
+            <span class="panel-meta">Q2 누적 · 백만원</span>
+          </div>
+          <div class="bar-chart-wrap">
+            <svg class="bc" id="bar-svg" viewBox="0 0 600 150" preserveAspectRatio="none">
+              <!-- drawn by JS -->
+            </svg>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">🗺 월×권역 매출 강도</span>
+            <span class="panel-meta">강도: 낮음→높음</span>
+          </div>
+          <div class="heatmap-wrap" id="heatmap">
+            <!-- drawn by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP 10 TABLE -->
+      <div class="panel" style="flex:none;">
+        <div class="panel-hdr">
+          <span class="panel-title">🏆 Top 10 거래처</span>
+          <span class="panel-meta" id="tbl-updated">방금 업데이트됨</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="data-tbl" id="top10-tbl">
+            <thead>
+              <tr>
+                <th style="width:36px;text-align:center;">순위</th>
+                <th>거래처명</th>
+                <th style="text-align:right;">매출</th>
+                <th style="text-align:right;">YoY</th>
+                <th style="text-align:right;">점유율</th>
+                <th style="text-align:right;">채널</th>
+              </tr>
+            </thead>
+            <tbody id="top10-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// =====================================================================
+// DATA
+// =====================================================================
+const REGIONS = ['서울','부산','대구','인천','광주','대전'];
+const MONTHS  = ['4월','5월','6월','7월'];
+const CATS    = ['전자제품','가전','식품','의류','가구','도서','화장품','기타'];
+const DONUT_DATA = [
+  {name:'서울', val:38.2, color:'#42a5f5'},
+  {name:'부산', val:22.7, color:'#7ecf85'},
+  {name:'인천', val:16.4, color:'#ffb020'},
+  {name:'대구', val:13.1, color:'#ab47bc'},
+  {name:'기타', val:9.6,  color:'#4dd0e1'},
+];
+const BAR_DATA = [
+  {cat:'전자제품', val:342},{cat:'가전', val:287},{cat:'식품', val:198},
+  {cat:'의류', val:154},{cat:'가구', val:121},{cat:'도서', val:88},
+  {cat:'화장품', val:76},{cat:'기타', val:52},
+];
+const TOP10 = [
+  {rank:1, name:'한국전자(주)',  rev:'₩142M', yoy:+18, share:7.7, ch:'직영'},
+  {rank:2, name:'A그룹 리테일', rev:'₩98M',  yoy:+12, share:5.3, ch:'온라인'},
+  {rank:3, name:'삼성전자 BPA', rev:'₩87M',  yoy:+9,  share:4.7, ch:'파트너'},
+  {rank:4, name:'(주)대한유통', rev:'₩74M',  yoy:-3,  share:4.0, ch:'오프라인'},
+  {rank:5, name:'현대 B2B몰',   rev:'₩68M',  yoy:+21, share:3.7, ch:'온라인'},
+  {rank:6, name:'SK네트웍스',   rev:'₩61M',  yoy:+6,  share:3.3, ch:'파트너'},
+  {rank:7, name:'롯데 GS플러스',rev:'₩57M',  yoy:+14, share:3.1, ch:'직영'},
+  {rank:8, name:'코리아마트',   rev:'₩49M',  yoy:-7,  share:2.7, ch:'오프라인'},
+  {rank:9, name:'에스팩토리',   rev:'₩44M',  yoy:+33, share:2.4, ch:'온라인'},
+  {rank:10,name:'넥스트로지(주)',rev:'₩38M',  yoy:+5,  share:2.1, ch:'파트너'},
+];
+// Heatmap values per [region][month] — 0–100
+const HM_DATA = [
+  [82, 91, 78, 44],  // 서울
+  [55, 63, 70, 28],  // 부산
+  [38, 42, 55, 19],  // 대구
+  [47, 58, 62, 22],  // 인천
+  [30, 34, 41, 15],  // 광주
+  [41, 49, 53, 18],  // 대전
+];
+
+// =====================================================================
+// UTILITIES
+// =====================================================================
+function lerp(a,b,t){return a+(b-a)*t;}
+function hmColor(v){
+  // 0=dark, 100=vivid blue
+  const t=v/100;
+  const r=Math.round(lerp(14,9,t));
+  const g=Math.round(lerp(32,120,t));
+  const b=Math.round(lerp(50,245,t));
+  const alpha=lerp(0.25,1,t);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// =====================================================================
+// REFRESH TIMESTAMP
+// =====================================================================
+function fmtTime(d){
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+function updateRefresh(){
+  document.getElementById('refresh-time').textContent=fmtTime(new Date());
+}
+updateRefresh();
+setInterval(updateRefresh,60000);
+
+// =====================================================================
+// LINE CHART
+// =====================================================================
+(function buildLineChart(){
+  const N=90, w=600, h=150;
+  const padL=40, padR=5, padT=10, padB=15;
+  const cw=w-padL-padR, ch=h-padT-padB;
+  // generate data
+  const vals=[], targets=[];
+  let cur=14;
+  for(let i=0;i<N;i++){
+    cur+=(Math.random()-.44)*1.8+0.12;
+    cur=Math.max(4,Math.min(28,cur));
+    vals.push(cur);
+    targets.push(12+i/N*6+Math.sin(i/8)*0.4);
+  }
+  const maxV=Math.max(...vals,28), minV=0;
+  function tx(i){return padL+i/(N-1)*cw;}
+  function ty(v){return padT+ch-(v-minV)/(maxV-minV)*ch;}
+
+  function buildD(arr){
+    return arr.map((v,i)=>(i===0?`M${tx(i).toFixed(1)},${ty(v).toFixed(1)}`:`L${tx(i).toFixed(1)},${ty(v).toFixed(1)}`)).join(' ');
+  }
+  const pathD=buildD(vals);
+  const targetD=buildD(targets);
+  const areaD=pathD+` L${tx(N-1).toFixed(1)},${(padT+ch).toFixed(1)} L${tx(0).toFixed(1)},${(padT+ch).toFixed(1)} Z`;
+
+  document.getElementById('lc-path').setAttribute('d',pathD);
+  document.getElementById('lc-target').setAttribute('d',targetD);
+  document.getElementById('lc-area').setAttribute('d',areaD);
+
+  // dot tracker
+  let dotIdx=0;
+  function moveDot(){
+    dotIdx=(dotIdx+1)%N;
+    const dot=document.getElementById('lc-dot');
+    dot.setAttribute('cx',tx(dotIdx).toFixed(1));
+    dot.setAttribute('cy',ty(vals[dotIdx]).toFixed(1));
+  }
+  setInterval(moveDot,3000/N*4);
+})();
+
+// =====================================================================
+// DONUT CHART
+// =====================================================================
+(function buildDonut(){
+  const svg=document.getElementById('donut-svg');
+  const R=52, r=30;
+  const total=DONUT_DATA.reduce((s,d)=>s+d.val,0);
+  let startAngle=-Math.PI/2;
+  const slices=[];
+  DONUT_DATA.forEach((d,i)=>{
+    const angle=d.val/total*2*Math.PI;
+    const endAngle=startAngle+angle;
+    const x1=R*Math.cos(startAngle), y1=R*Math.sin(startAngle);
+    const x2=R*Math.cos(endAngle),   y2=R*Math.sin(endAngle);
+    const ix1=r*Math.cos(startAngle),iy1=r*Math.sin(startAngle);
+    const ix2=r*Math.cos(endAngle),  iy2=r*Math.sin(endAngle);
+    const large=angle>Math.PI?1:0;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${ix1.toFixed(2)},${iy1.toFixed(2)} L${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${r},${r} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z`);
+    path.setAttribute('fill',d.color);
+    path.setAttribute('opacity','0.9');
+    path.style.transition='transform .3s,opacity .3s';
+    path.style.cursor='pointer';
+    path.setAttribute('data-i',i);
+    svg.appendChild(path);
+    slices.push({el:path,mid:(startAngle+endAngle)/2});
+    startAngle=endAngle;
+  });
+  // center label
+  const ct=document.createElementNS('http://www.w3.org/2000/svg','text');
+  ct.setAttribute('x','0');ct.setAttribute('y','4');
+  ct.setAttribute('text-anchor','middle');ct.setAttribute('fill','#c8d8e8');
+  ct.setAttribute('font-size','11');ct.setAttribute('font-weight','700');
+  ct.textContent='권역별';
+  svg.appendChild(ct);
+
+  // legend
+  const leg=document.getElementById('donut-legend');
+  DONUT_DATA.forEach(d=>{
+    const row=document.createElement('div');
+    row.className='legend-row';
+    row.innerHTML=`<span class="legend-dot" style="background:${d.color}"></span><span>${d.name}</span><span class="legend-val">${d.val}%</span>`;
+    leg.appendChild(row);
+  });
+
+  // slow highlight rotation
+  let hi=0;
+  function rotatHi(){
+    slices.forEach((s,i)=>{
+      s.el.setAttribute('opacity',i===hi?'1':'0.75');
+      s.el.setAttribute('transform',i===hi?`translate(${(Math.cos(s.mid)*4).toFixed(2)},${(Math.sin(s.mid)*4).toFixed(2)})`:'');
+    });
+    hi=(hi+1)%slices.length;
+  }
+  rotatHi();
+  setInterval(rotatHi,2000);
+})();
+
+// =====================================================================
+// BAR CHART
+// =====================================================================
+(function buildBarChart(){
+  const svg=document.getElementById('bar-svg');
+  const w=600,h=150,padL=8,padR=8,padT=10,padB=28;
+  const cw=w-padL-padR,ch=h-padT-padB;
+  const N=BAR_DATA.length;
+  const maxV=Math.max(...BAR_DATA.map(d=>d.val));
+  const bw=cw/N*0.6, gap=cw/N;
+
+  // grid lines
+  [0,.25,.5,.75,1].forEach(t=>{
+    const y=padT+ch*(1-t);
+    const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',padL);ln.setAttribute('x2',w-padR);
+    ln.setAttribute('y1',y);ln.setAttribute('y2',y);
+    ln.setAttribute('class','grid-line');
+    svg.appendChild(ln);
+  });
+
+  BAR_DATA.forEach((d,i)=>{
+    const x=padL+gap*i+gap/2-bw/2;
+    const barH=d.val/maxV*ch;
+    const y=padT+ch-barH;
+    const colors=['#42a5f5','#5bb8f7','#6ec4f8','#7ecf85','#7ecf85','#4dd0e1','#ce93d8','#90a4ae'];
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x.toFixed(1));
+    rect.setAttribute('y',y.toFixed(1));
+    rect.setAttribute('width',bw.toFixed(1));
+    rect.setAttribute('height',barH.toFixed(1));
+    rect.setAttribute('fill',colors[i%colors.length]);
+    rect.setAttribute('opacity','0.85');
+    rect.setAttribute('rx','2');
+    rect.setAttribute('data-base',barH.toFixed(1));
+    rect.setAttribute('data-basey',y.toFixed(1));
+    rect.setAttribute('data-phase',(i*0.7).toFixed(2));
+    rect.className='bar-rect';
+    svg.appendChild(rect);
+    // label
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',(x+bw/2).toFixed(1));
+    lbl.setAttribute('y',(h-padB+11).toFixed(1));
+    lbl.setAttribute('class','bar-label');
+    lbl.textContent=d.cat.length>4?d.cat.slice(0,4):d.cat;
+    svg.appendChild(lbl);
+    // value
+    const val=document.createElementNS('http://www.w3.org/2000/svg','text');
+    val.setAttribute('x',(x+bw/2).toFixed(1));
+    val.setAttribute('y',(y-3).toFixed(1));
+    val.setAttribute('class','bar-val');
+    val.textContent=d.val+'M';
+    svg.appendChild(val);
+  });
+
+  // breathing animation
+  function breathe(){
+    const t=Date.now()/1000;
+    svg.querySelectorAll('.bar-rect').forEach(r=>{
+      const baseH=parseFloat(r.getAttribute('data-base'));
+      const baseY=parseFloat(r.getAttribute('data-basey'));
+      const phase=parseFloat(r.getAttribute('data-phase'));
+      const delta=Math.sin(t*0.8+phase)*baseH*0.018;
+      r.setAttribute('height',(baseH+delta).toFixed(1));
+      r.setAttribute('y',(baseY-delta).toFixed(1));
+    });
+    requestAnimationFrame(breathe);
+  }
+  breathe();
+})();
+
+// =====================================================================
+// HEATMAP
+// =====================================================================
+(function buildHeatmap(){
+  const container=document.getElementById('heatmap');
+  // col labels
+  const colRow=document.createElement('div');
+  colRow.className='hm-col-labels';
+  MONTHS.forEach(m=>{
+    const s=document.createElement('span');
+    s.className='hm-col-label';s.textContent=m;
+    colRow.appendChild(s);
+  });
+  container.appendChild(colRow);
+  // rows
+  REGIONS.forEach((reg,ri)=>{
+    const row=document.createElement('div');
+    row.className='hm-row';
+    const lbl=document.createElement('span');
+    lbl.className='hm-label';lbl.textContent=reg;
+    row.appendChild(lbl);
+    MONTHS.forEach((_,mi)=>{
+      const cell=document.createElement('div');
+      cell.className='hm-cell';
+      const v=HM_DATA[ri][mi];
+      cell.style.background=hmColor(v);
+      cell.title=`${reg} ${MONTHS[mi]}: ${v}`;
+      cell.setAttribute('data-ri',ri);
+      cell.setAttribute('data-mi',mi);
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  });
+  // random flash
+  function flashCell(){
+    const cells=container.querySelectorAll('.hm-cell');
+    const idx=Math.floor(Math.random()*cells.length);
+    cells[idx].classList.remove('flash');
+    void cells[idx].offsetWidth;
+    cells[idx].classList.add('flash');
+  }
+  setInterval(flashCell,8000);
+})();
+
+// =====================================================================
+// TOP 10 TABLE
+// =====================================================================
+(function buildTable(){
+  const tbody=document.getElementById('top10-body');
+  TOP10.forEach(row=>{
+    const tr=document.createElement('tr');
+    const yoyClass=row.yoy>=0?'pos':'neg';
+    const yoyStr=(row.yoy>=0?'+':'')+row.yoy+'%';
+    tr.innerHTML=`
+      <td class="rank num">${row.rank}</td>
+      <td>${row.name}</td>
+      <td class="num">${row.rev}</td>
+      <td class="num ${yoyClass}"><span class="delta-arrow" data-row="${row.rank}"></span>${yoyStr}</td>
+      <td class="num">${row.share}%</td>
+      <td style="color:var(--dimmer)">${row.ch}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // occasional rank-change arrow flash
+  function flashArrow(){
+    const arrows=document.querySelectorAll('.delta-arrow');
+    const idx=Math.floor(Math.random()*arrows.length);
+    const arrow=arrows[idx];
+    const up=Math.random()>0.5;
+    arrow.textContent=up?'▲':'▼';
+    arrow.style.color=up?'var(--green)':'var(--red)';
+    setTimeout(()=>{arrow.textContent='';},1800);
+  }
+  setInterval(flashArrow,4500);
+})();
+
+// =====================================================================
+// KPI TICKER
+// =====================================================================
+(function kpiTicker(){
+  let yoy=12.4, conv=3.42;
+  function tick(){
+    yoy+=(Math.random()-.5)*0.04;
+    conv+=(Math.random()-.5)*0.015;
+    yoy=Math.max(10,Math.min(15,yoy));
+    conv=Math.max(2.8,Math.min(4.2,conv));
+    document.getElementById('kpi-yoy').textContent=(yoy>=0?'+':'')+yoy.toFixed(1)+'%';
+    document.getElementById('kpi-conv').textContent=conv.toFixed(2)+'%';
+  }
+  setInterval(tick,3700);
+})();
+
+// =====================================================================
+// CHECKBOX INTERACTION
+// =====================================================================
+document.querySelectorAll('.check-item').forEach(item=>{
+  const cb=item.querySelector('input[type=checkbox]');
+  if(cb){
+    cb.addEventListener('change',()=>{
+      item.classList.toggle('checked',cb.checked);
+    });
+  }
+});
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>
