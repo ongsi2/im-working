@@ -11,6 +11,11 @@
 //   local  — 40~160px nearby motion (reading, hovering)
 //   long   — anywhere on screen (switching attention)
 // ~30% of travels are long, rest local.
+//
+// When travel ends on a real DOM element, we emit `cursor:arrived` so
+// shared-core/cursor-actions.mjs can simulate click/type/select/etc.
+
+import { emit } from './eventbus.mjs';
 
 let el = null;
 let raf = null;
@@ -42,6 +47,7 @@ export function mount(settings) {
   let phaseStart = performance.now();
   let phaseDuration = 1500 + Math.random() * 3000;  // first dwell short-ish
   let fromX = curX, fromY = curY, toX = curX, toY = curY;
+  let targetEl = null;  // element travel is targeting (null = random pos)
 
   function startDwell(ts) {
     phase = 'dwell';
@@ -53,17 +59,19 @@ export function mount(settings) {
     phase = 'travel';
     phaseStart = ts;
     fromX = curX; fromY = curY;
+    targetEl = null;
     const W = window.innerWidth, H = window.innerHeight;
     const useElement = Math.random() < 0.4;
     if (useElement) {
-      const targets = [...document.querySelectorAll('button, a, td, input, .cell, [class*="row"], [class*="item"], li')]
+      const targets = [...document.querySelectorAll('button, a, td, input, textarea, .cell, [class*="row"], [class*="item"], li')]
         .filter(el => {
-          if (el.closest('.busy-os-top, .busy-os-dock, .busy-toast-container, .busy-settings-drawer, .busy-hub-fab, .busy-status-strip')) return false;
+          if (el.closest('.busy-os-top, .busy-os-dock, .busy-toast-container, .busy-settings-drawer, .busy-hub-fab, .busy-status-strip, .busy-fake-context-menu')) return false;
           const r = el.getBoundingClientRect();
           return r.width > 8 && r.height > 8 && r.top >= 0 && r.left >= 0 && r.bottom <= H && r.right <= W;
         });
       if (targets.length > 0) {
         const t = targets[Math.floor(Math.random() * targets.length)];
+        targetEl = t;
         const r = t.getBoundingClientRect();
         toX = r.left + r.width * (0.3 + Math.random() * 0.4);
         toY = r.top + r.height * (0.3 + Math.random() * 0.4);
@@ -95,6 +103,12 @@ export function mount(settings) {
         startTravel(ts);
       } else {
         curX = toX; curY = toY;
+        // Notify cursor-actions BEFORE starting dwell so the action layer
+        // can decide what to do with this element.
+        if (targetEl) {
+          try { emit('cursor:arrived', { element: targetEl, x: curX, y: curY }); } catch {}
+          targetEl = null;
+        }
         startDwell(ts);
       }
     } else if (phase === 'travel') {

@@ -14,6 +14,7 @@ import { mount as mountIdentity } from './shared-core/identity-tag.mjs';
 import { mount as mountOSChrome } from './shared-core/os-chrome.mjs';
 import { mount as mountToast, show as showToast } from './shared-core/toast.mjs';
 import { mount as mountCursor } from './shared-core/cursor.mjs';
+import { mount as mountCursorActions } from './shared-core/cursor-actions.mjs';
 import { mount as mountSound, unlock as unlockSound } from './shared-core/sound.mjs';
 import * as Rotator from './shared-core/rotator.mjs';
 import * as WakeLock from './shared-core/wake-lock.mjs';
@@ -41,6 +42,7 @@ try { mountOSChrome(Busy.settings); } catch (e) { console.warn('[Busy] OSChrome 
 try { mountToast(Busy.settings); } catch (e) { console.warn('[Busy] Toast failed', e); }
 Busy.showToast = showToast;
 try { mountCursor(Busy.settings); } catch (e) { console.warn('[Busy] Cursor failed', e); }
+try { mountCursorActions(); } catch (e) { console.warn('[Busy] CursorActions failed', e); }
 try { mountSound(Busy.settings); } catch (e) { console.warn('[Busy] Sound failed', e); }
 Busy.unlockSound = unlockSound;
 try { Rotator.mount(Busy.settings); } catch (e) { console.warn('[Busy] Rotator failed', e); }

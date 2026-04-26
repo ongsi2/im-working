@@ -112,6 +112,7 @@ export function mount(s) {
   enabled = settings.sound.enabled;
   scheduleBurst();
   on('toast', () => playDing());
+  on('cursor:click', () => playClick());
   // Unlock on first user gesture
   const kick = () => { unlock(); document.removeEventListener('click', kick); document.removeEventListener('keydown', kick); };
   document.addEventListener('click', kick, { once: true });

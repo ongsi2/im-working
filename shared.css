@@ -266,3 +266,59 @@ body.busy-has-strip { padding-top: 48px; }
 .busy-os-dock[data-skin="win"] .dock-app.active::after {
   background: #2a73d2;
 }
+
+/* Cursor actions — visual feedback for ghost-cursor click/type/select/etc */
+.busy-click-pulse {
+  position: fixed;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(120, 180, 255, 0.25);
+  border: 2px solid rgba(120, 180, 255, 0.75);
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%) scale(0.3);
+  animation: busy-click-pulse 600ms ease-out forwards;
+}
+@keyframes busy-click-pulse {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+}
+
+.busy-fake-focused {
+  outline: 2px solid #5a88e6 !important;
+  outline-offset: 1px;
+  transition: outline 100ms ease;
+}
+
+.busy-fake-selected {
+  background: rgba(255, 243, 160, 0.55) !important;
+  transition: background 200ms ease;
+}
+
+.busy-fake-context-menu {
+  position: fixed;
+  z-index: 99999;
+  background: rgba(28, 30, 34, 0.96);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 0;
+  min-width: 200px;
+  font-size: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #ddd;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  animation: busy-fadein 120ms ease-out;
+}
+@keyframes busy-fadein {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.busy-fake-context-menu-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 14px;
+  gap: 24px;
+}
+.busy-fake-context-menu-item .kbd { opacity: 0.5; font-size: 10px; }
