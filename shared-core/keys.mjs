@@ -1,7 +1,7 @@
 // shared-core/keys.mjs — global keyboard shortcuts (works in every scene)
 
 import * as Rotator from './rotator.mjs';
-import { focusCurrent } from './start.mjs';
+import { focusCurrent, endTour } from './start.mjs';
 
 let escCount = 0;
 let escTimer = null;
@@ -18,8 +18,13 @@ export function mount(settings) {
       return;
     }
 
-    // Esc Esc → resume panic
+    // Esc — single tap exits tour mode; double-tap resumes panic
     if (e.key === 'Escape') {
+      if (Rotator.isTouring()) {
+        e.preventDefault();
+        endTour();
+        return;
+      }
       escCount++;
       clearTimeout(escTimer);
       escTimer = setTimeout(() => { escCount = 0; }, 500);

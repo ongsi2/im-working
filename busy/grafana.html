@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Production Overview · Grafana</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#111217;--panel:#1f1f23;--panel2:#2a2a30;--border:#2c2c34;
+  --text:#d4d5d9;--dim:#9fa0a7;--dimmer:#66676e;
+  --orange:#F2741D;--green:#73BF69;--yellow:#FADE2A;--red:#F2495C;
+  --blue:#5794F2;--purple:#B877D9;
+  --font-mono:'Consolas','Courier New',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',sans-serif;font-size:12px;overflow:hidden;}
+
+/* ── TOP BAR ── */
+.topbar{height:40px;background:#181b1f;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:0;flex-shrink:0;}
+.topbar .logo{display:flex;align-items:center;gap:8px;margin-right:16px;}
+.topbar .logo svg{width:24px;height:24px;}
+.topbar .logo-text{color:#fff;font-size:14px;font-weight:700;letter-spacing:-0.3px;}
+.topbar .dash-title{color:#fff;font-size:13px;font-weight:600;flex:1;margin-left:4px;}
+.topbar .tb-group{display:flex;align-items:center;gap:4px;}
+.tb-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;font-size:11.5px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.tb-btn:hover{background:#35363e;border-color:#444;}
+.tb-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;}
+.tb-btn.primary:hover{background:#d4621a;}
+.refresh-icon{display:inline-block;font-size:13px;transition:transform 0.5s;}
+.refresh-icon.spinning{animation:spin 0.6s linear;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 6px;}
+.last-update{color:var(--dim);font-size:11px;font-family:var(--font-mono);white-space:nowrap;margin-left:8px;}
+
+/* ── APP SHELL ── */
+.app{display:flex;height:100vh;overflow:hidden;}
+
+/* ── LEFT RAIL ── */
+.rail{width:48px;background:#181b1f;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;flex-shrink:0;}
+.rail-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:var(--dim);font-size:16px;cursor:pointer;transition:background 0.15s,color 0.15s;}
+.rail-icon:hover,.rail-icon.active{background:var(--panel2);color:var(--orange);}
+.rail-icon.active{border-left:2px solid var(--orange);border-radius:0 4px 4px 0;}
+
+/* ── MAIN AREA ── */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── SUB BAR ── */
+.subbar{height:36px;background:#1a1a1f;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+.tag-badge{background:#1e3a5f;color:#7eb8e8;border:1px solid #2a5080;padding:2px 8px;border-radius:3px;font-size:11px;}
+.var-select{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:3px;font-size:11.5px;cursor:pointer;}
+.var-select:focus{outline:none;border-color:var(--orange);}
+.var-label{color:var(--dim);font-size:11px;}
+.subbar .spacer{flex:1;}
+.annotation-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;margin-right:4px;}
+.annotation-text{color:var(--dim);font-size:11px;}
+
+/* ── DASHBOARD BODY ── */
+.dash-body{flex:1;display:flex;overflow:hidden;}
+.panels-area{flex:1;overflow-y:auto;padding:8px;}
+.panels-area::-webkit-scrollbar{width:6px;}
+.panels-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ── ROWS ── */
+.row-label{display:flex;align-items:center;gap:8px;margin:4px 0 6px;color:var(--dim);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;}
+.row-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.panel-row{display:grid;gap:6px;margin-bottom:6px;}
+.panel-row.stats{grid-template-columns:repeat(4,1fr);}
+.panel-row.charts{grid-template-columns:repeat(4,1fr);}
+
+/* ── PANEL BASE ── */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;}
+.panel-header{padding:8px 12px 6px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);}
+.panel-title{font-size:12px;font-weight:600;color:var(--text);flex:1;}
+.panel-menu{color:var(--dimmer);font-size:14px;cursor:pointer;padding:2px 4px;border-radius:2px;}
+.panel-menu:hover{color:var(--text);}
+.info-icon{color:var(--dimmer);font-size:11px;cursor:pointer;}
+
+/* ── STAT PANELS ── */
+.stat-panel .panel-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px 8px;position:relative;}
+.stat-value{font-size:32px;font-weight:700;font-family:var(--font-mono);line-height:1;margin-bottom:4px;transition:color 0.3s;}
+.stat-label{font-size:11px;color:var(--dim);margin-bottom:8px;}
+.stat-delta{font-size:11px;font-family:var(--font-mono);}
+.stat-delta.up{color:var(--red);}
+.stat-delta.down{color:var(--green);}
+.stat-delta.neutral{color:var(--dim);}
+.sparkline-wrap{width:100%;height:36px;margin-top:4px;}
+
+/* ── CHART PANELS ── */
+.chart-panel .panel-body{flex:1;display:flex;flex-direction:column;padding:6px 10px 0;min-height:0;}
+.chart-area{flex:1;position:relative;min-height:100px;}
+.chart-area svg{width:100%;height:100%;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0 6px;border-top:1px solid var(--border);margin-top:4px;}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--dim);cursor:pointer;}
+.legend-item:hover{color:var(--text);}
+.legend-dot{width:8px;height:3px;border-radius:2px;flex-shrink:0;}
+.y-axis{position:absolute;left:0;top:0;bottom:0;width:36px;display:flex;flex-direction:column;justify-content:space-between;}
+.y-label{font-size:9.5px;font-family:var(--font-mono);color:var(--dimmer);text-align:right;padding-right:4px;line-height:1;}
+.x-axis{display:flex;justify-content:space-between;padding:2px 4px 0;margin-left:36px;}
+.x-label{font-size:9.5px;font-family:var(--font-mono);color:var(--dimmer);}
+
+/* ── RIGHT PANEL: ALERTS ── */
+.alerts-panel{width:250px;background:#181b1f;border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.alerts-header{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.alerts-title{font-size:12px;font-weight:700;color:var(--text);flex:1;}
+.alert-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.alerts-list{flex:1;overflow-y:auto;padding:6px;}
+.alerts-list::-webkit-scrollbar{width:4px;}
+.alerts-list::-webkit-scrollbar-thumb{background:var(--border);}
+.alert-item{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:8px 10px;margin-bottom:6px;border-left:3px solid transparent;}
+.alert-item.critical{border-left-color:var(--red);}
+.alert-item.warning{border-left-color:var(--yellow);}
+.alert-item.info{border-left-color:var(--blue);}
+.alert-item.pulsing{animation:pulse-border 1.5s ease-in-out infinite;}
+@keyframes pulse-border{0%,100%{border-left-color:var(--red);box-shadow:0 0 0 0 rgba(242,73,92,0);}50%{border-left-color:#ff6b7a;box-shadow:0 0 0 3px rgba(242,73,92,0.2);}}
+.alert-name{font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.alert-meta{font-size:10.5px;color:var(--dim);}
+.alert-badges{display:flex;gap:4px;margin-top:5px;}
+.badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:2px;text-transform:uppercase;}
+.badge.critical{background:rgba(242,73,92,0.2);color:var(--red);border:1px solid rgba(242,73,92,0.3);}
+.badge.warning{background:rgba(250,222,42,0.15);color:var(--yellow);border:1px solid rgba(250,222,42,0.3);}
+.badge.info{background:rgba(87,148,242,0.15);color:var(--blue);border:1px solid rgba(87,148,242,0.3);}
+.alert-since{font-size:10px;color:var(--dimmer);margin-top:3px;}
+
+/* ── TIME RIBBON ── */
+.time-ribbon{height:52px;background:#181b1f;border-top:1px solid var(--border);flex-shrink:0;padding:6px 12px;}
+.ribbon-label{font-size:10px;color:var(--dim);margin-bottom:4px;display:flex;justify-content:space-between;}
+.ribbon-bar{height:18px;background:var(--panel);border:1px solid var(--border);border-radius:2px;overflow:hidden;position:relative;display:flex;align-items:flex-end;}
+.ribbon-segment{height:100%;display:flex;align-items:flex-end;}
+.ribbon-bin{flex:1;background:rgba(87,148,242,0.18);border-right:1px solid rgba(87,148,242,0.05);transition:background 0.3s;}
+.ribbon-bin:hover{background:rgba(87,148,242,0.4);}
+.ribbon-cursor{position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--orange);opacity:0.9;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="Production Overview · Grafana" data-favicon="📈" data-app="Grafana">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#F2741D" opacity="0.15"/><path d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 3.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm3 9H9v-1.5h2.25V12H9.75v-1.5h3v4.5H15V16.5z" fill="#F2741D"/></svg>
+    <span class="logo-text">Grafana</span>
+  </div>
+  <div class="dash-title">Production Overview</div>
+  <div class="tb-group" style="gap:4px;">
+    <button class="tb-btn" onclick="cycleRange(this)">🕐 Last 1 hour</button>
+    <button class="tb-btn" id="refreshBtn" onclick="manualRefresh()"><span class="refresh-icon" id="refreshIcon">↻</span> 5s</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn">+ Add panel</button>
+    <button class="tb-btn primary">💾 Save</button>
+    <button class="tb-btn">⤴ Share</button>
+    <button class="tb-btn">⚙</button>
+    <div class="tb-sep"></div>
+    <div class="last-update" id="lastUpdate">Updated just now</div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app">
+  <!-- LEFT RAIL -->
+  <div class="rail">
+    <div class="rail-icon active" title="Search">🔍</div>
+    <div class="rail-icon" title="Dashboards">⊞</div>
+    <div class="rail-icon" title="Explore">🧭</div>
+    <div class="rail-icon" title="Alerting">🔔</div>
+    <div style="flex:1;"></div>
+    <div class="rail-icon" title="Settings">⚙</div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <!-- SUB BAR -->
+    <div class="subbar">
+      <span class="tag-badge">production</span>
+      <span class="tag-badge">eu-west-1</span>
+      <div class="tb-sep"></div>
+      <span class="var-label">instance:</span>
+      <select class="var-select"><option>All</option><option>i-0a1b2c3d</option><option>i-4e5f6a7b</option></select>
+      <span class="var-label">service:</span>
+      <select class="var-select"><option>api-gateway</option><option>auth-service</option><option>payment-svc</option><option>user-service</option></select>
+      <div class="spacer"></div>
+      <div class="annotation-dot"></div>
+      <span class="annotation-text">Deployed v3.14.1 — 23m ago</span>
+    </div>
+
+    <!-- DASHBOARD BODY -->
+    <div class="dash-body">
+      <!-- PANELS AREA -->
+      <div class="panels-area">
+        <!-- STAT ROW -->
+        <div class="row-label">▾ Metrics Overview</div>
+        <div class="panel-row stats">
+
+          <!-- Stat: Request Rate -->
+          <div class="panel stat-panel" id="stat-rps">
+            <div class="panel-header">
+              <span class="panel-title">Request Rate</span>
+              <span class="info-icon">ⓘ</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="stat-value" id="val-rps" style="color:var(--green)">12.4k</div>
+              <div class="stat-label">req/s · avg last 5m</div>
+              <div class="stat-delta neutral" id="delta-rps">↑ +1.2%</div>
+              <div class="sparkline-wrap"><svg id="spark-rps" viewBox="0 0 120 36" preserveAspectRatio="none"></svg></div>
+            </div>
+          </div>
+
+          <!-- Stat: Latency p99 -->
+          <div class="panel stat-panel" id="stat-lat">
+            <div class="panel-header">
+              <span class="panel-title">Latency p99</span>
+              <span class="info-icon">ⓘ</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="stat-value" id="val-lat" style="color:var(--yellow)">142ms</div>
+              <div class="stat-label">p99 · eu-west-1</div>
+              <div class="stat-delta up" id="delta-lat">↑ +8ms</div>
+              <div class="sparkline-wrap"><svg id="spark-lat" viewBox="0 0 120 36" preserveAspectRatio="none"></svg></div>
+            </div>
+          </div>
+
+          <!-- Stat: Error Rate -->
+          <div class="panel stat-panel" id="stat-err">
+            <div class="panel-header">
+              <span class="panel-title">Error Rate</span>
+              <span class="info-icon">ⓘ</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="stat-value" id="val-err" style="color:var(--green)">0.04%</div>
+              <div class="stat-label">5xx errors · all services</div>
+              <div class="stat-delta down" id="delta-err">↓ -0.01%</div>
+              <div class="sparkline-wrap"><svg id="spark-err" viewBox="0 0 120 36" preserveAspectRatio="none"></svg></div>
+            </div>
+          </div>
+
+          <!-- Stat: Active Sessions -->
+          <div class="panel stat-panel" id="stat-sess">
+            <div class="panel-header">
+              <span class="panel-title">Active Sessions</span>
+              <span class="info-icon">ⓘ</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="stat-value" id="val-sess" style="color:var(--blue)">8.4k</div>
+              <div class="stat-label">concurrent sessions</div>
+              <div class="stat-delta neutral" id="delta-sess">↔ stable</div>
+              <div class="sparkline-wrap"><svg id="spark-sess" viewBox="0 0 120 36" preserveAspectRatio="none"></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHART ROW -->
+        <div class="row-label">▾ Time Series</div>
+        <div class="panel-row charts">
+
+          <!-- Chart: Request Rate -->
+          <div class="panel chart-panel" style="height:200px;">
+            <div class="panel-header">
+              <span class="panel-title">Request Rate · req/s</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="chart-area" id="chart-rps">
+                <svg id="svg-rps" width="100%" height="100%"></svg>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>api-gateway</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>auth-svc</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart: Latency multi-line -->
+          <div class="panel chart-panel" style="height:200px;">
+            <div class="panel-header">
+              <span class="panel-title">Latency · p50 / p95 / p99</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="chart-area" id="chart-lat">
+                <svg id="svg-lat" width="100%" height="100%"></svg>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>p50</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>p95</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>p99</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart: Error rate by service -->
+          <div class="panel chart-panel" style="height:200px;">
+            <div class="panel-header">
+              <span class="panel-title">Error Rate by Service · %</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="chart-area" id="chart-err">
+                <svg id="svg-err" width="100%" height="100%"></svg>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>api-gw</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>payment</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>auth</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart: CPU by node -->
+          <div class="panel chart-panel" style="height:200px;">
+            <div class="panel-header">
+              <span class="panel-title">CPU Usage by Node · %</span>
+              <span class="panel-menu">⋮</span>
+            </div>
+            <div class="panel-body">
+              <div class="chart-area" id="chart-cpu">
+                <svg id="svg-cpu" width="100%" height="100%"></svg>
+              </div>
+              <div class="chart-legend" id="cpu-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIME RIBBON -->
+        <div class="time-ribbon">
+          <div class="ribbon-label">
+            <span>now-1h</span>
+            <span style="color:var(--orange)">▮ now</span>
+          </div>
+          <div class="ribbon-bar" id="ribbonBar"></div>
+        </div>
+      </div>
+
+      <!-- ALERTS PANEL -->
+      <div class="alerts-panel">
+        <div class="alerts-header">
+          <span class="alerts-title">🔔 Alert Rules</span>
+          <span class="alert-count">5 Firing</span>
+        </div>
+        <div class="alerts-list">
+
+          <div class="alert-item critical pulsing">
+            <div class="alert-name">HighErrorRate</div>
+            <div class="alert-meta">api-gateway · eu-west-1</div>
+            <div class="alert-badges"><span class="badge critical">Firing</span><span class="badge critical">Critical</span></div>
+            <div class="alert-since">Since 14m ago · 4 instances</div>
+          </div>
+
+          <div class="alert-item warning">
+            <div class="alert-name">LatencyP99Elevated</div>
+            <div class="alert-meta">payment-service · eu-west-1</div>
+            <div class="alert-badges"><span class="badge warning">Firing</span><span class="badge warning">Warning</span></div>
+            <div class="alert-since">Since 32m ago · 2 instances</div>
+          </div>
+
+          <div class="alert-item warning">
+            <div class="alert-name">CPUThrottling</div>
+            <div class="alert-meta">node-04 · eu-west-1c</div>
+            <div class="alert-badges"><span class="badge warning">Firing</span><span class="badge warning">Warning</span></div>
+            <div class="alert-since">Since 7m ago · 1 node</div>
+          </div>
+
+          <div class="alert-item info">
+            <div class="alert-name">PodRestartLoop</div>
+            <div class="alert-meta">user-service · eu-west-1b</div>
+            <div class="alert-badges"><span class="badge info">Pending</span><span class="badge info">Info</span></div>
+            <div class="alert-since">Since 2m ago · 1 pod</div>
+          </div>
+
+          <div class="alert-item info">
+            <div class="alert-name">DiskUsageHigh</div>
+            <div class="alert-meta">node-02 · eu-west-1a</div>
+            <div class="alert-badges"><span class="badge info">Firing</span><span class="badge info">Info</span></div>
+            <div class="alert-since">Since 1h 4m ago · 1 node</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA GENERATION ──────────────────────────────────────────────────────────
+const N = 60; // data points for charts (one per minute, 60min window)
+const rng = (min, max) => min + Math.random() * (max - min);
+const noise = (val, pct) => val + (Math.random() - 0.5) * 2 * val * pct;
+
+function genSeries(base, noisePct, n = N) {
+  const arr = [];
+  let v = base;
+  for (let i = 0; i < n; i++) {
+    v = v * 0.92 + base * 0.08 + (Math.random() - 0.5) * base * noisePct;
+    arr.push(Math.max(0, v));
+  }
+  return arr;
+}
+
+// Live data stores
+const data = {
+  rps_gw:   genSeries(9800, 0.08),
+  rps_auth: genSeries(3100, 0.06),
+  lat_p50:  genSeries(38, 0.07),
+  lat_p95:  genSeries(88, 0.09),
+  lat_p99:  genSeries(142, 0.10),
+  err_gw:   genSeries(0.04, 0.20),
+  err_pay:  genSeries(0.09, 0.25),
+  err_auth: genSeries(0.02, 0.15),
+  cpu: [
+    genSeries(62, 0.08),
+    genSeries(55, 0.07),
+    genSeries(78, 0.10),
+    genSeries(49, 0.07),
+    genSeries(71, 0.09),
+    genSeries(58, 0.08),
+  ],
+};
+
+// Sparkline histories (shorter)
+const sparkData = {
+  rps:  genSeries(12400, 0.05, 30),
+  lat:  genSeries(142, 0.08, 30),
+  err:  genSeries(0.04, 0.20, 30),
+  sess: genSeries(8400, 0.04, 30),
+};
+
+// ── SVG HELPERS ──────────────────────────────────────────────────────────────
+function polyPoints(arr, W, H, padTop = 4, padBot = 4) {
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const range = max - min || 1;
+  return arr.map((v, i) => {
+    const x = (i / (arr.length - 1)) * W;
+    const y = padTop + (1 - (v - min) / range) * (H - padTop - padBot);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function makeSVGLine(pts, color, strokeW = 1.5) {
+  const pl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  pl.setAttribute('points', pts);
+  pl.setAttribute('fill', 'none');
+  pl.setAttribute('stroke', color);
+  pl.setAttribute('stroke-width', strokeW);
+  pl.setAttribute('stroke-linejoin', 'round');
+  pl.setAttribute('stroke-linecap', 'round');
+  return pl;
+}
+
+function makeSVGArea(arr, W, H, color) {
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const range = max - min || 1;
+  const pts = arr.map((v, i) => {
+    const x = (i / (arr.length - 1)) * W;
+    const y = 4 + (1 - (v - min) / range) * (H - 8);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const first = pts[0].split(',');
+  const last = pts[pts.length - 1].split(',');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  path.setAttribute('points', `${pts[0]} ${pts.join(' ')} ${last[0]},${H} ${first[0]},${H}`);
+  path.setAttribute('fill', color);
+  path.setAttribute('opacity', '0.12');
+  return path;
+}
+
+function makeGrid(W, H, cols = 6, rows = 4) {
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  for (let i = 0; i <= cols; i++) {
+    const x = (i / cols) * W;
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', x); l.setAttribute('x2', x);
+    l.setAttribute('y1', 0); l.setAttribute('y2', H);
+    l.setAttribute('stroke', '#2c2c34'); l.setAttribute('stroke-width', '0.5');
+    g.appendChild(l);
+  }
+  for (let i = 0; i <= rows; i++) {
+    const y = (i / rows) * H;
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', 0); l.setAttribute('x2', W);
+    l.setAttribute('y1', y); l.setAttribute('y2', y);
+    l.setAttribute('stroke', '#2c2c34'); l.setAttribute('stroke-width', '0.5');
+    g.appendChild(l);
+  }
+  return g;
+}
+
+function makeTrackingDot(color) {
+  const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  c.setAttribute('r', '4');
+  c.setAttribute('fill', color);
+  c.setAttribute('stroke', '#1f1f23');
+  c.setAttribute('stroke-width', '2');
+  return c;
+}
+
+// ── CHART RENDER ─────────────────────────────────────────────────────────────
+function renderChart(svgId, series, colors, dotProgress) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.innerHTML = '';
+  const rect = svg.getBoundingClientRect();
+  const W = rect.width || 200;
+  const H = rect.height || 120;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  // Grid
+  svg.appendChild(makeGrid(W, H));
+
+  // Lines and areas
+  series.forEach((arr, idx) => {
+    svg.appendChild(makeSVGArea(arr, W, H, colors[idx]));
+    const pts = polyPoints(arr, W, H);
+    svg.appendChild(makeSVGLine(pts, colors[idx]));
+  });
+
+  // Tracking dots on last visible point (animated index)
+  series.forEach((arr, idx) => {
+    const progress = dotProgress % arr.length;
+    const dot = makeTrackingDot(colors[idx]);
+    const min = Math.min(...arr);
+    const max = Math.max(...arr);
+    const range = max - min || 1;
+    const x = (progress / (arr.length - 1)) * W;
+    const y = 4 + (1 - (arr[progress] - min) / range) * (H - 8);
+    dot.setAttribute('cx', x);
+    dot.setAttribute('cy', y);
+    svg.appendChild(dot);
+  });
+}
+
+// ── SPARKLINE RENDER ─────────────────────────────────────────────────────────
+function renderSparkline(svgId, arr, color) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.innerHTML = '';
+  const W = 120, H = 36;
+  const pts = polyPoints(arr, W, H, 2, 2);
+  svg.appendChild(makeSVGArea(arr, W, H, color));
+  svg.appendChild(makeSVGLine(pts, color, 1.5));
+}
+
+// ── TIME RIBBON ──────────────────────────────────────────────────────────────
+function buildRibbon() {
+  const bar = document.getElementById('ribbonBar');
+  bar.innerHTML = '';
+  const bins = 60;
+  for (let i = 0; i < bins; i++) {
+    const bin = document.createElement('div');
+    bin.className = 'ribbon-bin';
+    const density = 0.2 + 0.6 * Math.sin(i / bins * Math.PI) + Math.random() * 0.2;
+    bin.style.height = `${Math.round(density * 100)}%`;
+    bar.appendChild(bin);
+  }
+  const cursor = document.createElement('div');
+  cursor.className = 'ribbon-cursor';
+  bar.appendChild(cursor);
+}
+
+// ── CPU NODE LEGEND ───────────────────────────────────────────────────────────
+const CPU_COLORS = ['#73BF69','#5794F2','#FADE2A','#F2495C','#B877D9','#F2741D'];
+const CPU_NAMES  = ['node-01','node-02','node-03','node-04','node-05','node-06'];
+
+function buildCPULegend() {
+  const leg = document.getElementById('cpu-legend');
+  leg.innerHTML = '';
+  CPU_NAMES.forEach((n, i) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${CPU_COLORS[i]}"></div>${n}`;
+    leg.appendChild(item);
+  });
+}
+
+// ── LIVE STAT VALUES ──────────────────────────────────────────────────────────
+let dotProgress = N - 1;
+let tickCount = 0;
+
+function tickStats() {
+  tickCount++;
+
+  // Push new data point
+  const pushPoint = (arr, base, noise) => {
+    arr.push(Math.max(0, arr[arr.length - 1] * 0.9 + base * 0.1 + (Math.random() - 0.5) * base * noise));
+    if (arr.length > N) arr.shift();
+  };
+
+  pushPoint(data.rps_gw,   9800, 0.08);
+  pushPoint(data.rps_auth, 3100, 0.06);
+  pushPoint(data.lat_p50,  38,   0.07);
+  pushPoint(data.lat_p95,  88,   0.09);
+  pushPoint(data.lat_p99,  142,  0.10);
+  pushPoint(data.err_gw,   0.04, 0.20);
+  pushPoint(data.err_pay,  0.09, 0.25);
+  pushPoint(data.err_auth, 0.02, 0.15);
+  data.cpu.forEach((arr, i) => {
+    const bases = [62,55,78,49,71,58];
+    const noises = [0.08,0.07,0.10,0.07,0.09,0.08];
+    pushPoint(arr, bases[i], noises[i]);
+  });
+
+  // CPU breathing: slight sine offset on latest value
+  data.cpu.forEach((arr, i) => {
+    const base = arr[arr.length - 1];
+    arr[arr.length - 1] = base + Math.sin(Date.now() / 1200 + i * 1.1) * 1.5;
+  });
+
+  // Update stat displays
+  const totalRps = data.rps_gw[data.rps_gw.length - 1] + data.rps_auth[data.rps_auth.length - 1];
+  const lat99    = data.lat_p99[data.lat_p99.length - 1];
+  const errRate  = data.err_gw[data.err_gw.length - 1];
+  const sessions = noise(8400, 0.03);
+
+  // Format helpers
+  const fmtK = v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v.toFixed(0);
+
+  document.getElementById('val-rps').textContent  = fmtK(totalRps);
+  document.getElementById('val-lat').textContent  = `${lat99.toFixed(0)}ms`;
+  document.getElementById('val-err').textContent  = `${errRate.toFixed(2)}%`;
+  document.getElementById('val-sess').textContent = fmtK(sessions);
+
+  // Color the latency
+  const latEl = document.getElementById('val-lat');
+  latEl.style.color = lat99 > 170 ? 'var(--red)' : lat99 > 140 ? 'var(--yellow)' : 'var(--green)';
+
+  // Update sparklines
+  sparkData.rps.push(totalRps); sparkData.rps.shift();
+  sparkData.lat.push(lat99);    sparkData.lat.shift();
+  sparkData.err.push(errRate);  sparkData.err.shift();
+  sparkData.sess.push(sessions);sparkData.sess.shift();
+
+  renderSparkline('spark-rps',  sparkData.rps,  '#73BF69');
+  renderSparkline('spark-lat',  sparkData.lat,  '#FADE2A');
+  renderSparkline('spark-err',  sparkData.err,  '#F2495C');
+  renderSparkline('spark-sess', sparkData.sess, '#5794F2');
+
+  // Advance dot
+  dotProgress = N - 1;
+
+  // Render charts
+  renderChart('svg-rps', [data.rps_gw, data.rps_auth], ['#73BF69','#5794F2'], dotProgress);
+  renderChart('svg-lat', [data.lat_p50, data.lat_p95, data.lat_p99], ['#73BF69','#FADE2A','#F2495C'], dotProgress);
+  renderChart('svg-err', [data.err_gw, data.err_pay, data.err_auth], ['#F2495C','#FADE2A','#5794F2'], dotProgress);
+  renderChart('svg-cpu', data.cpu, CPU_COLORS, dotProgress);
+}
+
+// ── REFRESH CYCLE (5s) ────────────────────────────────────────────────────────
+let secondsAgo = 0;
+function doRefresh() {
+  secondsAgo = 0;
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('spinning');
+  setTimeout(() => icon.classList.remove('spinning'), 600);
+}
+
+function updateTimestamp() {
+  const el = document.getElementById('lastUpdate');
+  if (secondsAgo === 0) el.textContent = 'Updated just now';
+  else el.textContent = `Updated ${secondsAgo}s ago`;
+  secondsAgo++;
+}
+
+function manualRefresh() {
+  doRefresh();
+  tickStats();
+}
+
+const timeRanges = ['Last 15 minutes','Last 30 minutes','Last 1 hour','Last 3 hours','Last 6 hours','Last 12 hours'];
+let rangeIdx = 2;
+function cycleRange(btn) {
+  rangeIdx = (rangeIdx + 1) % timeRanges.length;
+  btn.textContent = '🕐 ' + timeRanges[rangeIdx];
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+buildRibbon();
+buildCPULegend();
+tickStats();
+
+// 1s tick for live animation
+setInterval(tickStats, 1000);
+
+// 5s refresh
+setInterval(() => { doRefresh(); updateTimestamp(); }, 5000);
+setInterval(updateTimestamp, 1000);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

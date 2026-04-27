@@ -60,3 +60,31 @@ export async function stopEverything() {
   WakeLock.release();
   Rotator.stopRotation();
 }
+
+/** "샥샥 투어" — fast role-cycling demo mode. Click a role chip on the hub:
+ *  fullscreen + audio + wake lock + PiP + immediately navigate to the first
+ *  scene in that role with a 6s cycle. ESC exits. */
+export async function startTour(role, intervalSec = 6) {
+  const results = {};
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    results.fullscreen = true;
+  } catch { results.fullscreen = false; }
+  try { await unlockSound(); results.audio = true; } catch { results.audio = false; }
+  try { results.wakeLock = await WakeLock.request(); } catch { results.wakeLock = false; }
+  try { results.pip = await PiP.enter(); } catch { results.pip = false; }
+  results.tour = Rotator.beginTour(role, intervalSec);
+  console.info(`[Busy] tour started (${role}, ${intervalSec}s)`, results);
+  return results;
+}
+
+/** End tour and return to hub. Caller is the keys.mjs Esc handler. */
+export async function endTour() {
+  try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
+  try { await PiP.exit(); } catch {}
+  WakeLock.release();
+  Rotator.stopTour();
+  // Navigate back to hub
+  const base = location.pathname.includes('/busy/') ? '../' : './';
+  location.href = base + 'index.html';
+}

@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Q2 OKR 워크숍 — Miro</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --toolbar-bg: #ffffff;
+    --toolbar-border: #e0e0e0;
+    --toolbar-icon: #3d3d3d;
+    --toolbar-active: #4262ff;
+    --topbar-bg: #ffffff;
+    --topbar-border: #e8e8e8;
+    --canvas-bg: #f5f5f5;
+    --dot-color: #c8c8c8;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 28px rgba(0,0,0,0.18);
+    --yellow: #fff59d;
+    --yellow-dark: #f9a825;
+    --pink: #f8bbd0;
+    --pink-dark: #e91e63;
+    --blue: #bbdefb;
+    --blue-dark: #1565c0;
+    --green: #c8e6c9;
+    --green-dark: #2e7d32;
+    --purple: #e1bee7;
+    --purple-dark: #6a1b9a;
+    --orange: #ffe0b2;
+    --orange-dark: #e65100;
+    --frame-bg: rgba(66,98,255,0.04);
+    --frame-border: rgba(66,98,255,0.28);
+    --radius-note: 4px;
+  }
+
+  html, body {
+    height: 100%; width: 100%;
+    background: var(--canvas-bg);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    overflow: hidden;
+    color: #1a1a1a;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    height: 48px;
+    background: var(--topbar-bg);
+    border-bottom: 1px solid var(--topbar-border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 10px;
+    flex-shrink: 0;
+    z-index: 100;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  }
+
+  .tb-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 4px;
+  }
+  .tb-logo-mark {
+    width: 28px; height: 28px;
+    background: #ffdd00;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; color: #1a1a1a;
+    letter-spacing: -1px;
+  }
+  .tb-logo-text {
+    font-size: 15px; font-weight: 700; color: #1a1a1a;
+    letter-spacing: -0.3px;
+  }
+
+  .tb-divider {
+    width: 1px; height: 24px;
+    background: var(--topbar-border);
+    margin: 0 4px;
+  }
+
+  .tb-board-name {
+    font-size: 14px; font-weight: 600; color: #1a1a1a;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+
+  .tb-spacer { flex: 1; }
+
+  .tb-share-btn {
+    background: #4262ff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tb-share-btn:hover { background: #3451e0; }
+
+  .tb-avatars {
+    display: flex;
+    align-items: center;
+  }
+  .tb-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    margin-left: -8px;
+    box-shadow: 0 0 0 1.5px rgba(0,0,0,0.08);
+    cursor: default;
+    user-select: none;
+  }
+  .tb-avatar:first-child { margin-left: 0; }
+
+  .tb-zoom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f0f0f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px; font-weight: 600; color: #444;
+    cursor: pointer;
+    min-width: 60px;
+    justify-content: center;
+  }
+  .tb-zoom:hover { background: #e8e8e8; }
+
+  .tb-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #555;
+    font-size: 16px;
+    border: none; background: transparent;
+  }
+  .tb-btn:hover { background: #f0f0f0; }
+
+  /* ─── MAIN ROW ─── */
+  .main-row {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ─── LEFT TOOLBAR ─── */
+  .toolbar {
+    width: 48px;
+    background: var(--toolbar-bg);
+    border-right: 1px solid var(--toolbar-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    gap: 2px;
+    z-index: 90;
+    box-shadow: 1px 0 0 rgba(0,0,0,0.04);
+    flex-shrink: 0;
+  }
+
+  .tool-item {
+    width: 36px; height: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--toolbar-icon);
+    position: relative;
+    transition: background 0.12s;
+    gap: 2px;
+  }
+  .tool-item:hover { background: #f0f2ff; color: var(--toolbar-active); }
+  .tool-item.active {
+    background: #edf0ff;
+    color: var(--toolbar-active);
+  }
+  .tool-item svg { width: 18px; height: 18px; fill: currentColor; }
+  .tool-label {
+    font-size: 7.5px; font-weight: 500;
+    color: inherit;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0.8;
+  }
+  .tool-sep {
+    width: 24px; height: 1px;
+    background: var(--toolbar-border);
+    margin: 4px 0;
+  }
+
+  /* ─── CANVAS ─── */
+  .canvas-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background-color: #f5f5f5;
+    background-image:
+      radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .canvas-inner {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3200px; height: 2400px;
+    transform-origin: top left;
+  }
+
+  /* ─── FRAME ─── */
+  .frame {
+    position: absolute;
+    border: 2px solid var(--frame-border);
+    background: var(--frame-bg);
+    border-radius: 12px;
+    padding: 40px 24px 28px;
+  }
+  .frame-label {
+    position: absolute;
+    top: -1px; left: 18px;
+    background: rgba(66,98,255,0.12);
+    color: #4262ff;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 0 0 6px 6px;
+    letter-spacing: 0.3px;
+  }
+  .frame-sub-label {
+    position: absolute;
+    top: 16px; left: 22px;
+    font-size: 10px; color: #888;
+    font-weight: 500;
+  }
+
+  /* ─── STICKY NOTES ─── */
+  .sticky {
+    position: absolute;
+    width: 160px;
+    min-height: 140px;
+    border-radius: var(--radius-note);
+    padding: 14px 12px 12px;
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.15s;
+  }
+  .sticky:hover { transform: scale(1.02) rotate(-0.5deg); box-shadow: var(--shadow-lg); }
+  .sticky.active-edit {
+    outline: 2.5px solid #4262ff;
+    outline-offset: 1px;
+    transform: scale(1.03);
+    box-shadow: var(--shadow-lg), 0 0 0 4px rgba(66,98,255,0.12);
+    z-index: 50 !important;
+  }
+
+  .sticky-avatar {
+    position: absolute;
+    top: -10px; right: -8px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; color: #fff;
+  }
+
+  .sticky-text {
+    font-family: 'Segoe UI', cursive, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: rgba(0,0,0,0.75);
+    flex: 1;
+  }
+  .sticky-text .caret {
+    display: inline-block;
+    width: 2px; height: 14px;
+    background: #4262ff;
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: blink 0.9s step-end infinite;
+  }
+
+  .sticky-tag {
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    align-self: flex-start;
+    opacity: 0.65;
+    background: rgba(0,0,0,0.1);
+    color: rgba(0,0,0,0.6);
+  }
+
+  .sticky-meta {
+    font-size: 9px;
+    color: rgba(0,0,0,0.4);
+    margin-top: auto;
+  }
+
+  /* colors */
+  .sticky-yellow { background: var(--yellow); }
+  .sticky-pink   { background: var(--pink); }
+  .sticky-blue   { background: var(--blue); }
+  .sticky-green  { background: var(--green); }
+  .sticky-purple { background: var(--purple); }
+  .sticky-orange { background: var(--orange); }
+
+  /* ─── NEW NOTE ANIMATION ─── */
+  @keyframes popIn {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    70%  { transform: scale(1.07) rotate(1deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .sticky.popping { animation: popIn 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+  /* ─── CONNECTOR SVG ─── */
+  .connector-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3200px; height: 2400px;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .connector-path {
+    fill: none;
+    stroke: #9e9e9e;
+    stroke-width: 2;
+    stroke-dasharray: none;
+    marker-end: url(#arrowhead);
+    transition: stroke 0.3s;
+  }
+  .connector-path.pulse-active {
+    stroke: #4262ff;
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 3px rgba(66,98,255,0.35));
+  }
+
+  .connector-label {
+    font-size: 10px;
+    fill: #888;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 500;
+  }
+
+  /* ─── SHAPE BOXES ─── */
+  .shape-box {
+    position: absolute;
+    border: 2px solid #b0bec5;
+    background: rgba(255,255,255,0.7);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #546e7a;
+    text-align: center;
+    padding: 8px;
+    backdrop-filter: blur(2px);
+  }
+
+  .diamond {
+    transform: rotate(45deg);
+    border-radius: 4px;
+  }
+  .diamond .diamond-text {
+    transform: rotate(-45deg);
+    font-size: 10px;
+    font-weight: 700;
+    color: #455a64;
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  /* ─── COLLABORATOR CURSORS ─── */
+  .collab-cursor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 200;
+    transition: left 0.08s linear, top 0.08s linear;
+  }
+  .collab-cursor svg {
+    width: 22px; height: 22px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+  }
+  .cursor-name {
+    position: absolute;
+    top: 18px; left: 16px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px; font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  }
+
+  /* ─── RIGHT PANEL ─── */
+  .right-panel {
+    width: 220px;
+    background: #fff;
+    border-left: 1px solid var(--topbar-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 90;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .rp-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .rp-title {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #888;
+    margin-bottom: 10px;
+  }
+
+  /* Minimap */
+  .minimap {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #f8f9ff;
+    border: 1px solid #e0e4f0;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .minimap-dot {
+    position: absolute;
+    border-radius: 2px;
+  }
+  .minimap-viewport {
+    position: absolute;
+    border: 2px solid #4262ff;
+    background: rgba(66,98,255,0.07);
+    border-radius: 3px;
+    transition: left 0.6s ease, top 0.6s ease;
+  }
+
+  /* Style panel */
+  .style-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: #555;
+  }
+  .style-row label { flex: 1; font-size: 11px; color: #666; }
+  .color-swatch {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    cursor: pointer;
+  }
+  .style-select {
+    flex: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    background: #fafafa;
+    color: #333;
+  }
+  .style-input {
+    width: 52px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    background: #fafafa;
+    color: #333;
+  }
+
+  .rp-selected-info {
+    background: #f0f4ff;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: #4262ff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ─── BOTTOM STATUS ─── */
+  .statusbar {
+    height: 28px;
+    background: #fff;
+    border-top: 1px solid var(--topbar-border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    font-size: 11px;
+    color: #888;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4caf50;
+    display: inline-block;
+    margin-right: 4px;
+    animation: pulse-dot 2.5s ease infinite;
+  }
+  .status-sep { opacity: 0.3; }
+
+  /* ─── GROUP LABEL ─── */
+  .group-bracket {
+    position: absolute;
+    border: 2px dashed rgba(66,98,255,0.3);
+    border-radius: 10px;
+    pointer-events: none;
+  }
+  .group-bracket-label {
+    position: absolute;
+    top: -14px; left: 10px;
+    font-size: 10px; font-weight: 700;
+    color: #4262ff;
+    background: #fff;
+    padding: 0 6px;
+    opacity: 0.7;
+  }
+
+  /* ─── COMMENT BUBBLE ─── */
+  .comment-pin {
+    position: absolute;
+    width: 28px; height: 28px;
+    background: #ff7043;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 30;
+  }
+  .comment-pin::after {
+    content: '💬';
+    font-size: 12px;
+    transform: rotate(45deg);
+  }
+  .comment-bubble {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: #333;
+    box-shadow: var(--shadow-md);
+    min-width: 140px;
+    z-index: 31;
+    line-height: 1.5;
+  }
+  .comment-author {
+    font-weight: 700;
+    color: #ff7043;
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.3); opacity: 0.7; }
+  }
+  @keyframes connector-pulse {
+    0%   { stroke-opacity: 1; stroke-width: 2; }
+    50%  { stroke-opacity: 0.5; stroke-width: 3.5; }
+    100% { stroke-opacity: 1; stroke-width: 2; }
+  }
+  .connector-path.pulsing {
+    animation: connector-pulse 1.8s ease-in-out;
+  }
+
+  /* ─── REACTION BADGE ─── */
+  .reaction-badge {
+    position: absolute;
+    bottom: -10px; right: 8px;
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 11px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex; align-items: center; gap: 3px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  /* scrollbar hide */
+  .right-panel::-webkit-scrollbar { width: 4px; }
+  .right-panel::-webkit-scrollbar-track { background: transparent; }
+  .right-panel::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+</style>
+</head>
+<body data-suppress="cursor" data-title="Q2 OKR 워크숍 — Miro" data-favicon="🟨" data-app="Miro">
+
+<div class="app">
+
+  <!-- ─── TOP BAR ─── -->
+  <div class="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-mark">m</div>
+      <span class="tb-logo-text">miro</span>
+    </div>
+    <div class="tb-divider"></div>
+    <div class="tb-board-name">Q2 OKR 워크숍 - 04/26</div>
+    <div class="tb-spacer"></div>
+
+    <button class="tb-btn" title="타이머">⏱</button>
+    <button class="tb-btn" title="프레임">⬜</button>
+    <button class="tb-btn" title="통합">🔌</button>
+
+    <div class="tb-divider"></div>
+
+    <button class="tb-share-btn">공유</button>
+
+    <div class="tb-avatars">
+      <div class="tb-avatar" style="background:#e53935" title="이수민">수</div>
+      <div class="tb-avatar" style="background:#1e88e5" title="박지훈">지</div>
+      <div class="tb-avatar" style="background:#43a047" title="김PM">PM</div>
+      <div class="tb-avatar" style="background:#8e24aa" title="최디자">디</div>
+      <div class="tb-avatar" style="background:#fb8c00" title="나 (오현석)">현</div>
+    </div>
+
+    <div class="tb-divider"></div>
+
+    <div class="tb-zoom" id="zoomDisplay">75%</div>
+    <button class="tb-btn">⋮</button>
+  </div>
+
+  <!-- ─── MAIN ROW ─── -->
+  <div class="main-row">
+
+    <!-- ─── LEFT TOOLBAR ─── -->
+    <div class="toolbar">
+      <div class="tool-item active" title="선택">
+        <svg viewBox="0 0 24 24"><path d="M4 2l16 10-7 1-4 7z"/></svg>
+        <span class="tool-label">선택</span>
+      </div>
+      <div class="tool-item" title="텍스트">
+        <svg viewBox="0 0 24 24"><path d="M3 5h18v2H13v12h-2V7H3V5z"/></svg>
+        <span class="tool-label">텍스트</span>
+      </div>
+      <div class="tool-item" title="스티키">
+        <svg viewBox="0 0 24 24"><path d="M20 3H4a1 1 0 00-1 1v13l4-4h13a1 1 0 001-1V4a1 1 0 00-1-1z"/></svg>
+        <span class="tool-label">스티키</span>
+      </div>
+      <div class="tool-sep"></div>
+      <div class="tool-item" title="도형">
+        <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm13 0l4 8H12z"/></svg>
+        <span class="tool-label">도형</span>
+      </div>
+      <div class="tool-item" title="그리기">
+        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        <span class="tool-label">그리기</span>
+      </div>
+      <div class="tool-item" title="화살표">
+        <svg viewBox="0 0 24 24"><path d="M14 5l7 7-7 7v-4H3v-6h11z"/></svg>
+        <span class="tool-label">화살표</span>
+      </div>
+      <div class="tool-sep"></div>
+      <div class="tool-item" title="이미지">
+        <svg viewBox="0 0 24 24"><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>
+        <span class="tool-label">이미지</span>
+      </div>
+      <div class="tool-item" title="댓글">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2zM7 9h10v2H7zm0 4h7v2H7z"/></svg>
+        <span class="tool-label">댓글</span>
+      </div>
+      <div class="tool-item" title="프레임">
+        <svg viewBox="0 0 24 24"><path d="M2 7h2v10H2zm18 0h2v10h-2zM7 2v2h10V2zm0 18v2h10v-2z"/></svg>
+        <span class="tool-label">프레임</span>
+      </div>
+    </div>
+
+    <!-- ─── CANVAS ─── -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="canvas-inner" id="canvasInner">
+
+        <!-- SVG CONNECTOR LAYER -->
+        <svg class="connector-layer" id="connSvg">
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="7"
+                    refX="6" refY="3.5" orient="auto">
+              <polygon points="0 0, 8 3.5, 0 7" fill="#9e9e9e" id="arrowFill"/>
+            </marker>
+            <marker id="arrowheadBlue" markerWidth="8" markerHeight="7"
+                    refX="6" refY="3.5" orient="auto">
+              <polygon points="0 0, 8 3.5, 0 7" fill="#4262ff"/>
+            </marker>
+          </defs>
+
+          <!-- Main frame connectors -->
+          <path id="conn1" class="connector-path"
+                d="M 298 155 C 340 155, 340 200, 380 200"/>
+          <path id="conn2" class="connector-path"
+                d="M 298 230 C 380 230, 380 290, 460 290"/>
+          <path id="conn3" class="connector-path"
+                d="M 490 155 C 530 155, 530 120, 570 120"/>
+          <path id="conn4" class="connector-path"
+                d="M 680 200 C 720 200, 720 260, 760 260"/>
+          <path id="conn5" class="connector-path"
+                d="M 680 320 C 720 320, 720 360, 760 360"/>
+          <path id="conn6" class="connector-path"
+                d="M 490 380 C 540 380, 560 420, 600 420"/>
+          <!-- Cross connector -->
+          <path id="conn7" class="connector-path"
+                d="M 330 300 C 360 300, 390 290, 420 260"
+                stroke="#b0bec5" stroke-dasharray="5,4"/>
+
+          <!-- Labels on connectors -->
+          <text class="connector-label" x="340" y="180">연결</text>
+          <text class="connector-label" x="388" y="276">기반</text>
+
+        </svg>
+
+        <!-- ══ FRAME: Quarter Goals ══ -->
+        <div class="frame" style="left:80px; top:60px; width:820px; height:520px;">
+          <div class="frame-label">Quarter Goals</div>
+          <div class="frame-sub-label">2024 Q2 — 7개 항목</div>
+
+          <!-- Group bracket -->
+          <div class="group-bracket" style="left:8px; top:36px; width:230px; height:295px;">
+            <span class="group-bracket-label">매출 성장</span>
+          </div>
+          <div class="group-bracket" style="left:258px; top:36px; width:250px; height:195px;">
+            <span class="group-bracket-label">운영 효율</span>
+          </div>
+
+          <!-- ★ STICKY 1 — Yellow, active edit -->
+          <div class="sticky sticky-yellow active-edit" id="sticky1"
+               style="left:20px; top:50px; z-index:10; transform:rotate(-1deg)">
+            <div class="sticky-tag">KR 1</div>
+            <div class="sticky-text">신규 고객 +120명<span class="caret"></span></div>
+            <div class="sticky-meta">이수민 · 오늘</div>
+            <div class="sticky-avatar" style="background:#e53935">수</div>
+            <div class="reaction-badge">👍 3</div>
+          </div>
+
+          <!-- STICKY 2 — Pink -->
+          <div class="sticky sticky-pink" id="sticky2"
+               style="left:20px; top:215px; transform:rotate(0.8deg)">
+            <div class="sticky-tag">KR 2</div>
+            <div class="sticky-text">온보딩 시간 단축<br>4h → 2h</div>
+            <div class="sticky-meta">박지훈 · 어제</div>
+            <div class="sticky-avatar" style="background:#1e88e5">지</div>
+          </div>
+
+          <!-- STICKY 3 — Blue -->
+          <div class="sticky sticky-blue" id="sticky3"
+               style="left:200px; top:50px; transform:rotate(1.2deg)">
+            <div class="sticky-tag">KR 3</div>
+            <div class="sticky-text">MAU +15%</div>
+            <div class="sticky-meta">김PM · 오늘</div>
+            <div class="sticky-avatar" style="background:#43a047">PM</div>
+            <div class="reaction-badge">🎯 2</div>
+          </div>
+
+          <!-- STICKY 4 — Green -->
+          <div class="sticky sticky-green" id="sticky4"
+               style="left:200px; top:220px; transform:rotate(-0.5deg)">
+            <div class="sticky-tag">KR 4</div>
+            <div class="sticky-text">Q1 회고 — 이번 분기 적용</div>
+            <div class="sticky-meta">오현석 · 2일 전</div>
+          </div>
+
+          <!-- STICKY 5 — Purple -->
+          <div class="sticky sticky-purple" id="sticky5"
+               style="left:390px; top:50px; transform:rotate(-1.5deg)">
+            <div class="sticky-tag">OKR</div>
+            <div class="sticky-text">NPS 점수 45 이상 달성</div>
+            <div class="sticky-meta">최디자 · 오늘</div>
+            <div class="sticky-avatar" style="background:#8e24aa">디</div>
+          </div>
+
+          <!-- STICKY 6 — Orange -->
+          <div class="sticky sticky-orange" id="sticky6"
+               style="left:390px; top:220px; transform:rotate(0.7deg)">
+            <div class="sticky-tag">KR 5</div>
+            <div class="sticky-text">리텐션율 68% → 78%</div>
+            <div class="sticky-meta">이수민 · 오늘</div>
+            <div class="sticky-avatar" style="background:#e53935">수</div>
+          </div>
+
+          <!-- STICKY 7 — Yellow new -->
+          <div class="sticky sticky-yellow" id="sticky7"
+               style="left:570px; top:50px; transform:rotate(-0.8deg)">
+            <div class="sticky-tag">액션</div>
+            <div class="sticky-text">마케팅 캠페인 3월 런치</div>
+            <div class="sticky-meta">박지훈 · 이번 주</div>
+            <div class="sticky-avatar" style="background:#1e88e5">지</div>
+          </div>
+
+          <!-- Shape: Decision diamond -->
+          <div class="shape-box diamond"
+               style="left:570px; top:220px; width:90px; height:90px;">
+            <div class="diamond-text">우선<br>순위?</div>
+          </div>
+
+          <!-- Shape: Process box -->
+          <div class="shape-box"
+               style="left:390px; top:390px; width:200px; height:56px;">
+            스프린트 플래닝 → 실행
+          </div>
+
+          <!-- Comment pin + bubble -->
+          <div class="comment-pin" style="left:270px; top:180px;"></div>
+          <div class="comment-bubble" style="left:290px; top:160px;">
+            <div class="comment-author">박지훈</div>
+            이 수치 달성 가능한가요?<br>지난 분기 대비 +40% 목표
+          </div>
+
+        </div>
+
+        <!-- ══ SECOND FRAME: 액션 아이템 ══ -->
+        <div class="frame" style="left:960px; top:80px; width:420px; height:340px;"
+             id="frame2">
+          <div class="frame-label">액션 아이템</div>
+          <div class="frame-sub-label">담당자 배정</div>
+
+          <div class="sticky sticky-blue" id="sticky8"
+               style="left:20px; top:40px; transform:rotate(0.5deg)">
+            <div class="sticky-tag">이수민</div>
+            <div class="sticky-text">고객 인터뷰 5건<br>완료 마감 4/30</div>
+            <div class="sticky-meta">우선순위: 높음</div>
+          </div>
+
+          <div class="sticky sticky-green" id="sticky9"
+               style="left:200px; top:40px; transform:rotate(-1deg)">
+            <div class="sticky-tag">박지훈</div>
+            <div class="sticky-text">온보딩 플로우<br>A/B 테스트 설계</div>
+            <div class="sticky-meta">우선순위: 높음</div>
+          </div>
+
+          <div class="sticky sticky-pink" id="sticky10"
+               style="left:20px; top:195px; transform:rotate(1deg)">
+            <div class="sticky-tag">김PM</div>
+            <div class="sticky-text">Q2 대시보드<br>지표 정의</div>
+            <div class="sticky-meta">우선순위: 중간</div>
+          </div>
+
+          <!-- horizontal timeline bar -->
+          <div style="position:absolute; left:200px; top:210px; width:200px; height:6px;
+                      background: linear-gradient(90deg,#4262ff 60%,#e0e0e0 60%);
+                      border-radius:3px;"></div>
+          <div style="position:absolute; left:200px; top:220px; font-size:9px; color:#888;">
+            진행률 60%
+          </div>
+          <div style="position:absolute; left:200px; top:235px; width:120px; height:6px;
+                      background: linear-gradient(90deg,#43a047 35%,#e0e0e0 35%);
+                      border-radius:3px;"></div>
+          <div style="position:absolute; left:200px; top:245px; font-size:9px; color:#888;">
+            진행률 35%
+          </div>
+
+        </div>
+
+        <!-- ══ LONE STICKY outside frames ══ -->
+        <div class="sticky sticky-purple" id="sticky11"
+             style="left:960px; top:470px; transform:rotate(-2deg)">
+          <div class="sticky-tag">아이디어</div>
+          <div class="sticky-text">추가 채널 확보:<br>파트너십 검토</div>
+          <div class="sticky-meta">김PM · 아이디어</div>
+          <div class="sticky-avatar" style="background:#43a047">PM</div>
+        </div>
+
+        <!-- ══ NEW STICKY — appears via animation ══ -->
+        <div class="sticky sticky-yellow" id="stickyNew"
+             style="left:1200px; top:480px; opacity:0; transform:scale(0.4); z-index:20;">
+          <div class="sticky-tag">신규</div>
+          <div class="sticky-text">채용 계획:<br>UX 디자이너 1명</div>
+          <div class="sticky-meta">최디자 · 방금</div>
+          <div class="sticky-avatar" style="background:#8e24aa">디</div>
+        </div>
+
+        <!-- ══ COLLABORATOR CURSORS ══ -->
+        <div class="collab-cursor" id="cursor1" style="left:310px; top:180px">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2l16 10-7 1.5-4 7z" fill="#e53935" stroke="#fff" stroke-width="1"/>
+          </svg>
+          <div class="cursor-name" style="background:#e53935">이수민</div>
+        </div>
+
+        <div class="collab-cursor" id="cursor2" style="left:680px; top:310px">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2l16 10-7 1.5-4 7z" fill="#1e88e5" stroke="#fff" stroke-width="1"/>
+          </svg>
+          <div class="cursor-name" style="background:#1e88e5">박지훈</div>
+        </div>
+
+        <div class="collab-cursor" id="cursor3" style="left:1050px; top:120px">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2l16 10-7 1.5-4 7z" fill="#43a047" stroke="#fff" stroke-width="1"/>
+          </svg>
+          <div class="cursor-name" style="background:#43a047">김PM</div>
+        </div>
+
+        <div class="collab-cursor" id="cursor4" style="left:1180px; top:390px">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2l16 10-7 1.5-4 7z" fill="#8e24aa" stroke="#fff" stroke-width="1"/>
+          </svg>
+          <div class="cursor-name" style="background:#8e24aa">최디자</div>
+        </div>
+
+      </div><!-- /canvas-inner -->
+    </div><!-- /canvas-wrap -->
+
+    <!-- ─── RIGHT PANEL ─── -->
+    <div class="right-panel">
+
+      <!-- Selected object info -->
+      <div class="rp-section">
+        <div class="rp-title">선택된 항목</div>
+        <div class="rp-selected-info" id="selectedInfo">
+          📌 스티키 노트
+        </div>
+      </div>
+
+      <!-- Style panel -->
+      <div class="rp-section">
+        <div class="rp-title">스타일</div>
+
+        <div class="style-row">
+          <label>배경색</label>
+          <div class="color-swatch" style="background:#fff59d"></div>
+          <div class="color-swatch" style="background:#f8bbd0"></div>
+          <div class="color-swatch" style="background:#bbdefb"></div>
+        </div>
+        <div class="style-row">
+          <div class="color-swatch" style="background:#c8e6c9"></div>
+          <div class="color-swatch" style="background:#e1bee7"></div>
+          <div class="color-swatch" style="background:#ffe0b2"></div>
+          <div class="color-swatch" style="background:#fff; border:2px solid #ccc"></div>
+        </div>
+
+        <div class="style-row">
+          <label>텍스트 크기</label>
+          <input class="style-input" type="text" value="13" readonly>
+        </div>
+        <div class="style-row">
+          <label>폰트</label>
+          <select class="style-select">
+            <option>Segoe UI</option>
+            <option>Noto Sans KR</option>
+            <option>Nanum Gothic</option>
+          </select>
+        </div>
+        <div class="style-row">
+          <label>정렬</label>
+          <span style="cursor:pointer;font-size:14px">⬛⬛⬛</span>
+        </div>
+      </div>
+
+      <!-- Border/Shadow -->
+      <div class="rp-section">
+        <div class="rp-title">테두리 &amp; 그림자</div>
+        <div class="style-row">
+          <label>테두리</label>
+          <select class="style-select">
+            <option>없음</option>
+            <option>실선</option>
+            <option>점선</option>
+          </select>
+        </div>
+        <div class="style-row">
+          <label>그림자</label>
+          <select class="style-select">
+            <option selected>기본</option>
+            <option>없음</option>
+            <option>강조</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Minimap -->
+      <div class="rp-section" style="flex:1">
+        <div class="rp-title">미니맵</div>
+        <div class="minimap" id="minimap">
+          <!-- Frame dots -->
+          <div class="minimap-dot" style="left:2%;top:2%;width:26%;height:22%;background:rgba(66,98,255,0.12);border:1px solid rgba(66,98,255,0.3);border-radius:3px"></div>
+          <div class="minimap-dot" style="left:30%;top:3%;width:13%;height:14%;background:rgba(66,98,255,0.1);border:1px solid rgba(66,98,255,0.25);border-radius:3px"></div>
+          <!-- Sticky dots -->
+          <div class="minimap-dot" style="left:3%;top:4%;width:5%;height:6%;background:#fff59d;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:3%;top:11%;width:5%;height:6%;background:#f8bbd0;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:9%;top:4%;width:5%;height:6%;background:#bbdefb;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:9%;top:11%;width:5%;height:6%;background:#c8e6c9;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:15%;top:4%;width:5%;height:6%;background:#e1bee7;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:15%;top:11%;width:5%;height:6%;background:#ffe0b2;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:21%;top:4%;width:5%;height:6%;background:#fff59d;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:31%;top:4%;width:5%;height:6%;background:#bbdefb;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:37%;top:4%;width:5%;height:6%;background:#c8e6c9;border-radius:1px"></div>
+          <div class="minimap-dot" style="left:31%;top:11%;width:5%;height:6%;background:#f8bbd0;border-radius:1px"></div>
+
+          <!-- Viewport highlight -->
+          <div class="minimap-viewport" id="minimapViewport"
+               style="left:0%;top:0%;width:45%;height:50%"></div>
+        </div>
+      </div>
+
+      <!-- Layer panel -->
+      <div class="rp-section">
+        <div class="rp-title">레이어</div>
+        <div style="font-size:10px;color:#666;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 6px;background:#f0f4ff;border-radius:4px">
+            <span>📌</span> <span style="flex:1;color:#4262ff;font-weight:600">스티키 노트 (10)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 6px">
+            <span>⬜</span> <span style="flex:1">프레임 (2)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 6px">
+            <span>↗</span> <span style="flex:1">커넥터 (7)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 6px">
+            <span>🔷</span> <span style="flex:1">도형 (2)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 6px">
+            <span>💬</span> <span style="flex:1">댓글 (1)</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /right-panel -->
+  </div><!-- /main-row -->
+
+  <!-- ─── STATUS BAR ─── -->
+  <div class="statusbar">
+    <span>
+      <span class="status-dot"></span>
+      <span id="activeCount">5명 접속 중</span>
+    </span>
+    <span class="status-sep">·</span>
+    <span id="saveStatus">자동 저장됨 14:25</span>
+    <span class="status-sep">·</span>
+    <span>편집 중: <strong>이수민</strong></span>
+    <div style="flex:1"></div>
+    <span>보드 ID: OKR-2024-Q2</span>
+    <span class="status-sep">·</span>
+    <span>변경사항 23개</span>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Canvas pan offset ──
+  const inner = document.getElementById('canvasInner');
+  const wrap  = document.getElementById('canvasWrap');
+  let panX = -80, panY = -40, scale = 0.75;
+  let isPanning = false, startX, startY;
+
+  function applyTransform() {
+    inner.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    inner.style.transformOrigin = '0 0';
+  }
+  applyTransform();
+
+  wrap.addEventListener('mousedown', e => {
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      isPanning = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+      wrap.style.cursor = 'grabbing';
+    }
+  });
+  window.addEventListener('mousemove', e => {
+    if (!isPanning) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    applyTransform();
+    updateMinimap();
+  });
+  window.addEventListener('mouseup', () => {
+    isPanning = false;
+    wrap.style.cursor = '';
+  });
+  wrap.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.04 : 0.04;
+    scale = Math.max(0.3, Math.min(2.5, scale + delta));
+    applyTransform();
+    updateMinimap();
+  }, { passive: false });
+
+  // ── Zoom display cycles 70~80% ──
+  const zoomEl = document.getElementById('zoomDisplay');
+  let zoomBase = 75, zoomDir = 1;
+  setInterval(() => {
+    zoomBase += zoomDir * 0.4;
+    if (zoomBase >= 80) zoomDir = -1;
+    if (zoomBase <= 70) zoomDir = 1;
+    zoomEl.textContent = Math.round(zoomBase) + '%';
+  }, 700);
+
+  // ── Collaborator cursor noise movement ──
+  const cursors = [
+    { el: document.getElementById('cursor1'), x: 310, y: 180, vx: 0.6, vy: 0.3,
+      tx: 310, ty: 180, ax: 80, ay: 40 },
+    { el: document.getElementById('cursor2'), x: 680, y: 310, vx:-0.4, vy: 0.5,
+      tx: 680, ty: 310, ax: 120, ay: 70 },
+    { el: document.getElementById('cursor3'), x: 1050, y: 120, vx: 0.3, vy:-0.4,
+      tx:1050, ty: 120, ax:  80, ay: 60 },
+    { el: document.getElementById('cursor4'), x: 1180, y: 390, vx:-0.5, vy:-0.3,
+      tx:1180, ty: 390, ax: 100, ay: 50 },
+  ];
+
+  // Simplex-like noise via sin/cos sum
+  function noiseX(c, t) {
+    return c.ax * (Math.sin(t * 0.0008 + c.vx * 3) * 0.6
+                 + Math.sin(t * 0.0013 + c.vy * 2) * 0.4);
+  }
+  function noiseY(c, t) {
+    return c.ay * (Math.cos(t * 0.0007 + c.vx * 2) * 0.5
+                 + Math.cos(t * 0.0011 + c.vy * 4) * 0.5);
+  }
+
+  let startTime = performance.now();
+  function animCursors(now) {
+    const t = now - startTime;
+    cursors.forEach(c => {
+      const nx = c.tx + noiseX(c, t);
+      const ny = c.ty + noiseY(c, t);
+      c.el.style.left = nx + 'px';
+      c.el.style.top  = ny + 'px';
+    });
+    requestAnimationFrame(animCursors);
+  }
+  requestAnimationFrame(animCursors);
+
+  // ── Minimap viewport ──
+  const viewport = document.getElementById('minimapViewport');
+  const CANVAS_W = 3200, CANVAS_H = 2400;
+  const MM_W = 192, MM_H = 144; // approx minimap px
+
+  function updateMinimap() {
+    const wrapRect = wrap.getBoundingClientRect();
+    const vw = wrapRect.width  / scale;
+    const vh = wrapRect.height / scale;
+    const vLeft = (-panX / scale);
+    const vTop  = (-panY / scale);
+
+    const pctL = Math.max(0, vLeft / CANVAS_W * 100);
+    const pctT = Math.max(0, vTop  / CANVAS_H * 100);
+    const pctW = Math.min(100 - pctL, vw / CANVAS_W * 100);
+    const pctH = Math.min(100 - pctT, vh / CANVAS_H * 100);
+
+    viewport.style.left  = pctL + '%';
+    viewport.style.top   = pctT + '%';
+    viewport.style.width = pctW + '%';
+    viewport.style.height= pctH + '%';
+  }
+  updateMinimap();
+
+  // ── Animate minimap viewport drifting ──
+  let mmDir = 1, mmPct = 0;
+  setInterval(() => {
+    mmPct += mmDir * 0.5;
+    if (mmPct > 12) mmDir = -1;
+    if (mmPct < 0)  mmDir =  1;
+    viewport.style.left = mmPct + '%';
+    viewport.style.top  = (mmPct * 0.6) + '%';
+  }, 400);
+
+  // ── Connector pulse ──
+  const connectors = [
+    document.getElementById('conn1'),
+    document.getElementById('conn2'),
+    document.getElementById('conn3'),
+    document.getElementById('conn4'),
+    document.getElementById('conn5'),
+    document.getElementById('conn6'),
+    document.getElementById('conn7'),
+  ];
+  let connIdx = 0;
+  function pulseNextConn() {
+    const c = connectors[connIdx % connectors.length];
+    c.classList.add('pulsing');
+    setTimeout(() => c.classList.remove('pulsing'), 1900);
+    connIdx++;
+    setTimeout(pulseNextConn, 2400 + Math.random() * 1800);
+  }
+  setTimeout(pulseNextConn, 1200);
+
+  // ── New sticky pop-in ──
+  const stickyNew = document.getElementById('stickyNew');
+  function triggerNewSticky() {
+    stickyNew.style.opacity = '';
+    stickyNew.style.transform = '';
+    stickyNew.classList.remove('popping');
+    void stickyNew.offsetWidth; // reflow
+    stickyNew.classList.add('popping');
+    // schedule next
+    setTimeout(triggerNewSticky, 7000 + Math.random() * 4000);
+  }
+  setTimeout(triggerNewSticky, 3000);
+
+  // ── Selected info cycling ──
+  const selectedInfoEl = document.getElementById('selectedInfo');
+  const selectedInfoList = [
+    '📌 스티키 노트',
+    '↗ 커넥터',
+    '⬜ 프레임',
+    '🔷 도형',
+    '📌 스티키 노트 (3개 선택)',
+  ];
+  let selIdx = 0;
+  setInterval(() => {
+    selIdx = (selIdx + 1) % selectedInfoList.length;
+    selectedInfoEl.textContent = selectedInfoList[selIdx];
+  }, 3500);
+
+  // ── Save status clock ──
+  const saveEl = document.getElementById('saveStatus');
+  function updateSave() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2,'0');
+    const m = now.getMinutes().toString().padStart(2,'0');
+    saveEl.textContent = `자동 저장됨 ${h}:${m}`;
+  }
+  updateSave();
+  setInterval(updateSave, 60000);
+
+  // ── Active count flicker ──
+  const countEl = document.getElementById('activeCount');
+  const counts = ['5명 접속 중', '4명 접속 중', '5명 접속 중', '6명 접속 중', '5명 접속 중'];
+  let cIdx = 0;
+  setInterval(() => {
+    cIdx = (cIdx + 1) % counts.length;
+    countEl.textContent = counts[cIdx];
+  }, 8000);
+
+  // ── Tool item click ──
+  document.querySelectorAll('.tool-item').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tool-item').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+})();
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

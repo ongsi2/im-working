@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GET /users/4382 — Postman</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:"Inter","Segoe UI",system-ui,sans-serif;font-size:12.5px;background:#1e1e1e;color:#e0e0e0}
+
+/* ── TOP BAR ── */
+.topbar{height:40px;background:#1a1a1a;display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0;border-bottom:1px solid #111;position:relative;z-index:200}
+.pm-logo{display:flex;align-items:center;gap:7px;color:#fff;font-size:13px;font-weight:700;padding:0 6px;flex-shrink:0;cursor:pointer}
+.pm-logo-icon{width:22px;height:22px;background:#ff6c37;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.ws-btn{height:26px;padding:0 10px;display:flex;align-items:center;gap:5px;background:#2c2c2c;border:1px solid #3a3a3a;border-radius:4px;cursor:pointer;color:#ccc;font-size:12px;white-space:nowrap;flex-shrink:0}
+.ws-btn:hover{background:#333;color:#fff}
+.ws-chevron{font-size:9px;color:#888;margin-left:2px}
+.top-search{flex:1;max-width:340px;height:26px;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:4px;display:flex;align-items:center;padding:0 10px;gap:7px;color:#888;font-size:12px;cursor:text;margin:0 6px}
+.top-search:hover{border-color:#555}
+.top-actions{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+.top-btn{height:26px;padding:0 10px;display:flex;align-items:center;gap:5px;border-radius:4px;cursor:pointer;color:#bbb;font-size:12px;background:transparent;border:none;white-space:nowrap}
+.top-btn:hover{background:#2c2c2c;color:#fff}
+.top-btn.accent{background:#ff6c37;color:#fff;font-weight:600;border:none}
+.top-btn.accent:hover{background:#e85c2a}
+.env-btn{height:26px;padding:0 10px;display:flex;align-items:center;gap:5px;background:#2c2c2c;border:1px solid #3a3a3a;border-radius:4px;cursor:pointer;color:#ff6c37;font-size:12px;font-weight:600;flex-shrink:0}
+.env-btn:hover{background:#333}
+.avatar{width:26px;height:26px;background:linear-gradient(135deg,#ff6c37,#e03e00);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;margin-left:4px}
+
+/* ── REQUEST TABS ── */
+.req-tabs-bar{height:36px;background:#1e1e1e;display:flex;align-items:flex-end;padding:0 0 0 0;border-bottom:1px solid #111;flex-shrink:0;overflow:hidden;position:relative;z-index:100}
+.req-tab{height:32px;padding:0 14px;display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#888;border-right:1px solid #111;background:#1a1a1a;border-top:2px solid transparent;white-space:nowrap;position:relative;flex-shrink:0}
+.req-tab:hover{background:#252525;color:#ccc}
+.req-tab.active{background:#2c2c2c;color:#fff;border-top-color:#ff6c37}
+.req-tab .method-dot{font-size:11px;font-weight:700}
+.dot-get{color:#49cc90}
+.dot-post{color:#fca130}
+.dot-put{color:#61affe}
+.dot-delete{color:#f93e3e}
+.req-tab .dirty{width:8px;height:8px;border-radius:50%;background:#ff6c37;flex-shrink:0;animation:dirtyPulse 2s ease-in-out infinite}
+@keyframes dirtyPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.req-tab .tab-close{color:#666;font-size:11px;margin-left:4px;line-height:1;padding:2px;border-radius:2px}
+.req-tab .tab-close:hover{background:#3a3a3a;color:#ccc}
+.new-tab-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#666;font-size:16px;flex-shrink:0}
+.new-tab-btn:hover{color:#ccc;background:#252525}
+
+/* ── MAIN BODY ── */
+.app-body{display:flex;height:calc(100vh - 76px);overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:280px;min-width:220px;max-width:320px;background:#1e1e1e;border-right:1px solid #111;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-header{height:40px;padding:0 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #111;flex-shrink:0}
+.sidebar-header span{font-size:12px;font-weight:600;color:#ccc;flex:1}
+.sidebar-icon-btn{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:3px;cursor:pointer;color:#888;font-size:13px}
+.sidebar-icon-btn:hover{background:#2c2c2c;color:#ccc}
+.sidebar-search{margin:8px 10px;height:28px;background:#2a2a2a;border:1px solid #333;border-radius:4px;display:flex;align-items:center;padding:0 9px;gap:6px;color:#666;font-size:12px;cursor:text;flex-shrink:0}
+.sidebar-content{flex:1;overflow-y:auto;overflow-x:hidden}
+.sidebar-content::-webkit-scrollbar{width:4px}
+.sidebar-content::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.sidebar-content::-webkit-scrollbar-track{background:transparent}
+.collection-group{margin-bottom:2px}
+.coll-header{height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;cursor:pointer;color:#bbb;font-size:12px;border-radius:3px;margin:0 4px}
+.coll-header:hover{background:#272727;color:#fff}
+.coll-chevron{font-size:10px;color:#666;transition:transform .15s;flex-shrink:0}
+.coll-chevron.open{transform:rotate(90deg)}
+.coll-name{flex:1;font-weight:500}
+.coll-count{background:#2c2c2c;color:#888;font-size:10px;padding:1px 6px;border-radius:8px;flex-shrink:0}
+.coll-count.tick{background:#ff6c37;color:#fff;transition:all .3s}
+.coll-items{padding-left:8px}
+.req-item{height:28px;padding:0 10px 0 16px;display:flex;align-items:center;gap:7px;cursor:pointer;color:#aaa;font-size:12px;border-radius:3px;margin:0 4px}
+.req-item:hover{background:#272727;color:#fff}
+.req-item.active-item{background:#2a2a2a;color:#fff}
+.method-tag{font-size:10px;font-weight:700;min-width:34px;text-align:center;padding:1px 4px;border-radius:2px;flex-shrink:0}
+.tag-get{color:#49cc90}
+.tag-post{color:#fca130}
+.tag-put{color:#61affe}
+.tag-delete{color:#f93e3e}
+.req-path{font-size:11.5px;font-family:"Cascadia Code","Fira Code","Consolas",monospace}
+.section-label{padding:10px 14px 4px;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.6px}
+.env-item{height:28px;padding:0 10px 0 16px;display:flex;align-items:center;gap:7px;cursor:pointer;color:#aaa;font-size:12px;border-radius:3px;margin:0 4px}
+.env-item:hover{background:#272727;color:#fff}
+.env-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.env-dot.prod{background:#ff6c37}
+.env-dot.staging{background:#fca130}
+.env-dot.dev{background:#49cc90}
+
+/* ── CENTER PANEL ── */
+.center-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#2c2c2c}
+
+/* ── URL BAR ── */
+.url-bar{height:52px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #222;flex-shrink:0;background:#2c2c2c}
+.method-select{height:34px;padding:0 12px;background:#3a3a3a;border:1px solid #444;border-radius:4px;color:#49cc90;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;min-width:80px}
+.method-select:hover{background:#424242}
+.url-input{flex:1;height:34px;background:#1e1e1e;border:1px solid #3a3a3a;border-radius:4px;padding:0 12px;color:#e0e0e0;font-size:13px;font-family:"Cascadia Code","Fira Code","Consolas",monospace;outline:none}
+.url-input:focus{border-color:#ff6c37;box-shadow:0 0 0 2px rgba(255,108,55,.15)}
+.send-btn{height:34px;padding:0 22px;background:#ff6c37;border:none;border-radius:4px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;animation:sendPulse 4s ease-in-out infinite}
+.send-btn:hover{background:#e85c2a;animation:none}
+@keyframes sendPulse{0%,85%,100%{box-shadow:0 0 0 0 rgba(255,108,55,0)}90%{box-shadow:0 0 0 5px rgba(255,108,55,.35)}95%{box-shadow:0 0 0 0 rgba(255,108,55,0)}}
+.save-btn{height:34px;padding:0 14px;background:#3a3a3a;border:1px solid #444;border-radius:4px;color:#ccc;font-size:12.5px;cursor:pointer;flex-shrink:0}
+.save-btn:hover{background:#424242;color:#fff}
+
+/* ── REQUEST INNER TABS ── */
+.req-inner-tabs{height:36px;display:flex;align-items:flex-end;padding:0 12px;gap:0;border-bottom:1px solid #222;flex-shrink:0;background:#2c2c2c;overflow:hidden}
+.inner-tab{height:32px;padding:0 14px;display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:#888;border-bottom:2px solid transparent;white-space:nowrap;position:relative}
+.inner-tab:hover{color:#ccc}
+.inner-tab.active{color:#fff;border-bottom-color:#ff6c37}
+.inner-tab .tab-badge{background:#3a3a3a;color:#888;font-size:10px;padding:1px 5px;border-radius:8px;min-width:18px;text-align:center}
+.inner-tab.active .tab-badge{background:#ff6c37;color:#fff}
+.inner-tab .flashing-badge{background:#3a3a3a;color:#888;font-size:10px;padding:1px 5px;border-radius:8px;animation:flashBadge 3s ease-in-out infinite}
+@keyframes flashBadge{0%,70%,100%{background:#3a3a3a;color:#888}75%{background:#ff6c37;color:#fff}80%{background:#3a3a3a;color:#888}85%{background:#ff6c37;color:#fff}}
+
+/* ── HEADERS TABLE ── */
+.headers-section{flex:1;overflow:auto;padding:0}
+.headers-section::-webkit-scrollbar{width:4px}
+.headers-section::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.headers-section::-webkit-scrollbar-track{background:transparent}
+.headers-toolbar{height:36px;padding:0 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #222;flex-shrink:0;background:#252525}
+.ht-label{font-size:12px;color:#888;flex:1}
+.ht-btn{height:24px;padding:0 10px;background:#3a3a3a;border:1px solid #444;border-radius:3px;color:#ccc;font-size:11.5px;cursor:pointer}
+.ht-btn:hover{background:#424242;color:#fff}
+.ht-btn.accent{background:#ff6c37;color:#fff;border:none}
+.ht-btn.accent:hover{background:#e85c2a}
+.headers-table{width:100%;border-collapse:collapse}
+.headers-table th{padding:6px 14px;text-align:left;font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.4px;background:#232323;border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:10}
+.headers-table td{padding:8px 14px;border-bottom:1px solid #1c1c1c;vertical-align:middle}
+.headers-table tr:hover td{background:#2a2a2a}
+.header-check{width:14px;height:14px;accent-color:#ff6c37;cursor:pointer}
+.header-key{font-family:"Cascadia Code","Fira Code","Consolas",monospace;font-size:12px;color:#9cdcfe}
+.header-val{font-family:"Cascadia Code","Fira Code","Consolas",monospace;font-size:12px;color:#ce9178;word-break:break-all}
+.header-val.token{color:#b5cea8;font-size:11px}
+.header-desc{font-size:11.5px;color:#666;font-style:italic}
+.add-row{padding:8px 14px;display:flex;align-items:center;gap:8px;color:#555;font-size:12px;cursor:pointer}
+.add-row:hover{color:#888;background:#272727}
+
+/* ── RESPONSE PANEL ── */
+.response-panel{height:340px;min-height:160px;border-top:2px solid #111;display:flex;flex-direction:column;background:#1e1e1e;flex-shrink:0;resize:vertical;overflow:hidden}
+.response-header{height:38px;padding:0 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #161616;flex-shrink:0;background:#1c1c1c}
+.resp-label{font-size:12px;font-weight:600;color:#888;margin-right:6px}
+.status-badge{padding:3px 10px;border-radius:3px;font-size:12px;font-weight:700;background:linear-gradient(90deg,#0d3b1e,#1a5c2a);color:#49cc90;border:1px solid #2a7a3a;animation:statusGlow 3s ease-in-out infinite}
+@keyframes statusGlow{0%,100%{box-shadow:0 0 0 0 rgba(73,204,144,0)}50%{box-shadow:0 0 6px 1px rgba(73,204,144,.2)}}
+.resp-time{font-size:12px;color:#888;padding:2px 8px;background:#242424;border-radius:3px;font-family:"Cascadia Code","Fira Code","Consolas",monospace}
+.resp-time span{color:#fca130;font-weight:600}
+.resp-size{font-size:12px;color:#888;padding:2px 8px;background:#242424;border-radius:3px}
+.resp-divider{flex:1}
+.resp-tabs-row{height:36px;padding:0 12px;display:flex;align-items:flex-end;gap:0;border-bottom:1px solid #161616;flex-shrink:0;background:#1c1c1c}
+.resp-tab{height:32px;padding:0 14px;display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:#888;border-bottom:2px solid transparent;white-space:nowrap}
+.resp-tab:hover{color:#ccc}
+.resp-tab.active{color:#fff;border-bottom-color:#ff6c37}
+.resp-toolbar{height:32px;padding:0 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #161616;flex-shrink:0;background:#1a1a1a}
+.view-btn{height:24px;padding:0 10px;background:transparent;border:1px solid #333;border-radius:3px;color:#888;font-size:11.5px;cursor:pointer}
+.view-btn:hover{background:#2a2a2a;color:#ccc}
+.view-btn.active{background:#2c2c2c;border-color:#ff6c37;color:#ff6c37}
+.resp-spacer{flex:1}
+.copy-btn{height:24px;padding:0 10px;background:transparent;border:1px solid #333;border-radius:3px;color:#666;font-size:11px;cursor:pointer}
+.copy-btn:hover{background:#2a2a2a;color:#ccc;border-color:#555}
+.json-body{flex:1;overflow:auto;padding:14px 16px;font-family:"Cascadia Code","Fira Code","Consolas",monospace;font-size:12.5px;line-height:1.7;background:#1e1e1e}
+.json-body::-webkit-scrollbar{width:6px}
+.json-body::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+.json-body::-webkit-scrollbar-track{background:transparent}
+/* JSON syntax coloring — VS Code Dark+ */
+.jk{color:#9cdcfe}   /* key: light blue */
+.js{color:#ce9178}   /* string value: orange-brown */
+.jn{color:#b5cea8}   /* number: pale green */
+.jb{color:#569cd6}   /* boolean: blue */
+.jnl{color:#569cd6}  /* null: blue */
+.jp{color:#808080}   /* punctuation: gray */
+.jl{color:#6a9955}   /* line number / faint */
+
+/* ── BOTTOM STATUS ── */
+.statusbar{height:22px;background:#111;display:flex;align-items:center;padding:0 14px;gap:14px;flex-shrink:0;border-top:1px solid #0a0a0a;position:relative;z-index:50}
+.sb-item{font-size:11px;color:#555;display:flex;align-items:center;gap:4px}
+.sb-item.ok{color:#49cc90}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:#49cc90;flex-shrink:0}
+.sb-divider{width:1px;height:12px;background:#333}
+
+/* ── RESIZE HANDLE ── */
+.resize-handle{width:100%;height:4px;background:transparent;cursor:ns-resize;flex-shrink:0}
+.resize-handle:hover{background:#ff6c37;opacity:.4}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="GET /users/4382 — Postman" data-favicon="📮" data-app="Postman">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="pm-logo">
+    <div class="pm-logo-icon">📮</div>
+    <span>Postman</span>
+  </div>
+  <div class="ws-btn">내 워크스페이스 <span class="ws-chevron">▾</span></div>
+  <div class="top-search">
+    <span style="font-size:13px">🔍</span>
+    <span>Search Postman</span>
+  </div>
+  <div class="top-actions">
+    <div class="top-btn">⟳ Runner</div>
+    <div class="top-btn">📋 History</div>
+    <div class="top-btn">⬆ Share</div>
+    <div class="env-btn">PROD <span style="font-size:9px;margin-left:2px">▾</span></div>
+    <div class="avatar">YO</div>
+  </div>
+</div>
+
+<!-- REQUEST TABS BAR -->
+<div class="req-tabs-bar">
+  <div class="req-tab active" onclick="setReqTab(this)">
+    <span class="method-dot dot-get">GET</span>
+    <span>/users/4382</span>
+    <span class="tab-close">✕</span>
+  </div>
+  <div class="req-tab" onclick="setReqTab(this)">
+    <span class="method-dot dot-post">POST</span>
+    <span>/orders</span>
+    <span class="tab-close">✕</span>
+  </div>
+  <div class="req-tab" onclick="setReqTab(this)">
+    <span class="method-dot dot-put">PUT</span>
+    <span>/users/:id</span>
+    <span class="tab-close">✕</span>
+  </div>
+  <div class="req-tab" onclick="setReqTab(this)">
+    <span class="method-dot dot-delete">DELETE</span>
+    <span>/sessions</span>
+    <span class="tab-close">✕</span>
+  </div>
+  <div class="req-tab" onclick="setReqTab(this)">
+    <span class="method-dot dot-get">GET</span>
+    <span>/metrics</span>
+    <span class="dirty"></span>
+    <span class="tab-close">✕</span>
+  </div>
+  <div class="new-tab-btn">＋</div>
+</div>
+
+<!-- MAIN APP BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>Collections</span>
+      <div class="sidebar-icon-btn" title="New collection">＋</div>
+      <div class="sidebar-icon-btn" title="Import">⬇</div>
+      <div class="sidebar-icon-btn" title="More">⋯</div>
+    </div>
+    <div class="sidebar-search">
+      <span>🔍</span>
+      <span>Filter</span>
+    </div>
+    <div class="sidebar-content">
+
+      <!-- User API -->
+      <div class="collection-group">
+        <div class="coll-header" onclick="toggleColl(this)">
+          <span class="coll-chevron open">▶</span>
+          <span class="coll-name">User API</span>
+          <span class="coll-count" id="userApiCount">12</span>
+        </div>
+        <div class="coll-items" style="display:block">
+          <div class="req-item active-item"><span class="method-tag tag-get">GET</span><span class="req-path">/users</span></div>
+          <div class="req-item"><span class="method-tag tag-post">POST</span><span class="req-path">/users</span></div>
+          <div class="req-item"><span class="method-tag tag-get">GET</span><span class="req-path">/users/:id</span></div>
+          <div class="req-item"><span class="method-tag tag-put">PUT</span><span class="req-path">/users/:id</span></div>
+          <div class="req-item"><span class="method-tag tag-delete">DEL</span><span class="req-path">/users/:id</span></div>
+        </div>
+      </div>
+
+      <!-- Order API -->
+      <div class="collection-group">
+        <div class="coll-header" onclick="toggleColl(this)">
+          <span class="coll-chevron open">▶</span>
+          <span class="coll-name">Order API</span>
+          <span class="coll-count">8</span>
+        </div>
+        <div class="coll-items" style="display:block">
+          <div class="req-item"><span class="method-tag tag-get">GET</span><span class="req-path">/orders</span></div>
+          <div class="req-item"><span class="method-tag tag-post">POST</span><span class="req-path">/orders</span></div>
+          <div class="req-item"><span class="method-tag tag-get">GET</span><span class="req-path">/orders/:id</span></div>
+          <div class="req-item"><span class="method-tag tag-put">PUT</span><span class="req-path">/orders/:id</span></div>
+        </div>
+      </div>
+
+      <!-- Auth -->
+      <div class="collection-group">
+        <div class="coll-header" onclick="toggleColl(this)">
+          <span class="coll-chevron">▶</span>
+          <span class="coll-name">Auth</span>
+          <span class="coll-count">5</span>
+        </div>
+        <div class="coll-items" style="display:none">
+          <div class="req-item"><span class="method-tag tag-post">POST</span><span class="req-path">/auth/login</span></div>
+          <div class="req-item"><span class="method-tag tag-post">POST</span><span class="req-path">/auth/refresh</span></div>
+          <div class="req-item"><span class="method-tag tag-delete">DEL</span><span class="req-path">/auth/logout</span></div>
+        </div>
+      </div>
+
+      <!-- Webhooks -->
+      <div class="collection-group">
+        <div class="coll-header" onclick="toggleColl(this)">
+          <span class="coll-chevron">▶</span>
+          <span class="coll-name">Webhooks</span>
+          <span class="coll-count">3</span>
+        </div>
+        <div class="coll-items" style="display:none">
+          <div class="req-item"><span class="method-tag tag-post">POST</span><span class="req-path">/hooks/register</span></div>
+          <div class="req-item"><span class="method-tag tag-delete">DEL</span><span class="req-path">/hooks/:id</span></div>
+        </div>
+      </div>
+
+      <!-- Environments -->
+      <div class="section-label">Environments</div>
+      <div class="env-item"><div class="env-dot prod"></div>PROD</div>
+      <div class="env-item"><div class="env-dot staging"></div>STAGING</div>
+      <div class="env-item"><div class="env-dot dev"></div>DEV</div>
+
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+
+    <!-- URL BAR -->
+    <div class="url-bar">
+      <div class="method-select">GET <span style="color:#666;font-size:10px">▾</span></div>
+      <input class="url-input" type="text" value="https://api.growth.com/users/4382" readonly>
+      <button class="send-btn">Send</button>
+      <button class="save-btn">Save ▾</button>
+    </div>
+
+    <!-- INNER REQUEST TABS -->
+    <div class="req-inner-tabs">
+      <div class="inner-tab" onclick="setInnerTab(this)">Params</div>
+      <div class="inner-tab" onclick="setInnerTab(this)">Authorization <span class="tab-badge" style="background:#1a3a1a;color:#49cc90">Bearer</span></div>
+      <div class="inner-tab active" onclick="setInnerTab(this)">Headers <span class="tab-badge" id="headersBadge">8</span></div>
+      <div class="inner-tab" onclick="setInnerTab(this)">Body</div>
+      <div class="inner-tab" onclick="setInnerTab(this)">Pre-request Script <span class="flashing-badge">①</span></div>
+      <div class="inner-tab" onclick="setInnerTab(this)">Tests</div>
+      <div class="inner-tab" onclick="setInnerTab(this)">Settings</div>
+    </div>
+
+    <!-- HEADERS CONTENT -->
+    <div class="headers-section" style="flex:1;overflow-y:auto;background:#2c2c2c">
+      <div class="headers-toolbar">
+        <span class="ht-label">Request Headers &nbsp;<span style="color:#555">·</span>&nbsp; <span style="color:#666">4 active</span></span>
+        <button class="ht-btn">Bulk Edit</button>
+        <button class="ht-btn" style="margin-left:2px">Presets ▾</button>
+        <button class="ht-btn accent" style="margin-left:4px">＋ Add</button>
+      </div>
+      <table class="headers-table">
+        <thead>
+          <tr>
+            <th style="width:28px"></th>
+            <th style="width:32%">Key</th>
+            <th style="width:44%">Value</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" class="header-check" checked></td>
+            <td><span class="header-key">Authorization</span></td>
+            <td><span class="header-val token">Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzQzODIiLCJpYXQiOjE3NDU3MjkwMDB9…</span></td>
+            <td><span class="header-desc">JWT access token</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="header-check" checked></td>
+            <td><span class="header-key">Content-Type</span></td>
+            <td><span class="header-val">application/json</span></td>
+            <td><span class="header-desc">Request body format</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="header-check" checked></td>
+            <td><span class="header-key">X-Tenant</span></td>
+            <td><span class="header-val">tenant_xyz</span></td>
+            <td><span class="header-desc">Multi-tenant identifier</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="header-check" checked></td>
+            <td><span class="header-key">X-Request-Id</span></td>
+            <td><span class="header-val">req_abc_20260427_001</span></td>
+            <td><span class="header-desc">Idempotency / tracing</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="header-check"></td>
+            <td><span class="header-key" style="color:#555">Accept-Language</span></td>
+            <td><span class="header-val" style="color:#555">ko-KR, en;q=0.9</span></td>
+            <td><span class="header-desc">Disabled</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="header-check"></td>
+            <td><span class="header-key" style="color:#555">X-Debug-Mode</span></td>
+            <td><span class="header-val" style="color:#555">true</span></td>
+            <td><span class="header-desc">Disabled</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="add-row">
+        <span style="font-size:14px">＋</span>
+        <span>Add header</span>
+      </div>
+    </div>
+
+    <!-- RESPONSE PANEL -->
+    <div class="response-panel" id="responsePanel">
+      <div class="resize-handle" id="resizeHandle"></div>
+      <div class="response-header">
+        <span class="resp-label">Response</span>
+        <span class="status-badge">200 OK</span>
+        <div class="resp-time"><span id="respTimeMs">142</span>ms</div>
+        <div class="resp-size">2.4 KB</div>
+        <div class="resp-divider"></div>
+        <button class="copy-btn" title="Copy response">⎘ Copy</button>
+        <button class="copy-btn" title="Download">⬇ Save</button>
+      </div>
+      <div class="resp-tabs-row">
+        <div class="resp-tab active" onclick="setRespTab(this)">Body</div>
+        <div class="resp-tab" onclick="setRespTab(this)">Cookies <span style="background:#242424;color:#666;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px">3</span></div>
+        <div class="resp-tab" onclick="setRespTab(this)">Headers <span style="background:#242424;color:#666;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px">14</span></div>
+        <div class="resp-tab" onclick="setRespTab(this)">Test Results <span style="background:#1a3a1a;color:#49cc90;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px">4/4</span></div>
+      </div>
+      <div class="resp-toolbar">
+        <button class="view-btn active" onclick="setViewBtn(this)">Pretty</button>
+        <button class="view-btn" onclick="setViewBtn(this)">Raw</button>
+        <button class="view-btn" onclick="setViewBtn(this)">Preview</button>
+        <button class="view-btn" onclick="setViewBtn(this)">Visualize</button>
+        <div class="resp-spacer"></div>
+        <span style="font-size:11px;color:#555;margin-right:8px">JSON ▾</span>
+        <button class="copy-btn">⟳ Re-run</button>
+      </div>
+      <div class="json-body" id="jsonBody"></div>
+    </div>
+
+  </div><!-- end center-panel -->
+</div><!-- end app-body -->
+
+<!-- BOTTOM STATUS BAR -->
+<div class="statusbar">
+  <div class="sb-item"><span>Build 11.21</span></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item ok"><div class="sb-dot"></div><span>캐시 OK</span></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item"><span>활동 기록</span></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item" style="margin-left:auto;color:#555">
+    <span>Postman Agent Active</span>
+  </div>
+</div>
+
+<script>
+// ── Toggle sidebar collection ──
+function toggleColl(header) {
+  const chevron = header.querySelector('.coll-chevron');
+  const items = header.nextElementSibling;
+  const isOpen = chevron.classList.contains('open');
+  chevron.classList.toggle('open', !isOpen);
+  items.style.display = isOpen ? 'none' : 'block';
+}
+
+// ── Request tab switcher ──
+function setReqTab(tab) {
+  document.querySelectorAll('.req-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+}
+
+// ── Inner tab switcher ──
+function setInnerTab(tab) {
+  document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  // Update badge on active Headers tab
+  const badge = tab.querySelector('.tab-badge');
+  if (badge) badge.style.background = '#ff6c37', badge.style.color = '#fff';
+  document.querySelectorAll('.inner-tab:not(.active) .tab-badge').forEach(b => {
+    b.style.background = '';
+    b.style.color = '';
+  });
+}
+
+// ── Response tab switcher ──
+function setRespTab(tab) {
+  document.querySelectorAll('.resp-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+}
+
+// ── View button switcher ──
+function setViewBtn(btn) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── JSON response body ──
+const jsonLines = [
+  '{',
+  '  <span class="jk">"id"</span><span class="jp">:</span> <span class="jn">4382</span><span class="jp">,</span>',
+  '  <span class="jk">"username"</span><span class="jp">:</span> <span class="js">"yuna.oh"</span><span class="jp">,</span>',
+  '  <span class="jk">"email"</span><span class="jp">:</span> <span class="js">"yuna.oh@growth.com"</span><span class="jp">,</span>',
+  '  <span class="jk">"full_name"</span><span class="jp">:</span> <span class="js">"오유나"</span><span class="jp">,</span>',
+  '  <span class="jk">"role"</span><span class="jp">:</span> <span class="js">"growth_manager"</span><span class="jp">,</span>',
+  '  <span class="jk">"tenant_id"</span><span class="jp">:</span> <span class="js">"tenant_xyz"</span><span class="jp">,</span>',
+  '  <span class="jk">"status"</span><span class="jp">:</span> <span class="js">"active"</span><span class="jp">,</span>',
+  '  <span class="jk">"verified"</span><span class="jp">:</span> <span class="jb">true</span><span class="jp">,</span>',
+  '  <span class="jk">"created_at"</span><span class="jp">:</span> <span class="js">"2024-03-15T09:22:18Z"</span><span class="jp">,</span>',
+  '  <span class="jk">"updated_at"</span><span class="jp">:</span> <span class="js">"2026-04-26T14:55:03Z"</span><span class="jp">,</span>',
+  '  <span class="jk">"profile"</span><span class="jp">:</span> <span class="jp">{</span>',
+  '    <span class="jk">"avatar_url"</span><span class="jp">:</span> <span class="js">"https://cdn.growth.com/avatars/4382.webp"</span><span class="jp">,</span>',
+  '    <span class="jk">"department"</span><span class="jp">:</span> <span class="js">"Product Growth"</span><span class="jp">,</span>',
+  '    <span class="jk">"locale"</span><span class="jp">:</span> <span class="js">"ko-KR"</span><span class="jp">,</span>',
+  '    <span class="jk">"timezone"</span><span class="jp">:</span> <span class="js">"Asia/Seoul"</span>',
+  '  <span class="jp">}</span><span class="jp">,</span>',
+  '  <span class="jk">"permissions"</span><span class="jp">:</span> <span class="jp">[</span>',
+  '    <span class="js">"read:users"</span><span class="jp">,</span>',
+  '    <span class="js">"write:users"</span><span class="jp">,</span>',
+  '    <span class="js">"read:analytics"</span><span class="jp">,</span>',
+  '    <span class="js">"manage:experiments"</span>',
+  '  <span class="jp">]</span><span class="jp">,</span>',
+  '  <span class="jk">"metadata"</span><span class="jp">:</span> <span class="jp">{</span>',
+  '    <span class="jk">"login_count"</span><span class="jp">:</span> <span class="jn">1842</span><span class="jp">,</span>',
+  '    <span class="jk">"last_login"</span><span class="jp">:</span> <span class="js">"2026-04-27T08:11:00Z"</span><span class="jp">,</span>',
+  '    <span class="jk">"mfa_enabled"</span><span class="jp">:</span> <span class="jb">true</span><span class="jp">,</span>',
+  '    <span class="jk">"plan"</span><span class="jp">:</span> <span class="js">"enterprise"</span>',
+  '  <span class="jp">}</span>',
+  '}'
+];
+
+const jsonBodyEl = document.getElementById('jsonBody');
+jsonBodyEl.innerHTML = jsonLines.map((line, i) =>
+  `<div style="display:flex;gap:12px"><span style="color:#444;user-select:none;min-width:20px;text-align:right">${i+1}</span><span>${line}</span></div>`
+).join('');
+
+// ── Response time ticker ──
+const timeEl = document.getElementById('respTimeMs');
+setInterval(() => {
+  // Add realistic noise: base ~120ms ± 50ms, occasional spike
+  const spike = Math.random() < 0.08 ? Math.floor(Math.random() * 80) : 0;
+  const base = 100 + Math.floor(Math.random() * 70);
+  timeEl.textContent = base + spike;
+}, 5000);
+
+// ── User API count tick ──
+const countEl = document.getElementById('userApiCount');
+setInterval(() => {
+  countEl.textContent = '13';
+  countEl.classList.add('tick');
+  setTimeout(() => {
+    countEl.textContent = '12';
+    countEl.classList.remove('tick');
+  }, 800);
+}, 7000);
+
+// ── Resize handle for response panel ──
+(function() {
+  const panel = document.getElementById('responsePanel');
+  const handle = document.getElementById('resizeHandle');
+  let dragging = false, startY = 0, startH = 0;
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    startY = e.clientY;
+    startH = panel.offsetHeight;
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta = startY - e.clientY;
+    const newH = Math.max(120, Math.min(600, startH + delta));
+    panel.style.height = newH + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (dragging) {
+      dragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+})();
+
+// ── Hover effects on sidebar items ──
+document.querySelectorAll('.req-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.req-item').forEach(i => i.classList.remove('active-item'));
+    this.classList.add('active-item');
+  });
+});
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

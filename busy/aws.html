@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>EC2 Instances · ap-northeast-2 · AWS</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --aws-navy:#232f3e;
+    --aws-navy2:#1a2332;
+    --aws-navy3:#2d3e50;
+    --aws-orange:#ff9900;
+    --aws-orange2:#e68a00;
+    --aws-blue:#0073bb;
+    --aws-link:#0073bb;
+    --bg:#f2f3f3;
+    --panel:#ffffff;
+    --panel2:#f8f8f8;
+    --border:#d5dbdb;
+    --border2:#aab7b8;
+    --text:#16191f;
+    --dim:#545b64;
+    --dimmer:#879596;
+    --green:#1d8102;
+    --green-bg:#f2f8f2;
+    --red:#d13212;
+    --red-bg:#fdf3f1;
+    --gray:#687078;
+    --gray-bg:#f0f0f0;
+    --amber:#8a6116;
+    --amber-bg:#fef6e4;
+    --sidebar:#f8f8f8;
+    --sidebar-w:56px;
+    --header-h:40px;
+    --subnav-h:36px;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Amazon Ember','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;overflow:hidden;}
+  .app{display:grid;grid-template-rows:var(--header-h) var(--subnav-h) 1fr 28px;height:100vh;}
+
+  /* ── TOP HEADER ── */
+  .header{background:var(--aws-navy);display:flex;align-items:center;padding:0 12px;gap:0;position:relative;z-index:100;}
+  .header .logo{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;border-right:1px solid rgba(255,255,255,0.15);margin-right:4px;}
+  .header .logo svg{width:56px;height:28px;}
+  .header .services-btn{color:#fff;font-size:13px;padding:4px 10px;display:flex;align-items:center;gap:5px;cursor:pointer;border-radius:3px;}
+  .header .services-btn:hover{background:var(--aws-navy3);}
+  .header .services-btn .caret{font-size:9px;opacity:0.7;}
+  .header .search-bar{flex:1;margin:0 10px;display:flex;align-items:center;background:#fff;border-radius:3px;overflow:hidden;max-width:460px;}
+  .header .search-bar input{flex:1;border:none;outline:none;padding:5px 10px;font-size:13px;color:var(--text);}
+  .header .search-bar .search-icon{background:#ec7211;padding:5px 10px;color:#fff;cursor:pointer;font-size:13px;}
+  .header .hspace{flex:1;}
+  .header .header-actions{display:flex;align-items:center;gap:2px;}
+  .header .h-btn{color:rgba(255,255,255,0.9);font-size:12.5px;padding:4px 8px;cursor:pointer;border-radius:3px;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+  .header .h-btn:hover{background:var(--aws-navy3);}
+  .header .h-btn .caret{font-size:9px;opacity:0.6;}
+  .region-btn{position:relative;}
+  .region-btn::after{content:'';position:absolute;inset:2px;border-radius:3px;pointer-events:none;}
+  .region-glow{animation:regionGlow 3s ease-in-out infinite;}
+  @keyframes regionGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,153,0,0);}50%{box-shadow:0 0 8px 2px rgba(255,153,0,0.35);}}
+  .divider-v{width:1px;height:20px;background:rgba(255,255,255,0.15);margin:0 4px;}
+
+  /* ── SUB NAV ── */
+  .subnav{background:var(--aws-navy2);display:flex;align-items:center;padding:0 12px 0 calc(var(--sidebar-w) + 12px);gap:0;border-bottom:1px solid rgba(0,0,0,0.3);}
+  .breadcrumb{display:flex;align-items:center;gap:4px;font-size:12.5px;color:rgba(255,255,255,0.75);}
+  .breadcrumb a{color:var(--aws-orange);cursor:pointer;text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .breadcrumb span{color:rgba(255,255,255,0.4);}
+  .breadcrumb .current{color:#fff;font-weight:600;}
+  .subnav-space{flex:1;}
+  .favorites{display:flex;align-items:center;gap:8px;}
+  .fav-item{display:flex;align-items:center;gap:4px;font-size:12px;color:rgba(255,255,255,0.6);cursor:pointer;padding:4px 8px;border-radius:3px;}
+  .fav-item:hover{background:rgba(255,255,255,0.08);}
+  .fav-item .star{color:var(--aws-orange);font-size:11px;}
+  .fav-item span{color:rgba(255,255,255,0.75);}
+
+  /* ── BODY LAYOUT ── */
+  .body{display:grid;grid-template-columns:var(--sidebar-w) 1fr 250px;overflow:hidden;}
+
+  /* ── SIDEBAR ── */
+  .sidebar{background:var(--aws-navy);border-right:1px solid rgba(0,0,0,0.4);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px;overflow-y:auto;}
+  .sidebar::-webkit-scrollbar{width:0;}
+  .svc-icon{width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border-radius:4px;position:relative;}
+  .svc-icon:hover{background:var(--aws-navy3);}
+  .svc-icon.active{background:rgba(255,153,0,0.15);border-left:2px solid var(--aws-orange);}
+  .svc-icon .ico{font-size:16px;line-height:1;}
+  .svc-icon .lbl{font-size:8.5px;color:rgba(255,255,255,0.55);text-align:center;line-height:1;font-weight:600;letter-spacing:0.2px;}
+  .svc-icon.active .lbl{color:var(--aws-orange);}
+  .svc-div{width:32px;height:1px;background:rgba(255,255,255,0.1);margin:4px 0;}
+  .svc-icon .badge-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--red);}
+
+  /* ── MAIN CONTENT ── */
+  .main{display:flex;flex-direction:column;overflow:hidden;gap:0;}
+
+  /* Section wrapper */
+  .section{flex:1;min-height:0;display:flex;flex-direction:column;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  .section-hd{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .section-hd h2{font-size:14px;font-weight:700;color:var(--text);}
+  .section-hd .count-badge{background:var(--aws-navy);color:#fff;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:10px;}
+  .section-hd-space{flex:1;}
+  .btn{padding:4px 12px;border-radius:3px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;border:1px solid transparent;}
+  .btn-primary{background:var(--aws-orange);color:#fff;border-color:var(--aws-orange2);}
+  .btn-primary:hover{background:var(--aws-orange2);}
+  .btn-sec{background:#fff;color:var(--text);border-color:var(--border2);}
+  .btn-sec:hover{background:var(--bg);}
+  .btn-danger{background:#fff;color:var(--red);border-color:var(--border2);}
+  .filter-bar{background:var(--panel2);border-bottom:1px solid var(--border);padding:5px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .filter-input{border:1px solid var(--border2);border-radius:3px;padding:3px 8px;font-size:12.5px;color:var(--text);outline:none;background:#fff;}
+  .filter-input:focus{border-color:var(--aws-blue);box-shadow:0 0 0 2px rgba(0,115,187,0.15);}
+  .filter-tag{background:var(--aws-orange);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;display:flex;align-items:center;gap:4px;}
+  .filter-tag .rm{cursor:pointer;opacity:0.7;}
+  .filter-label{font-size:12px;color:var(--dim);}
+
+  /* Tables */
+  .table-wrap{flex:1;overflow-y:auto;background:var(--panel);}
+  .table-wrap::-webkit-scrollbar{width:6px;}
+  .table-wrap::-webkit-scrollbar-track{background:#f5f5f5;}
+  .table-wrap::-webkit-scrollbar-thumb{background:#c8cece;border-radius:3px;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;padding:6px 12px;background:var(--panel2);color:var(--dim);font-size:11.5px;font-weight:700;border-bottom:2px solid var(--border);position:sticky;top:0;white-space:nowrap;user-select:none;cursor:pointer;}
+  th:hover{background:#e8e8e8;color:var(--text);}
+  th.sort-asc::after{content:' ▲';font-size:9px;}
+  th.sort-desc::after{content:' ▼';font-size:9px;}
+  td{padding:5px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-family:'Consolas','SF Mono','Menlo',monospace;font-size:12px;white-space:nowrap;}
+  tr:hover td{background:#fafbfc;}
+  .cb{width:14px;height:14px;cursor:pointer;}
+  td.name-col{font-family:'Amazon Ember','Helvetica Neue',sans-serif;font-size:12.5px;font-weight:600;color:var(--aws-link);cursor:pointer;}
+  td.name-col:hover{text-decoration:underline;}
+  td.id-col{color:var(--aws-link);cursor:pointer;}
+  td.id-col:hover{text-decoration:underline;}
+
+  /* Status badges */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:3px;font-size:11.5px;font-weight:600;font-family:'Amazon Ember',sans-serif;}
+  .badge .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .badge.running{background:var(--green-bg);color:var(--green);}
+  .badge.running .dot{background:var(--green);animation:pulse-green 2s infinite;}
+  .badge.stopped{background:var(--gray-bg);color:var(--gray);}
+  .badge.stopped .dot{background:var(--gray);}
+  .badge.initializing{background:var(--amber-bg);color:var(--amber);}
+  .badge.initializing .dot{background:#e6ac00;animation:pulse-amber 1s infinite;}
+  .badge.alarm{background:var(--red-bg);color:var(--red);}
+  .badge.alarm .dot{background:var(--red);animation:pulse-red 0.8s infinite;}
+  .badge.ok{background:var(--green-bg);color:var(--green);}
+  .badge.ok .dot{background:var(--green);}
+  .badge.insuff{background:var(--gray-bg);color:var(--gray);}
+  @keyframes pulse-green{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(29,129,2,0.4);}50%{opacity:0.8;box-shadow:0 0 0 3px rgba(29,129,2,0);}}
+  @keyframes pulse-amber{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(230,172,0,0.5);}50%{opacity:0.7;box-shadow:0 0 0 4px rgba(230,172,0,0);}}
+  @keyframes pulse-red{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(209,50,18,0.6);}50%{opacity:0.6;box-shadow:0 0 0 5px rgba(209,50,18,0);}}
+
+  /* Check passed/failed */
+  .check-pass{color:var(--green);font-size:12px;}
+  .check-fail{color:var(--red);font-size:12px;}
+  .check-warn{color:#e6ac00;font-size:12px;}
+
+  /* ── CLOUDWATCH SECTION ── */
+  .cw-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--border);flex-shrink:0;}
+  .cw-tile{background:var(--panel);padding:10px 14px;display:flex;flex-direction:column;}
+  .cw-tile .cw-label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;}
+  .cw-tile .cw-val{font-size:22px;font-weight:800;color:var(--text);margin:2px 0;font-variant-numeric:tabular-nums;}
+  .cw-tile .cw-unit{font-size:11px;color:var(--dimmer);margin-left:2px;font-weight:400;}
+  .cw-tile .cw-trend{font-size:11px;margin-bottom:4px;}
+  .cw-tile .cw-trend.up{color:var(--red);}
+  .cw-tile .cw-trend.down{color:var(--green);}
+  .cw-tile .cw-trend.flat{color:var(--dim);}
+  canvas.spark{width:100%;height:36px;display:block;}
+  .alarms-list{flex:1;overflow-y:auto;padding:8px 0;}
+  .alarm-row{padding:6px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);font-size:12px;}
+  .alarm-row:last-child{border-bottom:none;}
+  .alarm-row .al-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:800;}
+  .alarm-row .al-icon.red{background:var(--red-bg);color:var(--red);animation:alarmPulse 1s infinite;}
+  .alarm-row .al-icon.green{background:var(--green-bg);color:var(--green);}
+  @keyframes alarmPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+  .alarm-row .al-name{flex:1;color:var(--text);font-weight:600;}
+  .alarm-row .al-metric{color:var(--dim);font-size:11.5px;}
+  .alarm-row .al-time{color:var(--dimmer);font-size:11px;white-space:nowrap;}
+  .alarm-row .al-val{font-variant-numeric:tabular-nums;font-weight:700;}
+
+  /* ── S3 SECTION ── */
+  .public-yes{color:var(--red);font-weight:700;font-size:12px;}
+  .public-no{color:var(--green);font-size:12px;}
+  td.bucket-col{font-family:'Amazon Ember',sans-serif;font-size:12.5px;font-weight:600;color:var(--aws-link);cursor:pointer;}
+  td.bucket-col:hover{text-decoration:underline;}
+
+  /* ── RIGHT PANEL ── */
+  .right-panel{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .rp-hd{background:var(--aws-navy);color:#fff;padding:8px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .rp-hd .badge-count{background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:10px;animation:alarmPulse 1s infinite;}
+  .notif-list{flex:1;overflow-y:auto;padding:0;}
+  .notif-item{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .notif-item:hover{background:var(--panel2);}
+  .notif-item .ni-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px;}
+  .notif-item .ni-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;}
+  .ni-icon.alarm{background:var(--red-bg);color:var(--red);}
+  .ni-icon.info{background:#e8f4fd;color:var(--aws-blue);}
+  .ni-icon.warn{background:var(--amber-bg);color:var(--amber);}
+  .ni-icon.ok{background:var(--green-bg);color:var(--green);}
+  .notif-item .ni-title{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3;}
+  .notif-item .ni-body{font-size:11.5px;color:var(--dim);line-height:1.4;}
+  .notif-item .ni-time{font-size:11px;color:var(--dimmer);margin-top:3px;}
+  .rp-section{padding:10px 14px 6px;font-size:11px;text-transform:uppercase;font-weight:700;color:var(--dim);letter-spacing:0.4px;border-bottom:1px solid var(--border);background:var(--panel2);}
+
+  /* ── STATUS BAR ── */
+  .statusbar{background:var(--aws-navy);color:rgba(255,255,255,0.75);font-size:11.5px;display:flex;align-items:center;padding:0 16px;gap:20px;}
+  .statusbar .region-indicator{display:flex;align-items:center;gap:5px;}
+  .statusbar .green-dot{width:6px;height:6px;border-radius:50%;background:#1d8102;animation:pulse-green 2.5s infinite;}
+  .statusbar .cost{font-variant-numeric:tabular-nums;font-weight:700;}
+  .statusbar .cost .cost-val{color:var(--aws-orange);}
+  .statusbar .cost .cost-delta{font-size:11px;color:#2ecc71;}
+  .statusbar-space{flex:1;}
+  .statusbar .st-item{color:rgba(255,255,255,0.55);font-size:11px;}
+  .statusbar .st-item b{color:rgba(255,255,255,0.8);}
+
+  /* scrollbars global */
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:#f0f0f0;}
+  ::-webkit-scrollbar-thumb{background:#c8cece;border-radius:3px;}
+
+  /* checkbox style */
+  input[type=checkbox]{accent-color:var(--aws-orange);cursor:pointer;}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="EC2 Instances · ap-northeast-2 · AWS" data-favicon="☁️" data-app="AWS Console">
+
+<div class="app">
+
+  <!-- TOP HEADER -->
+  <header class="header">
+    <div class="logo">
+      <!-- AWS Logo SVG -->
+      <svg viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="22" font-family="Arial Black,sans-serif" font-size="19" font-weight="900" fill="#ff9900">aws</text>
+        <path d="M66 20 Q72 16 78 20" stroke="#ff9900" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M60 24 L66 20 L72 24" fill="none" stroke="#ff9900" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M72 24 L78 20 L78 26" fill="none" stroke="#ff9900" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="services-btn">Services <span class="caret">▾</span></div>
+    <div class="search-bar">
+      <input type="text" placeholder="검색 서비스, 기능, 블로그, 설명서 등..." value="">
+      <div class="search-icon">🔍</div>
+    </div>
+    <div class="hspace"></div>
+    <div class="header-actions">
+      <div class="h-btn">⚙</div>
+      <div class="divider-v"></div>
+      <div class="h-btn region-btn region-glow" id="regionBtn">🌏 ap-northeast-2 (Seoul) <span class="caret">▾</span></div>
+      <div class="divider-v"></div>
+      <div class="h-btn">ongsya @ prod-account <span class="caret">▾</span></div>
+      <div class="divider-v"></div>
+      <div class="h-btn" style="color:rgba(255,255,255,0.6);">로그아웃</div>
+    </div>
+  </header>
+
+  <!-- SUB NAV -->
+  <nav class="subnav">
+    <div class="breadcrumb">
+      <a>EC2</a>
+      <span>›</span>
+      <span class="current">Instances</span>
+    </div>
+    <div class="subnav-space"></div>
+    <div class="favorites">
+      <div class="fav-item"><span class="star">★</span><span>EC2</span></div>
+      <div class="fav-item"><span class="star">★</span><span>S3</span></div>
+      <div class="fav-item"><span class="star">★</span><span>RDS</span></div>
+      <div class="fav-item"><span class="star">★</span><span>Lambda</span></div>
+      <div class="fav-item"><span class="star">☆</span><span>IAM</span></div>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="svc-icon active" title="EC2">
+        <div class="ico">🖥</div>
+        <div class="lbl">EC2</div>
+      </div>
+      <div class="svc-icon" title="S3">
+        <div class="ico">🪣</div>
+        <div class="lbl">S3</div>
+      </div>
+      <div class="svc-icon" title="Lambda">
+        <div class="ico">λ</div>
+        <div class="lbl">Lambda</div>
+      </div>
+      <div class="svc-icon" title="RDS">
+        <div class="ico">🗄</div>
+        <div class="lbl">RDS</div>
+      </div>
+      <div class="svc-div"></div>
+      <div class="svc-icon" title="CloudWatch">
+        <div class="ico">📊</div>
+        <div class="lbl">CW</div>
+        <div class="badge-dot"></div>
+      </div>
+      <div class="svc-icon" title="IAM">
+        <div class="ico">🔑</div>
+        <div class="lbl">IAM</div>
+      </div>
+      <div class="svc-icon" title="VPC">
+        <div class="ico">🔗</div>
+        <div class="lbl">VPC</div>
+      </div>
+      <div class="svc-icon" title="CloudFront">
+        <div class="ico">⚡</div>
+        <div class="lbl">CF</div>
+      </div>
+      <div class="svc-div"></div>
+      <div class="svc-icon" title="EKS">
+        <div class="ico">☸</div>
+        <div class="lbl">EKS</div>
+      </div>
+      <div class="svc-icon" title="ECS">
+        <div class="ico">📦</div>
+        <div class="lbl">ECS</div>
+      </div>
+      <div class="svc-icon" title="Route53">
+        <div class="ico">🌐</div>
+        <div class="lbl">R53</div>
+      </div>
+      <div class="svc-icon" title="SNS">
+        <div class="ico">📣</div>
+        <div class="lbl">SNS</div>
+      </div>
+      <div class="svc-icon" title="SQS">
+        <div class="ico">📮</div>
+        <div class="lbl">SQS</div>
+      </div>
+    </aside>
+
+    <!-- MAIN PANELS -->
+    <main class="main">
+
+      <!-- EC2 INSTANCES -->
+      <div class="section" style="flex:1.1;">
+        <div class="section-hd">
+          <h2>Instances</h2>
+          <span class="count-badge" id="runCount">6 running</span>
+          <div class="section-hd-space"></div>
+          <button class="btn btn-sec">Instance state ▾</button>
+          <button class="btn btn-sec">Actions ▾</button>
+          <button class="btn btn-primary">+ Launch instance</button>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" placeholder="🔍  인스턴스 필터..." style="width:240px;">
+          <span class="filter-label">인스턴스 유형:</span>
+          <div class="filter-tag">ap-northeast-2 <span class="rm">✕</span></div>
+        </div>
+        <div class="table-wrap">
+          <table id="ec2Table">
+            <thead>
+              <tr>
+                <th style="width:28px;"><input type="checkbox"></th>
+                <th class="sort-asc">Name</th>
+                <th>Instance ID</th>
+                <th>Instance state</th>
+                <th>Instance type</th>
+                <th>Status checks</th>
+                <th>Alarm status</th>
+                <th>Public IPv4</th>
+                <th>Launch time</th>
+              </tr>
+            </thead>
+            <tbody id="ec2Body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CLOUDWATCH -->
+      <div class="section" style="flex:1;">
+        <div class="section-hd">
+          <h2>CloudWatch 모니터링</h2>
+          <span class="count-badge" style="background:#d13212;">1 ALARM</span>
+          <div class="section-hd-space"></div>
+          <button class="btn btn-sec">Dashboards ▾</button>
+          <button class="btn btn-sec">Create alarm</button>
+        </div>
+        <div class="cw-grid">
+          <div class="cw-tile">
+            <div class="cw-label">CPU Utilization (avg)</div>
+            <div><span class="cw-val" id="cpuVal">32.4</span><span class="cw-unit">%</span></div>
+            <div class="cw-trend flat" id="cpuTrend">→ 안정</div>
+            <canvas class="spark" id="sparkCpu"></canvas>
+          </div>
+          <div class="cw-tile">
+            <div class="cw-label">Network In</div>
+            <div><span class="cw-val" id="netVal">2.41</span><span class="cw-unit">MB/s</span></div>
+            <div class="cw-trend down" id="netTrend">↓ -12%</div>
+            <canvas class="spark" id="sparkNet"></canvas>
+          </div>
+          <div class="cw-tile">
+            <div class="cw-label">Memory Used (avg)</div>
+            <div><span class="cw-val" id="memVal">68.7</span><span class="cw-unit">%</span></div>
+            <div class="cw-trend up" id="memTrend">↑ +4%</div>
+            <canvas class="spark" id="sparkMem"></canvas>
+          </div>
+          <div class="cw-tile">
+            <div class="cw-label">Disk I/O (avg)</div>
+            <div><span class="cw-val" id="diskVal">14.2</span><span class="cw-unit">MB/s</span></div>
+            <div class="cw-trend flat" id="diskTrend">→ 보통</div>
+            <canvas class="spark" id="sparkDisk"></canvas>
+          </div>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);">
+            <div style="padding:6px 16px;background:var(--panel2);font-size:11.5px;font-weight:700;color:var(--dim);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.4px;">알람 목록 (3)</div>
+            <div class="alarms-list" id="alarmsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S3 BUCKETS -->
+      <div class="section" style="flex:1;">
+        <div class="section-hd">
+          <h2>S3 버킷</h2>
+          <span class="count-badge">6 버킷</span>
+          <div class="section-hd-space"></div>
+          <button class="btn btn-sec">Empty</button>
+          <button class="btn btn-sec">Delete</button>
+          <button class="btn btn-primary">+ 버킷 만들기</button>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" placeholder="🔍  버킷 이름으로 찾기..." style="width:240px;">
+        </div>
+        <div class="table-wrap">
+          <table id="s3Table">
+            <thead>
+              <tr>
+                <th style="width:28px;"><input type="checkbox"></th>
+                <th>버킷 이름</th>
+                <th>AWS 리전</th>
+                <th>객체 수</th>
+                <th>크기</th>
+                <th>생성일</th>
+                <th>퍼블릭 액세스</th>
+              </tr>
+            </thead>
+            <tbody id="s3Body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main><!-- /main -->
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="rp-hd">
+        🔔 알림 &amp; 이벤트
+        <span class="badge-count" id="notifCount">3</span>
+      </div>
+      <div class="rp-section">알람</div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <div class="region-indicator">
+      <div class="green-dot"></div>
+      ap-northeast-2 (Seoul) — 연결됨
+    </div>
+    <div class="divider-v" style="background:rgba(255,255,255,0.15);"></div>
+    <div class="cost">
+      현재 월: <span class="cost-val" id="costVal">$1,247.32</span>
+      &nbsp;<span class="cost-delta">▼ -8% 전월대비</span>
+    </div>
+    <div class="statusbar-space"></div>
+    <div class="st-item">인스턴스: <b>6</b> running · <b>2</b> stopped</div>
+    <div class="st-item">알람: <b style="color:#f85149;">1 ALARM</b> · <b style="color:#2ecc71;">2 OK</b></div>
+    <div class="st-item">마지막 업데이트: <b id="lastUpdated"></b></div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const instances = [
+  { name:'web-prod-01',     id:'i-0a4f2e891cd3b7501', state:'running',     type:'m5.large',   ip:'13.209.12.44',  checks:'2/2 통과',  alarm:'없음',    launch:'2026-03-15 09:12' },
+  { name:'web-prod-02',     id:'i-0b3e7f234dc9a8612', state:'running',     type:'m5.large',   ip:'52.78.99.131',  checks:'2/2 통과',  alarm:'없음',    launch:'2026-03-15 09:14' },
+  { name:'api-server-01',   id:'i-0c5d1a678ef0b9723', state:'running',     type:'t3.medium',  ip:'3.36.72.205',   checks:'2/2 통과',  alarm:'없음',    launch:'2026-03-20 14:30' },
+  { name:'api-server-02',   id:'i-08abc123def456789', state:'running',     type:'t3.medium',  ip:'15.165.88.47',  checks:'2/2 통과',  alarm:'ALARM',   launch:'2026-03-20 14:32' },
+  { name:'worker-batch-01', id:'i-0d6e2b789fa1c0834', state:'running',     type:'c5.xlarge',  ip:'13.125.33.201', checks:'2/2 통과',  alarm:'없음',    launch:'2026-04-01 08:00' },
+  { name:'bastion-host',    id:'i-0e7f3c890gb2d1945', state:'running',     type:'t3.micro',   ip:'52.79.44.18',   checks:'2/2 통과',  alarm:'없음',    launch:'2026-01-10 11:00' },
+  { name:'dev-server-01',   id:'i-0f8a4d901hc3e2056', state:'stopped',     type:'t3.medium',  ip:'—',             checks:'도달 가능', alarm:'없음',    launch:'2026-02-28 16:45' },
+  { name:'test-runner',     id:'i-0g9b5e012id4f3167', state:'stopped',     type:'t3.small',   ip:'—',             checks:'도달 가능', alarm:'없음',    launch:'2026-04-10 10:20' },
+];
+
+const s3buckets = [
+  { name:'prod-app-static-assets-kr',    region:'ap-northeast-2', objects:14823, size:'2.41 GB',   created:'2024-08-12', public:false },
+  { name:'prod-user-uploads-kr',         region:'ap-northeast-2', objects:98241, size:'18.7 GB',   created:'2024-08-14', public:false },
+  { name:'prod-logs-archive-kr',         region:'ap-northeast-2', objects:3012,  size:'45.2 GB',   created:'2024-09-01', public:false },
+  { name:'dev-test-bucket-tmp',          region:'ap-northeast-2', objects:87,    size:'234 MB',    created:'2026-01-20', public:true  },
+  { name:'prod-cloudtrail-logs-apne2',   region:'ap-northeast-2', objects:25490, size:'8.9 GB',    created:'2024-07-30', public:false },
+  { name:'prod-codedeploy-artifacts-kr', region:'ap-northeast-2', objects:412,   size:'1.18 GB',   created:'2024-10-05', public:false },
+];
+
+const alarms = [
+  { state:'ALARM', name:'CPUUtilization-api-server-02', metric:'CPU > 85%', val:'91.3%', time:'2분 전' },
+  { state:'OK',    name:'NetworkPacketsOut-web-prod',   metric:'패킷 > 임계치', val:'정상', time:'14분 전' },
+  { state:'OK',    name:'DiskWriteBytes-worker-batch',  metric:'디스크 쓰기 > 50MB/s', val:'정상', time:'31분 전' },
+];
+
+const notifications = [
+  { type:'alarm', title:'⚠ CPU ALARM', body:'api-server-02: CPU 91.3% — 임계값 초과 (> 85%)', time:'2분 전' },
+  { type:'info',  title:'ℹ Auto Scaling 이벤트', body:'web-prod ASG: 스케일 아웃 평가 중...', time:'8분 전' },
+  { type:'warn',  title:'⚡ S3 퍼블릭 액세스 경고', body:'dev-test-bucket-tmp 퍼블릭 노출됨', time:'23분 전' },
+  { type:'ok',    title:'✔ 배포 완료', body:'CodeDeploy: api-server-01 v2.4.1 배포 성공', time:'1시간 전' },
+  { type:'info',  title:'ℹ 비용 최적화 권고', body:'유휴 인스턴스 2개 감지 — 절감 $48/월 가능', time:'3시간 전' },
+];
+
+// ── RENDER EC2 TABLE ─────────────────────────────────────────────────────────
+function renderEC2() {
+  const tbody = document.getElementById('ec2Body');
+  tbody.innerHTML = '';
+  instances.forEach((inst, i) => {
+    const tr = document.createElement('tr');
+    tr.id = 'ec2row-' + i;
+
+    let stateBadge, stateClass;
+    if (inst.state === 'running') {
+      stateClass = 'running'; stateBadge = '실행 중';
+    } else if (inst.state === 'initializing') {
+      stateClass = 'initializing'; stateBadge = '초기화 중';
+    } else {
+      stateClass = 'stopped'; stateBadge = '중지됨';
+    }
+
+    let alarmHtml;
+    if (inst.alarm === 'ALARM') {
+      alarmHtml = `<span class="badge alarm"><span class="dot"></span>ALARM</span>`;
+    } else {
+      alarmHtml = `<span style="color:var(--dimmer);font-size:12px;">—</span>`;
+    }
+
+    let checkHtml;
+    if (inst.state === 'running' || inst.state === 'initializing') {
+      checkHtml = `<span class="check-pass">✔ ${inst.checks}</span>`;
+    } else {
+      checkHtml = `<span class="check-warn">⚠ ${inst.checks}</span>`;
+    }
+
+    tr.innerHTML = `
+      <td><input type="checkbox"></td>
+      <td class="name-col">${inst.name}</td>
+      <td class="id-col" style="font-size:11.5px;">${inst.id}</td>
+      <td><span class="badge ${stateClass}"><span class="dot"></span>${stateBadge}</span></td>
+      <td style="font-family:monospace;font-size:12px;">${inst.type}</td>
+      <td>${checkHtml}</td>
+      <td>${alarmHtml}</td>
+      <td style="font-family:monospace;font-size:12px;color:var(--aws-link);">${inst.ip}</td>
+      <td style="color:var(--dim);font-size:11.5px;">${inst.launch}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── RENDER S3 TABLE ──────────────────────────────────────────────────────────
+function renderS3(buckets) {
+  const tbody = document.getElementById('s3Body');
+  tbody.innerHTML = '';
+  buckets.forEach((b, i) => {
+    const tr = document.createElement('tr');
+    const publicHtml = b.public
+      ? `<span class="public-yes">🔓 퍼블릭</span>`
+      : `<span class="public-no">🔒 차단됨</span>`;
+    tr.innerHTML = `
+      <td><input type="checkbox"></td>
+      <td class="bucket-col">${b.name}</td>
+      <td style="font-size:12px;">${b.region}</td>
+      <td style="font-variant-numeric:tabular-nums;text-align:right;" id="s3obj-${i}">${b.objects.toLocaleString()}</td>
+      <td style="font-variant-numeric:tabular-nums;">${b.size}</td>
+      <td style="color:var(--dim);font-size:12px;">${b.created}</td>
+      <td>${publicHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── RENDER ALARMS ─────────────────────────────────────────────────────────────
+function renderAlarms() {
+  const list = document.getElementById('alarmsList');
+  list.innerHTML = '';
+  alarms.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'alarm-row';
+    const iconClass = a.state === 'ALARM' ? 'red' : 'green';
+    const iconChar  = a.state === 'ALARM' ? '!' : '✔';
+    div.innerHTML = `
+      <div class="al-icon ${iconClass}">${iconChar}</div>
+      <div style="flex:1;">
+        <div class="al-name">${a.name}</div>
+        <div class="al-metric">${a.metric}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="al-val" style="color:${a.state==='ALARM'?'var(--red)':'var(--green)'}">${a.val}</div>
+        <div class="al-time">${a.time}</div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── RENDER NOTIFICATIONS ──────────────────────────────────────────────────────
+function renderNotifs() {
+  const list = document.getElementById('notifList');
+  list.innerHTML = '';
+  notifications.forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'notif-item';
+    const cls = n.type === 'alarm' ? 'alarm' : n.type === 'warn' ? 'warn' : n.type === 'ok' ? 'ok' : 'info';
+    div.innerHTML = `
+      <div class="ni-hd">
+        <div class="ni-icon ${cls}">${n.title.charAt(0)}</div>
+        <div class="ni-title">${n.title}</div>
+      </div>
+      <div class="ni-body">${n.body}</div>
+      <div class="ni-time">${n.time}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── SPARKLINE CANVAS ──────────────────────────────────────────────────────────
+const sparkData = {
+  cpu:  Array.from({length:30}, (_,i) => 25 + 12*Math.sin(i*0.4) + Math.random()*5),
+  net:  Array.from({length:30}, (_,i) => 1.8 + 1.2*Math.sin(i*0.3+1) + Math.random()*0.4),
+  mem:  Array.from({length:30}, (_,i) => 60 + 15*Math.sin(i*0.25+2) + Math.random()*4),
+  disk: Array.from({length:30}, (_,i) => 10 + 8*Math.sin(i*0.35+0.5) + Math.random()*3),
+};
+
+function drawSparkline(canvasId, data, color, fillColor) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width === 0) return;
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = rect.height;
+  const mn = Math.min(...data), mx = Math.max(...data) || mn+1;
+  const scaleY = v => h - ((v - mn) / (mx - mn)) * (h - 4) - 2;
+  const stepX = w / (data.length - 1);
+
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = i * stepX, y = scaleY(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  // fill
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+  ctx.fillStyle = fillColor;
+  ctx.fill();
+}
+
+function updateSparklines() {
+  ['cpu','net','mem','disk'].forEach(k => {
+    sparkData[k].shift();
+    const base = {cpu:32, net:2.4, mem:68, disk:14}[k];
+    const amp  = {cpu:12, net:1.2, mem:14, disk:7}[k];
+    sparkData[k].push(base + amp*(Math.random()-0.5)*2 + (Math.random()-0.5)*amp*0.4);
+  });
+  drawSparkline('sparkCpu',  sparkData.cpu,  '#d13212', 'rgba(209,50,18,0.08)');
+  drawSparkline('sparkNet',  sparkData.net,  '#0073bb', 'rgba(0,115,187,0.08)');
+  drawSparkline('sparkMem',  sparkData.mem,  '#8a6116', 'rgba(138,97,22,0.08)');
+  drawSparkline('sparkDisk', sparkData.disk, '#1d8102', 'rgba(29,129,2,0.08)');
+
+  // Update metric values
+  const cpuLast  = sparkData.cpu[sparkData.cpu.length-1];
+  const netLast  = sparkData.net[sparkData.net.length-1];
+  const memLast  = sparkData.mem[sparkData.mem.length-1];
+  const diskLast = sparkData.disk[sparkData.disk.length-1];
+
+  document.getElementById('cpuVal').textContent  = cpuLast.toFixed(1);
+  document.getElementById('netVal').textContent  = netLast.toFixed(2);
+  document.getElementById('memVal').textContent  = memLast.toFixed(1);
+  document.getElementById('diskVal').textContent = diskLast.toFixed(1);
+
+  const prev = sparkData.cpu[sparkData.cpu.length-2] || cpuLast;
+  const cpuTrendEl = document.getElementById('cpuTrend');
+  if (cpuLast > prev + 0.5)      { cpuTrendEl.textContent = '↑ 상승 중'; cpuTrendEl.className = 'cw-trend up'; }
+  else if (cpuLast < prev - 0.5) { cpuTrendEl.textContent = '↓ 하강 중'; cpuTrendEl.className = 'cw-trend down'; }
+  else                            { cpuTrendEl.textContent = '→ 안정';    cpuTrendEl.className = 'cw-trend flat'; }
+}
+
+// ── INSTANCE TOGGLE ANIMATION ────────────────────────────────────────────────
+// Instance #3 (index 3) = i-08abc... toggles occasionally
+let togglePhase = 0;
+function toggleInstanceState() {
+  const inst = instances[3]; // api-server-02
+  if (togglePhase === 0) {
+    inst.state = 'initializing'; inst.ip = '15.165.88.47';
+    togglePhase = 1;
+  } else if (togglePhase === 1) {
+    inst.state = 'running'; inst.ip = '15.165.88.47';
+    togglePhase = 0;
+  }
+  renderEC2();
+  // reschedule randomly 8-18s
+  setTimeout(toggleInstanceState, 8000 + Math.random() * 10000);
+}
+
+// ── S3 OBJECT COUNT TICK ─────────────────────────────────────────────────────
+function tickS3() {
+  const i = Math.floor(Math.random() * s3buckets.length);
+  const delta = Math.floor(Math.random() * 5) + 1;
+  s3buckets[i].objects += delta;
+  const el = document.getElementById('s3obj-' + i);
+  if (el) {
+    el.textContent = s3buckets[i].objects.toLocaleString();
+    el.style.color = 'var(--aws-orange)';
+    setTimeout(() => { if(el) el.style.color = ''; }, 600);
+  }
+  setTimeout(tickS3, 3000 + Math.random() * 4000);
+}
+
+// ── COST TICKER ──────────────────────────────────────────────────────────────
+let costCents = 124732;
+function tickCost() {
+  costCents += Math.floor(Math.random() * 3);
+  const dollars = (costCents / 100).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const el = document.getElementById('costVal');
+  if (el) el.textContent = '$' + dollars;
+  setTimeout(tickCost, 7000 + Math.random() * 8000);
+}
+
+// ── LAST UPDATED ─────────────────────────────────────────────────────────────
+function updateTimestamp() {
+  const now = new Date();
+  const el = document.getElementById('lastUpdated');
+  if (el) el.textContent = now.toLocaleTimeString('ko-KR');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+  renderEC2();
+  renderS3(s3buckets);
+  renderAlarms();
+  renderNotifs();
+  updateTimestamp();
+
+  // draw sparklines after layout
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      updateSparklines();
+    });
+  });
+
+  // sparklines update every 2s
+  setInterval(() => {
+    updateSparklines();
+    updateTimestamp();
+  }, 2000);
+
+  // instance toggle starts after 6s
+  setTimeout(toggleInstanceState, 6000 + Math.random() * 4000);
+
+  // S3 tick
+  setTimeout(tickS3, 2000);
+
+  // cost tick
+  setTimeout(tickCost, 5000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+window.addEventListener('resize', () => { updateSparklines(); });
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

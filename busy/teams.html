@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>성장팀 - 일반 - Microsoft Teams</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --teams-purple: #5b5fc7;
+  --teams-purple-dark: #444791;
+  --teams-purple-light: #e8e8f9;
+  --teams-purple-hover: #d6d6f5;
+  --bg: #f5f5f5;
+  --panel: #fff;
+  --rail: #33344a;
+  --rail-icon: #b9b9d6;
+  --rail-icon-active: #fff;
+  --sidebar-bg: #fff;
+  --sidebar-border: #e0e0e0;
+  --border: #e0e0e0;
+  --text: #252424;
+  --dim: #616161;
+  --mute: #8a8a8a;
+  --hover: #f0f0f0;
+  --active-ch: #e8e8f9;
+  --unread: #c4314b;
+  --badge-bg: #c4314b;
+  --meeting-green: #13a10e;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+html, body {
+  height: 100%; font-family: 'Segoe UI', 'Malgun Gothic', -apple-system, sans-serif;
+  font-size: 14px; color: var(--text); background: var(--bg); overflow: hidden;
+}
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── FAR LEFT RAIL (64px) ── */
+.rail {
+  width: 64px; min-width: 64px;
+  background: var(--rail);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 0; gap: 2px; z-index: 10;
+  overflow: hidden;
+}
+.rail-icon {
+  width: 48px; height: 48px; border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; cursor: pointer; position: relative;
+  color: var(--rail-icon); font-size: 10px; transition: background 0.15s;
+}
+.rail-icon:hover { background: rgba(255,255,255,0.1); }
+.rail-icon.active { color: var(--rail-icon-active); }
+.rail-icon.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 24px; background: var(--rail-icon-active);
+  border-radius: 0 2px 2px 0;
+}
+.rail-icon svg { width: 22px; height: 22px; fill: currentColor; }
+.rail-icon .label { font-size: 10px; line-height: 1; }
+.rail-spacer { flex: 1; }
+.rail-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--teams-purple); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; cursor: pointer; margin-bottom: 6px;
+  border: 2px solid transparent; transition: border-color 0.15s;
+}
+.rail-avatar:hover { border-color: rgba(255,255,255,0.4); }
+.rail-badge {
+  position: absolute; top: 6px; right: 6px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--unread); border: 2px solid var(--rail);
+}
+.rail-badge.blink { animation: badgePulse 1.8s infinite; }
+@keyframes badgePulse {
+  0%,100% { opacity: 1; } 50% { opacity: 0.25; }
+}
+
+/* ── CHANNEL SIDEBAR (280px) ── */
+.sidebar {
+  width: 280px; min-width: 280px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-top {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 6px; align-items: center;
+}
+.search-bar {
+  flex: 1; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; padding: 5px 8px; font-size: 12px;
+  color: var(--dim); display: flex; align-items: center; gap: 6px;
+}
+.search-bar svg { width: 13px; height: 13px; fill: var(--mute); flex-shrink: 0; }
+.btn-new-team {
+  background: var(--teams-purple); color: #fff; border: none;
+  border-radius: 4px; padding: 5px 9px; font-size: 11px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+}
+.sidebar-body { flex: 1; overflow-y: auto; padding: 6px 0; }
+.sidebar-body::-webkit-scrollbar { width: 4px; }
+.sidebar-body::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
+
+.team-group { margin-bottom: 2px; }
+.team-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--text); border-radius: 4px; margin: 0 4px;
+}
+.team-header:hover { background: var(--hover); }
+.team-chevron { font-size: 9px; color: var(--dim); transition: transform 0.15s; }
+.team-chevron.open { transform: rotate(0deg); }
+.team-chevron.closed { transform: rotate(-90deg); }
+.team-icon {
+  width: 24px; height: 24px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.channels-list { padding: 0 4px; }
+.channel-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 30px; border-radius: 4px; cursor: pointer;
+  font-size: 13px; color: var(--dim); position: relative;
+}
+.channel-item:hover { background: var(--hover); }
+.channel-item.active { background: var(--active-ch); color: var(--teams-purple); font-weight: 600; }
+.channel-item.unread { color: var(--text); font-weight: 700; }
+.ch-hash { font-size: 12px; color: var(--mute); flex-shrink: 0; }
+.ch-badge {
+  margin-left: auto; background: var(--badge-bg); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 8px;
+  min-width: 18px; text-align: center;
+}
+.ch-badge.blink-badge { animation: badgePulse 1.8s infinite; }
+
+/* ── MAIN CHAT AREA ── */
+.main {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--panel);
+}
+.chat-header {
+  padding: 0 16px; height: 48px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.chat-header .ch-title { font-weight: 700; font-size: 15px; }
+.chat-header .ch-members { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 4px; }
+.chat-header .ch-members svg { width: 13px; height: 13px; fill: var(--mute); }
+.header-actions { margin-left: auto; display: flex; gap: 8px; }
+.header-btn {
+  width: 32px; height: 32px; border-radius: 4px; border: none;
+  background: transparent; color: var(--dim); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.header-btn:hover { background: var(--hover); }
+.chat-tabs {
+  display: flex; gap: 0; padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab {
+  padding: 10px 14px; font-size: 13px; color: var(--dim);
+  cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500;
+}
+.tab:hover { color: var(--text); background: var(--hover); }
+.tab.active { color: var(--teams-purple); border-bottom-color: var(--teams-purple); font-weight: 600; }
+
+/* ── MESSAGE LIST ── */
+.msgs {
+  flex: 1; overflow-y: auto; padding: 12px 0;
+  display: flex; flex-direction: column; gap: 0;
+}
+.msgs::-webkit-scrollbar { width: 6px; }
+.msgs::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+
+.date-sep {
+  text-align: center; position: relative;
+  margin: 12px 20px; color: var(--mute); font-size: 12px;
+}
+.date-sep::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%;
+  border-top: 1px solid var(--border); z-index: 0;
+}
+.date-sep span {
+  background: var(--panel); padding: 0 10px; position: relative; z-index: 1;
+  border: 1px solid var(--border); border-radius: 10px; font-weight: 600;
+}
+
+.msg {
+  display: grid; grid-template-columns: 44px 1fr;
+  padding: 6px 16px; gap: 8px; position: relative;
+}
+.msg:hover { background: var(--bg); }
+.msg .av {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 12px; color: #fff; flex-shrink: 0; margin-top: 2px;
+}
+.msg .body { min-width: 0; }
+.msg .line1 { display: flex; align-items: baseline; gap: 8px; }
+.msg .sender { font-weight: 700; font-size: 13px; }
+.msg .ts { font-size: 11px; color: var(--mute); }
+.msg .txt { color: var(--text); line-height: 1.55; margin-top: 2px; font-size: 13.5px; word-break: break-word; }
+.msg.cont { padding-top: 1px; }
+.msg.cont .av { visibility: hidden; height: 0; }
+.msg.sys .av { background: transparent; border: 1.5px solid #c8c8e0; }
+.msg.sys .sender { color: var(--dim); font-weight: 400; }
+.msg.sys .txt { color: var(--dim); font-size: 12.5px; font-style: italic; }
+
+/* Attachment card */
+.attach-card {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 12px; margin-top: 6px;
+  background: var(--bg); max-width: 320px; cursor: pointer;
+}
+.attach-card:hover { background: var(--hover); border-color: var(--teams-purple); }
+.attach-icon { font-size: 24px; }
+.attach-info .fn { font-weight: 600; font-size: 12.5px; color: var(--teams-purple); }
+.attach-info .fs { font-size: 11px; color: var(--mute); }
+
+/* Reactions row */
+.reactions { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+.rxn {
+  display: flex; align-items: center; gap: 3px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2px 7px; font-size: 12px; cursor: pointer;
+}
+.rxn:hover { background: var(--teams-purple-light); border-color: var(--teams-purple); }
+.rxn .cnt { color: var(--dim); font-size: 11px; font-weight: 600; }
+
+/* Thread reply indicator */
+.thread-bar {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 4px; font-size: 12px; color: var(--teams-purple);
+  cursor: pointer; padding: 3px 6px; border-radius: 4px; width: fit-content;
+}
+.thread-bar:hover { background: var(--teams-purple-light); }
+.thread-bar .reply-avs { display: flex; gap: -4px; }
+.thread-av {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff;
+}
+
+/* Code block */
+.code-block {
+  background: #f4f4f8; border: 1px solid #d8d8e8;
+  border-radius: 4px; padding: 8px 12px; margin-top: 6px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 12px; color: #1e1e1e; line-height: 1.6;
+  max-width: 480px; overflow-x: auto;
+}
+
+/* Bullet list */
+.msg-list { margin-top: 5px; padding-left: 18px; }
+.msg-list li { color: var(--text); font-size: 13.5px; line-height: 1.7; }
+
+/* GIF block */
+.gif-block {
+  margin-top: 5px; border-radius: 6px; overflow: hidden;
+  width: 200px; height: 100px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; cursor: pointer; position: relative;
+}
+.gif-block::after {
+  content: 'GIF'; position: absolute; top: 6px; left: 6px;
+  background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 2px 5px; border-radius: 3px;
+}
+
+/* Meeting card */
+.meeting-card {
+  display: flex; align-items: center; gap: 10px;
+  background: #f0f0fb; border: 1px solid #c8c8f0;
+  border-left: 4px solid var(--meeting-green);
+  border-radius: 6px; padding: 10px 14px; margin-top: 4px;
+  max-width: 380px;
+}
+.meeting-card .m-icon { font-size: 22px; }
+.meeting-card .m-info .m-title { font-weight: 700; font-size: 13px; }
+.meeting-card .m-info .m-status { font-size: 12px; color: var(--meeting-green); font-weight: 600; }
+.meeting-card .m-join {
+  margin-left: auto; background: var(--meeting-green); color: #fff;
+  border: none; border-radius: 4px; padding: 6px 14px; font-size: 12px;
+  font-weight: 600; cursor: pointer;
+}
+#meeting-timer { font-size: 12px; color: var(--meeting-green); font-weight: 600; }
+
+/* Typing indicator */
+#typing-bar {
+  padding: 2px 16px 4px; font-size: 12px; color: var(--dim);
+  display: flex; align-items: center; gap: 6px; min-height: 20px;
+  flex-shrink: 0;
+}
+.typing-dots { display: flex; gap: 2px; align-items: center; }
+.typing-dots span {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--mute);
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%,80%,100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+}
+
+/* ── COMPOSE BOX ── */
+.compose-wrap {
+  padding: 8px 16px 12px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.compose-box {
+  border: 1.5px solid var(--border); border-radius: 6px;
+  background: var(--panel); transition: border-color 0.15s;
+  overflow: hidden;
+}
+.compose-box:focus-within { border-color: var(--teams-purple); }
+.compose-toolbar {
+  display: flex; align-items: center; gap: 2px;
+  padding: 4px 8px; border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.compose-btn {
+  width: 28px; height: 28px; border-radius: 4px; border: none;
+  background: transparent; cursor: pointer; color: var(--dim);
+  font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.compose-btn:hover { background: var(--hover); color: var(--text); }
+.compose-btn.icon-btn { font-size: 16px; }
+.compose-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.compose-input {
+  min-height: 44px; max-height: 120px; padding: 10px 12px;
+  font-size: 13.5px; color: var(--text); outline: none;
+  overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+}
+.compose-input:empty::before {
+  content: attr(data-placeholder); color: var(--mute); pointer-events: none;
+}
+.compose-footer {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-top: 1px solid var(--border);
+}
+.compose-footer-btn {
+  width: 28px; height: 28px; border-radius: 4px; border: none;
+  background: transparent; cursor: pointer; font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dim);
+}
+.compose-footer-btn:hover { background: var(--hover); }
+.send-btn {
+  margin-left: auto; background: var(--teams-purple); color: #fff;
+  border: none; border-radius: 4px; padding: 5px 14px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.send-btn:hover { background: var(--teams-purple-dark); }
+
+/* ── RIGHT RAIL ── */
+.right-rail {
+  width: 280px; min-width: 280px;
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.rr-section {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.rr-title { font-weight: 700; font-size: 13px; margin-bottom: 10px; color: var(--text); }
+.meeting-preview {
+  background: #1a1a2e; border-radius: 8px; padding: 8px; overflow: hidden;
+}
+.meeting-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 3px; border-radius: 4px; overflow: hidden;
+}
+.participant-tile {
+  aspect-ratio: 1; border-radius: 3px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+.meeting-meta { margin-top: 8px; font-size: 11.5px; color: #a0a0c0; }
+.meeting-meta strong { color: #c0c0e8; }
+.rr-join-btn {
+  display: block; width: 100%; margin-top: 8px;
+  background: var(--meeting-green); color: #fff; border: none;
+  border-radius: 4px; padding: 7px; font-size: 12px; font-weight: 600;
+  cursor: pointer; text-align: center;
+}
+.rr-join-btn:hover { background: #0f8b0a; }
+
+.rr-pinned { padding: 10px 14px; }
+.pinned-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12.5px;
+}
+.pinned-item:last-child { border-bottom: none; }
+.pinned-icon { font-size: 18px; }
+.pinned-info .pi-name { font-weight: 600; color: var(--teams-purple); }
+.pinned-info .pi-sub { font-size: 11px; color: var(--mute); }
+
+/* Scroll to bottom new msg notification */
+#new-msg-banner {
+  position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%);
+  background: var(--teams-purple); color: #fff;
+  border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600;
+  cursor: pointer; z-index: 5; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(91,95,199,0.4);
+  display: none;
+}
+</style>
+</head>
+<body data-suppress="cursor" data-title="성장팀 - 일반 - Microsoft Teams" data-favicon="💜" data-app="Teams">
+
+<div class="app">
+
+  <!-- ── FAR LEFT RAIL ── -->
+  <div class="rail">
+    <div class="rail-icon active">
+      <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm0 2v6h14V5H5zm0 10h6v2H5v-2zm0 4h8v2H5v-2zm10 0h4v2h-4v-2z"/></svg>
+      <span class="label">활동</span>
+      <div class="rail-badge blink" id="activity-badge"></div>
+    </div>
+    <div class="rail-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 011 1v10a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1zm1 2v11l2-2h12V6H5z"/></svg>
+      <span class="label">채팅</span>
+    </div>
+    <div class="rail-icon">
+      <svg viewBox="0 0 24 24"><path d="M17 12h2v2h-2v-2zm-4 0h2v2h-2v-2zM9 12h2v2H9v-2zm8-8a4 4 0 110 8 4 4 0 010-8zm0 2a2 2 0 100 4 2 2 0 000-4zM7 8a4 4 0 110 8A4 4 0 017 8zm0 2a2 2 0 100 4 2 2 0 000-4zm10 7c2.67 0 8 1.34 8 4v2H9v-2c0-2.66 5.33-4 8-4zM7 17c.29 0 .62.02.97.05C6.43 17.7 5 18.67 5 20H1v-2c0-1.93 2.67-3 6-3z"/></svg>
+      <span class="label">팀</span>
+    </div>
+    <div class="rail-icon">
+      <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm3 4h3v3H8v-3z"/></svg>
+      <span class="label">일정</span>
+    </div>
+    <div class="rail-icon">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      <span class="label">통화</span>
+    </div>
+    <div class="rail-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.53 16.47 1 14.64 1c-1.04 0-1.96.5-2.57 1.26L12 2.41l-.07-.15C11.32 1.5 10.4 1 9.36 1 7.53 1 6 2.53 6 4.64c0 .48.11.92.18 1.36H4a2 2 0 00-2 2v2a1 1 0 001 1h.28L4 19c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2l.72-10H21a1 1 0 001-1V8a2 2 0 00-2-2z"/></svg>
+      <span class="label">파일</span>
+    </div>
+    <div class="rail-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+      <span class="label">앱</span>
+    </div>
+    <div class="rail-spacer"></div>
+    <div class="rail-avatar" title="김PM">PM</div>
+  </div>
+
+  <!-- ── CHANNEL SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        검색
+      </div>
+      <button class="btn-new-team">+ 팀 만들기</button>
+    </div>
+    <div class="sidebar-body">
+
+      <!-- 즐겨찾는 팀: 성장팀 -->
+      <div style="padding:8px 12px 4px; font-size:11px; color:var(--mute); font-weight:600; letter-spacing:0.5px;">즐겨찾는 팀</div>
+      <div class="team-group">
+        <div class="team-header">
+          <span class="team-chevron open">▾</span>
+          <div class="team-icon" style="background:#d13438;">성</div>
+          <span>성장팀</span>
+        </div>
+        <div class="channels-list">
+          <div class="channel-item active" id="ch-general">
+            <span class="ch-hash">#</span>
+            <span>일반</span>
+          </div>
+          <div class="channel-item">
+            <span class="ch-hash">#</span>
+            <span>마케팅</span>
+            <span class="ch-badge">3</span>
+          </div>
+          <div class="channel-item">
+            <span class="ch-hash">#</span>
+            <span>데이터</span>
+          </div>
+          <div class="channel-item">
+            <span class="ch-hash">#</span>
+            <span>운영</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 엔지니어링 -->
+      <div class="team-group">
+        <div class="team-header">
+          <span class="team-chevron open">▾</span>
+          <div class="team-icon" style="background:#0078d4;">엔</div>
+          <span>엔지니어링</span>
+        </div>
+        <div class="channels-list">
+          <div class="channel-item">
+            <span class="ch-hash">#</span>
+            <span>일반</span>
+          </div>
+          <div class="channel-item">
+            <span class="ch-hash">#</span>
+            <span>frontend</span>
+          </div>
+          <div class="channel-item">
+            <span class="ch-hash">#</span>
+            <span>backend</span>
+          </div>
+          <div class="channel-item unread">
+            <span class="ch-hash">#</span>
+            <span>devops</span>
+            <span class="ch-badge blink-badge" id="devops-badge">12</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 전체 직원 -->
+      <div class="team-group">
+        <div class="team-header">
+          <span class="team-chevron closed">▾</span>
+          <div class="team-icon" style="background:#107c10;">전</div>
+          <span>전체 직원</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── MAIN CHAT ── -->
+  <div class="main" style="position:relative;">
+    <div class="chat-header">
+      <span style="color:var(--dim); font-size:13px;">성장팀</span>
+      <span style="color:var(--mute);">&rsaquo;</span>
+      <span class="ch-title">#&nbsp;일반</span>
+      <div class="ch-members">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        11명 멤버
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" title="검색">🔍</button>
+        <button class="header-btn" title="더보기">⋯</button>
+      </div>
+    </div>
+
+    <div class="chat-tabs">
+      <div class="tab active">게시물</div>
+      <div class="tab">파일</div>
+      <div class="tab">위키</div>
+      <div class="tab">+</div>
+    </div>
+
+    <!-- Messages -->
+    <div class="msgs" id="msgs">
+      <div class="date-sep"><span>오늘 · 2026년 4월 27일</span></div>
+
+      <!-- 김PM: KPI 자료 -->
+      <div class="msg" id="msg1">
+        <div class="av" style="background:#5b5fc7;">PM</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#5b5fc7;">김PM</span>
+            <span class="ts">14:23</span>
+          </div>
+          <div class="txt">안녕하세요 다들. Q2 KPI 리뷰 자료 공유드려요 🙂</div>
+          <div class="attach-card">
+            <div class="attach-icon">📊</div>
+            <div class="attach-info">
+              <div class="fn">Q2_KPI_Review.pptx</div>
+              <div class="fs">PowerPoint 프레젠테이션 · 2.4 MB</div>
+            </div>
+          </div>
+          <div class="reactions">
+            <div class="rxn">👍 <span class="cnt">8</span></div>
+            <div class="rxn">🎯 <span class="cnt">4</span></div>
+            <div class="rxn">🙌 <span class="cnt">3</span></div>
+            <div class="rxn">👀 <span class="cnt">2</span></div>
+            <div class="rxn">🔥 <span class="cnt">2</span></div>
+            <div class="rxn">💯 <span class="cnt">1</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이수민 -->
+      <div class="msg">
+        <div class="av" style="background:#da3b01;">수</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#da3b01;">이수민</span>
+            <span class="ts">14:24</span>
+          </div>
+          <div class="txt">확인했어요 👍 내용이 정말 잘 정리되어 있네요!</div>
+        </div>
+      </div>
+
+      <!-- 박지훈: 디자인 시안 -->
+      <div class="msg">
+        <div class="av" style="background:#107c10;">지</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#107c10;">박지훈</span>
+            <span class="ts">14:25</span>
+          </div>
+          <div class="txt">디자인 시안 v3 어디 있나요? 찾아봤는데 못 찾겠어요 😅</div>
+          <div class="thread-bar">
+            <div class="reply-avs">
+              <div class="thread-av" style="background:#5b5fc7;">PM</div>
+              <div class="thread-av" style="background:#da3b01; margin-left:-4px;">수</div>
+              <div class="thread-av" style="background:#8764b8; margin-left:-4px;">서</div>
+            </div>
+            <span><strong>3개 답글</strong> · 마지막 답글 14:27</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- System: 회의 시작 -->
+      <div class="msg sys">
+        <div class="av" style="font-size:16px; background:transparent; color:#107c10;">📹</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender">박지훈님이 회의를 시작했습니다</span>
+            <span class="ts">14:26</span>
+          </div>
+          <div class="meeting-card">
+            <div class="m-icon">🎥</div>
+            <div class="m-info">
+              <div class="m-title">성장팀 긴급 회의</div>
+              <div class="m-status" id="meeting-status">진행 중 · <span id="meeting-timer">28분</span></div>
+            </div>
+            <button class="m-join">참여</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 한서연: 질문 + 코드 -->
+      <div class="msg">
+        <div class="av" style="background:#8764b8;">서</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#8764b8;">한서연</span>
+            <span class="ts">14:30</span>
+          </div>
+          <div class="txt">자료 잘 봤어요, 한 가지 질문 드려도 될까요? MAU 계산 방식이 아래랑 다른 것 같아서요:</div>
+          <div class="code-block">SELECT COUNT(DISTINCT user_id) AS mau
+FROM events
+WHERE event_date >= DATE_TRUNC('month', NOW())
+  AND event_type = 'active_session';</div>
+          <div class="reactions">
+            <div class="rxn">🤔 <span class="cnt">2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 송민지: GIF -->
+      <div class="msg">
+        <div class="av" style="background:#c239b3;">민</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#c239b3;">송민지</span>
+            <span class="ts">14:32</span>
+          </div>
+          <div class="txt">맞아요 저도 의아했어요 ㅋㅋ</div>
+          <div class="gif-block">😂</div>
+        </div>
+      </div>
+
+      <!-- 최수영: 불릿 -->
+      <div class="msg">
+        <div class="av" style="background:#0078d4;">수</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#0078d4;">최수영</span>
+            <span class="ts">14:35</span>
+          </div>
+          <div class="txt">정리해봤어요:</div>
+          <ul class="msg-list">
+            <li>MAU 기준: 월간 1회 이상 로그인한 사용자</li>
+            <li>DAU/MAU 비율 목표 Q2: 40% → 현재 34.2%</li>
+            <li>리텐션 개선을 위해 온보딩 플로우 A/B 테스트 제안</li>
+          </ul>
+          <div class="reactions">
+            <div class="rxn">✅ <span class="cnt">5</span></div>
+            <div class="rxn">👍 <span class="cnt">3</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System: 김지영 가입 -->
+      <div class="msg sys">
+        <div class="av" style="font-size:14px; background:transparent; color:var(--mute);">👤</div>
+        <div class="body">
+          <div class="txt" style="color:var(--mute); font-size:12.5px; margin-top:2px;">+ 김지영님이 채널에 가입했습니다 · 14:38</div>
+        </div>
+      </div>
+
+      <!-- 조대표 -->
+      <div class="msg">
+        <div class="av" style="background:#e81123;">대</div>
+        <div class="body">
+          <div class="line1">
+            <span class="sender" style="color:#e81123;">조대표</span>
+            <span class="ts">14:40</span>
+          </div>
+          <div class="txt">리뷰 내용 확인했습니다. 이번 주말까지 각 팀별 액션 아이템 정리 부탁합니다. 목요일까지 초안 공유해주시면 감사하겠어요.</div>
+          <div class="reactions">
+            <div class="rxn">👌 <span class="cnt">6</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /msgs -->
+
+    <!-- Typing indicator -->
+    <div id="typing-bar" style="visibility:hidden;">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <span id="typing-name">박지훈님이 입력 중...</span>
+    </div>
+
+    <!-- Compose -->
+    <div class="compose-wrap">
+      <div class="compose-box">
+        <div class="compose-toolbar">
+          <button class="compose-btn" title="굵게"><b>B</b></button>
+          <button class="compose-btn" title="기울임"><i>I</i></button>
+          <button class="compose-btn" title="밑줄"><u>U</u></button>
+          <div class="compose-sep"></div>
+          <button class="compose-btn icon-btn" title="서식">⊞</button>
+          <button class="compose-btn icon-btn" title="이모지">😊</button>
+          <button class="compose-btn icon-btn" title="GIF">GIF</button>
+          <div class="compose-sep"></div>
+          <button class="compose-btn" title="코드">{ }</button>
+          <button class="compose-btn icon-btn" title="테이블">⊟</button>
+        </div>
+        <div class="compose-input" contenteditable="true" id="compose-input"
+             data-placeholder="성장팀 · 일반 채널에 메시지 작성"></div>
+        <div class="compose-footer">
+          <button class="compose-footer-btn" title="파일 첨부">📎</button>
+          <button class="compose-footer-btn" title="멘션">@</button>
+          <button class="compose-footer-btn" title="이모지">🙂</button>
+          <button class="compose-footer-btn" title="예약 전송">⏰</button>
+          <button class="send-btn">보내기 ➤</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="new-msg-banner" onclick="scrollToBottom()">↓ 새 메시지</div>
+  </div><!-- /main -->
+
+  <!-- ── RIGHT RAIL ── -->
+  <div class="right-rail">
+    <div class="rr-section">
+      <div class="rr-title">📹 진행 중인 회의</div>
+      <div class="meeting-preview">
+        <div class="meeting-grid">
+          <div class="participant-tile" style="background:#1a5276;">지</div>
+          <div class="participant-tile" style="background:#145a32;">훈</div>
+          <div class="participant-tile" style="background:#512e5f;">서</div>
+          <div class="participant-tile" style="background:#7b241c;">민</div>
+          <div class="participant-tile" style="background:#0b3861;">수</div>
+          <div class="participant-tile" style="background:#4a235a; font-size:11px;">+2</div>
+        </div>
+        <div class="meeting-meta">
+          <strong>성장팀 긴급 회의</strong><br>
+          참여자 7명 · <span id="rr-timer">28:14</span> 진행 중
+        </div>
+      </div>
+      <button class="rr-join-btn">📞 지금 참여하기</button>
+    </div>
+    <div class="rr-section">
+      <div class="rr-title">📌 채널 하이라이트</div>
+      <div class="pinned-item">
+        <div class="pinned-icon">📊</div>
+        <div class="pinned-info">
+          <div class="pi-name">Q2_KPI_Review.pptx</div>
+          <div class="pi-sub">김PM · 14:23 공유</div>
+        </div>
+      </div>
+      <div class="pinned-item">
+        <div class="pinned-icon">📋</div>
+        <div class="pinned-info">
+          <div class="pi-name">Q2 액션 아이템</div>
+          <div class="pi-sub">최수영 · 요약 정리</div>
+        </div>
+      </div>
+    </div>
+    <div class="rr-section" style="flex:1; border-bottom:none;">
+      <div class="rr-title">👥 채널 멤버</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; padding-top:4px;">
+        <div style="display:flex;align-items:center;gap:5px;width:100%;padding:3px 0;font-size:12px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:#5b5fc7;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">PM</div>
+          <span>김PM</span><span style="margin-left:auto;font-size:10px;color:var(--meeting-green);">●</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;width:100%;padding:3px 0;font-size:12px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:#da3b01;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">수</div>
+          <span>이수민</span><span style="margin-left:auto;font-size:10px;color:var(--meeting-green);">●</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;width:100%;padding:3px 0;font-size:12px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:#107c10;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">지</div>
+          <span>박지훈</span><span style="margin-left:auto;font-size:10px;color:#ffd700;">●</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;width:100%;padding:3px 0;font-size:12px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:#8764b8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">서</div>
+          <span>한서연</span><span style="margin-left:auto;font-size:10px;color:var(--meeting-green);">●</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;width:100%;padding:3px 0;font-size:12px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:#e81123;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">대</div>
+          <span>조대표</span><span style="margin-left:auto;font-size:10px;color:var(--meeting-green);">●</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── Utilities ──
+function pad(n) { return String(n).padStart(2,'0'); }
+
+// ── Meeting timer (counts up from 28 min) ──
+let meetingSeconds = 28 * 60 + 14;
+function updateMeetingTimer() {
+  meetingSeconds++;
+  const m = Math.floor(meetingSeconds / 60);
+  const s = meetingSeconds % 60;
+  const el = document.getElementById('meeting-timer');
+  const rr = document.getElementById('rr-timer');
+  if (el) el.textContent = m + '분';
+  if (rr) rr.textContent = pad(m) + ':' + pad(s);
+}
+setInterval(updateMeetingTimer, 1000);
+
+// ── Compose fake typing animation ──
+const composeEl = document.getElementById('compose-input');
+const sequences = [
+  { text: 'Q2 정리 중...', delay: 3000, hold: 1800, erase: true },
+  { text: '확인했습니다', delay: 2000, hold: 2200, erase: true },
+  { text: '@박지훈 시안 링크 공유 가능할까요?', delay: 3500, hold: 3000, erase: true },
+  { text: '네, 알겠습니다!', delay: 2500, hold: 1500, erase: true },
+];
+let seqIdx = 0;
+function runComposeSeq() {
+  const seq = sequences[seqIdx % sequences.length];
+  seqIdx++;
+  setTimeout(() => {
+    typeInto(composeEl, seq.text, () => {
+      setTimeout(() => {
+        if (seq.erase) {
+          eraseFrom(composeEl, () => {
+            setTimeout(runComposeSeq, 1200);
+          });
+        } else {
+          setTimeout(runComposeSeq, 2000);
+        }
+      }, seq.hold);
+    });
+  }, seq.delay);
+}
+function typeInto(el, text, done) {
+  let i = 0;
+  el.textContent = '';
+  const iv = setInterval(() => {
+    if (i < text.length) {
+      el.textContent += text[i++];
+      // auto-scroll compose
+    } else {
+      clearInterval(iv);
+      if (done) done();
+    }
+  }, 55 + Math.random() * 40);
+}
+function eraseFrom(el, done) {
+  const iv = setInterval(() => {
+    const t = el.textContent;
+    if (t.length > 0) {
+      el.textContent = t.slice(0, -1);
+    } else {
+      clearInterval(iv);
+      if (done) done();
+    }
+  }, 35);
+}
+// Start compose animation after 4s
+setTimeout(runComposeSeq, 4000);
+
+// ── Typing indicator ──
+const typingBar = document.getElementById('typing-bar');
+const typingName = document.getElementById('typing-name');
+const typingPeople = ['박지훈님이 입력 중...', '이수민님이 입력 중...', '한서연님이 입력 중...'];
+function showTyping() {
+  typingName.textContent = typingPeople[Math.floor(Math.random() * typingPeople.length)];
+  typingBar.style.visibility = 'visible';
+  setTimeout(() => {
+    typingBar.style.visibility = 'hidden';
+    scheduleTyping();
+  }, 1800 + Math.random() * 2200);
+}
+function scheduleTyping() {
+  setTimeout(showTyping, 5000 + Math.random() * 8000);
+}
+scheduleTyping();
+
+// ── New message arrival (30-50s) ──
+const msgsEl = document.getElementById('msgs');
+let newMsgScheduled = false;
+function scheduleNewMessage() {
+  const delay = 30000 + Math.random() * 20000;
+  setTimeout(() => {
+    appendNewMessage();
+    scheduleNewMessage();
+  }, delay);
+}
+function appendNewMessage() {
+  const newMsg = document.createElement('div');
+  newMsg.className = 'msg';
+  newMsg.style.opacity = '0';
+  newMsg.style.transition = 'opacity 0.4s ease';
+  newMsg.innerHTML = `
+    <div class="av" style="background:#00b4d8;">이</div>
+    <div class="body">
+      <div class="line1">
+        <span class="sender" style="color:#00b4d8;">윤이사</span>
+        <span class="ts">14:45</span>
+      </div>
+      <div class="txt">좋네요 👍 이번 분기 결과 기대됩니다!</div>
+    </div>`;
+  msgsEl.appendChild(newMsg);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { newMsg.style.opacity = '1'; });
+  });
+
+  // Blink activity badge
+  const ab = document.getElementById('activity-badge');
+  ab.classList.add('blink');
+
+  // Update channel unread - flash the badge momentarily
+  const badge = document.getElementById('devops-badge');
+  badge.classList.add('blink-badge');
+
+  // If not scrolled to bottom, show banner
+  if (msgsEl.scrollHeight - msgsEl.scrollTop > msgsEl.clientHeight + 100) {
+    const banner = document.getElementById('new-msg-banner');
+    banner.style.display = 'block';
+    setTimeout(() => { banner.style.display = 'none'; }, 4000);
+  } else {
+    scrollToBottom();
+  }
+}
+scheduleNewMessage();
+
+function scrollToBottom() {
+  msgsEl.scrollTo({ top: msgsEl.scrollHeight, behavior: 'smooth' });
+  document.getElementById('new-msg-banner').style.display = 'none';
+}
+
+// Initial scroll to bottom
+setTimeout(() => { msgsEl.scrollTop = msgsEl.scrollHeight; }, 100);
+
+// ── Badge blink interval cycling ──
+// devops badge number cycles
+let devopsCount = 12;
+setInterval(() => {
+  // occasionally increment
+  if (Math.random() < 0.15) {
+    devopsCount++;
+    const badge = document.getElementById('devops-badge');
+    badge.textContent = devopsCount;
+    // flash
+    badge.style.transform = 'scale(1.3)';
+    setTimeout(() => { badge.style.transform = ''; }, 200);
+  }
+}, 8000);
+
+// ── Channel click highlighting ──
+document.querySelectorAll('.channel-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ── Team header toggle collapse ──
+document.querySelectorAll('.team-header').forEach(header => {
+  header.addEventListener('click', function() {
+    const chevron = this.querySelector('.team-chevron');
+    const group = this.closest('.team-group');
+    const list = group.querySelector('.channels-list');
+    if (list) {
+      const isOpen = chevron.classList.contains('open');
+      chevron.classList.toggle('open', !isOpen);
+      chevron.classList.toggle('closed', isOpen);
+      list.style.display = isOpen ? 'none' : '';
+    }
+  });
+});
+
+// ── Tab switching ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

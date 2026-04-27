@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Q2_브랜드_오프닝.aep — After Effects</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1e1e1e;--panel:#2a2a2a;--panel2:#242424;--panel3:#323232;
+  --border:#151515;--border2:#3a3a3a;
+  --text:#c8c8c8;--dim:#7a7a7a;--mute:#555;
+  --accent:#2680eb;--accent2:#1a6bd6;
+  --gold:#e8b84b;--gold2:#f0ca70;
+  --green:#5ba85a;--red:#c94040;--orange:#d07030;
+  --yellow:#c8b84a;--blue:#4a80c8;--purple:#8a5ac8;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Inter',sans-serif;font-size:11px;overflow:hidden;}
+.app{display:grid;grid-template-rows:22px 1fr;height:100vh;}
+
+/* ── Menubar ── */
+.menubar{background:#1a1a1a;display:flex;align-items:center;padding:0 10px;gap:0;font-size:11px;border-bottom:1px solid #000;user-select:none;}
+.menubar .logo{color:#9ad;font-weight:700;font-size:11px;margin-right:12px;letter-spacing:.3px;}
+.mitem{padding:2px 8px;color:var(--dim);cursor:default;border-radius:2px;}
+.mitem:hover{background:#333;color:var(--text);}
+.menubar .spacer{flex:1;}
+.menubar .badge{background:#c94040;color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-weight:700;letter-spacing:.3px;}
+.menubar .badge.ram{background:#1e4a8a;color:#8bc4f8;animation:ramcycle 4s infinite;}
+@keyframes ramcycle{0%,100%{background:#1e4a8a;color:#8bc4f8;}40%{background:#0d3a6a;color:#60aaee;}70%{background:#225a9a;color:#9acffe;}}
+.menubar .ver{color:var(--mute);font-size:10px;margin-left:6px;}
+
+/* ── Main 4-zone grid ── */
+.main{display:grid;grid-template-columns:250px 1fr 220px;grid-template-rows:1fr 1fr;gap:1px;background:#000;overflow:hidden;}
+
+/* ── Panel header shared ── */
+.ph{background:#202020;padding:3px 8px;border-bottom:1px solid #000;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;}
+.ph .spacer{flex:1;}
+.ph .ico{color:var(--mute);font-size:10px;}
+.ph .tab{padding:2px 6px;border-radius:2px;cursor:default;}
+.ph .tab.active{color:var(--text);background:#333;}
+.ph .act{font-weight:400;text-transform:none;font-size:10px;color:var(--mute);}
+
+/* ── Panel shared ── */
+.panel{background:var(--panel);overflow:hidden;display:flex;flex-direction:column;}
+
+/* ── Project panel (left top) ── */
+.project{grid-column:1;grid-row:1;}
+.proj-toolbar{background:#222;padding:3px 6px;border-bottom:1px solid #000;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.proj-toolbar .btn{background:#333;border:1px solid #1a1a1a;color:var(--dim);font-size:10px;padding:1px 6px;border-radius:2px;cursor:default;}
+.proj-toolbar .btn:hover{background:#3a3a3a;color:var(--text);}
+.proj-toolbar .search{flex:1;background:#1a1a1a;border:1px solid #333;border-radius:2px;padding:1px 5px;color:var(--text);font-size:10px;}
+.proj-body{flex:1;overflow-y:auto;padding:4px 0;}
+.proj-body::-webkit-scrollbar{width:6px;}
+.proj-body::-webkit-scrollbar-track{background:#1a1a1a;}
+.proj-body::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:3px;}
+.folder{font-size:10.5px;}
+.folder>.fhead{padding:3px 8px;display:flex;align-items:center;gap:5px;color:var(--dim);cursor:default;user-select:none;}
+.folder>.fhead:hover{background:#2e2e2e;}
+.folder>.fhead .arr{font-size:8px;color:var(--mute);}
+.folder>.fhead .lbl{font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-size:10px;}
+.folder>.fhead .cnt{color:var(--mute);font-size:9px;}
+.asset{display:flex;align-items:center;gap:6px;padding:2px 8px 2px 22px;cursor:default;}
+.asset:hover{background:#2e2e2e;}
+.asset.sel{background:rgba(38,128,235,.18);outline:none;}
+.asset.sel .aname{color:#fff;}
+.asset .thumb{width:28px;height:18px;border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid #1a1a1a;}
+.asset .thumb.vid{background:linear-gradient(135deg,#1a2840,#0a1520);}
+.asset .thumb.aud{background:linear-gradient(135deg,#1a2820,#0a1410);}
+.asset .thumb.comp{background:linear-gradient(135deg,#2a1a40,#180a28);}
+.asset .thumb.img{background:linear-gradient(135deg,#2a2010,#1a1408);}
+.asset .ainfo{flex:1;min-width:0;}
+.asset .aname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);font-size:10.5px;}
+.asset .ameta{color:var(--mute);font-size:9px;font-family:'Consolas',monospace;}
+.proj-status{background:#202020;border-top:1px solid #000;padding:2px 8px;font-size:9px;color:var(--mute);display:flex;gap:10px;flex-shrink:0;}
+
+/* ── Composition viewport (center top) ── */
+.compview{grid-column:2;grid-row:1 / span 1;}
+.viewport{flex:1;background:#000;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.vp-canvas{width:86%;aspect-ratio:16/9;position:relative;overflow:hidden;background:#0a0a14;}
+.safe-outer{position:absolute;inset:5%;border:1px dashed rgba(255,255,255,.08);pointer-events:none;}
+.safe-inner{position:absolute;inset:10%;border:1px dashed rgba(255,255,255,.05);pointer-events:none;}
+/* composition content layers */
+.comp-bg{position:absolute;inset:0;animation:bgshift 8s ease-in-out infinite;}
+@keyframes bgshift{0%{background:radial-gradient(ellipse 80% 60% at 30% 40%,#1a1060 0%,#0a0420 60%,#050210 100%);}50%{background:radial-gradient(ellipse 80% 60% at 70% 60%,#0d1a50 0%,#060a20 60%,#030208 100%);}100%{background:radial-gradient(ellipse 80% 60% at 30% 40%,#1a1060 0%,#0a0420 60%,#050210 100%);}}
+.comp-particles{position:absolute;inset:0;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;animation:pfloat linear infinite;}
+@keyframes pfloat{0%{transform:translateY(100%) translateX(0);opacity:0;}10%{opacity:.7;}90%{opacity:.4;}100%{transform:translateY(-20%) translateX(var(--dx));opacity:0;}}
+.comp-logo-wrap{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);}
+.comp-logo{font-size:clamp(16px,3.5vw,38px);font-weight:900;color:#fff;letter-spacing:-1px;text-align:center;animation:logopulse 3s ease-in-out infinite;text-shadow:0 0 40px rgba(38,128,235,.6),0 0 80px rgba(38,128,235,.3);}
+@keyframes logopulse{0%,100%{opacity:.95;text-shadow:0 0 40px rgba(38,128,235,.6),0 0 80px rgba(38,128,235,.3);}50%{opacity:1;text-shadow:0 0 60px rgba(38,128,235,.9),0 0 120px rgba(38,128,235,.5);}}
+.comp-sub{font-size:clamp(7px,1.1vw,12px);color:rgba(255,255,255,.5);letter-spacing:4px;text-transform:uppercase;text-align:center;margin-top:8px;animation:subfade 3s ease-in-out infinite;}
+@keyframes subfade{0%,100%{opacity:.5;}50%{opacity:.8;}}
+.comp-shape{position:absolute;right:12%;top:50%;transform:translateY(-50%);}
+.shape-ring{width:clamp(30px,5vw,60px);height:clamp(30px,5vw,60px);border:2px solid rgba(38,128,235,.5);border-radius:50%;animation:spinring 6s linear infinite;}
+@keyframes spinring{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.shape-inner{position:absolute;top:50%;left:50%;width:60%;height:60%;transform:translate(-50%,-50%);border:1px solid rgba(150,100,255,.4);border-radius:50%;animation:spinring 4s linear infinite reverse;}
+.shape-dot{position:absolute;top:50%;left:50%;width:20%;height:20%;transform:translate(-50%,-50%);background:rgba(38,128,235,.8);border-radius:50%;box-shadow:0 0 10px rgba(38,128,235,1);}
+.comp-grid{position:absolute;left:8%;top:50%;transform:translateY(-50%);}
+.grid-axi{color:rgba(255,255,255,.15);font-size:clamp(6px,.9vw,10px);font-family:'Consolas',monospace;line-height:1.6;}
+.comp-motionpath{position:absolute;inset:0;pointer-events:none;}
+.vp-bar{background:#1a1a1a;padding:2px 8px;display:flex;align-items:center;gap:10px;border-top:1px solid #000;font-size:10px;flex-shrink:0;}
+.vp-bar .tc{font-family:'Consolas',monospace;color:var(--text);background:#111;padding:1px 6px;border-radius:2px;font-size:11px;}
+.vp-bar .mag{color:var(--dim);}
+.vp-bar .spacer{flex:1;}
+.vp-bar .res{color:var(--mute);}
+.vp-bar .channels{display:flex;gap:3px;}
+.vp-bar .ch{font-size:9px;padding:0 4px;border:1px solid #333;border-radius:2px;color:var(--dim);}
+.vp-bar .ch.active{border-color:var(--accent);color:var(--accent);}
+
+/* ── Effects & Presets panel (right top) ── */
+.effects{grid-column:3;grid-row:1;}
+.fx-search{padding:4px 6px;background:#222;border-bottom:1px solid #000;flex-shrink:0;}
+.fx-search input{width:100%;background:#1a1a1a;border:1px solid #333;color:var(--text);font-size:10px;padding:2px 6px;border-radius:2px;outline:none;}
+.fx-body{flex:1;overflow-y:auto;padding:4px 0;}
+.fx-body::-webkit-scrollbar{width:6px;}
+.fx-body::-webkit-scrollbar-track{background:#1a1a1a;}
+.fx-body::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:3px;}
+.fx-cat{font-size:10px;}
+.fx-cat>.fxhead{padding:3px 8px;display:flex;align-items:center;gap:5px;color:var(--dim);cursor:default;background:#202020;}
+.fx-cat>.fxhead .arr{font-size:8px;color:var(--mute);}
+.fx-cat>.fxhead .lbl{font-weight:600;font-size:10px;color:#aaa;}
+.fx-item{padding:3px 8px 3px 22px;display:flex;align-items:center;gap:6px;cursor:default;font-size:10.5px;color:var(--text);border-left:2px solid transparent;}
+.fx-item:hover{background:#2e2e2e;}
+.fx-item.applied{background:rgba(38,128,235,.12);border-left-color:var(--accent);color:#9dc8f8;}
+.fx-item.active{background:rgba(38,128,235,.22);border-left-color:var(--accent);color:#fff;}
+.fx-item .fxdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.fx-item .fxname{flex:1;}
+.fx-item .fxtag{font-size:8px;color:var(--mute);background:#1a1a1a;padding:0 3px;border-radius:1px;}
+.fx-info{background:#1e1e1e;border-top:1px solid #000;padding:6px 8px;font-size:10px;flex-shrink:0;}
+.fx-info .t{color:var(--dim);margin-bottom:4px;}
+.fx-info .prop-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #222;}
+.fx-info .prop-row .k{color:var(--mute);}
+.fx-info .prop-row .v{font-family:'Consolas',monospace;color:var(--text);}
+
+/* ── Timeline panel (full width bottom) ── */
+.timeline{grid-column:1 / span 3;grid-row:2;display:flex;flex-direction:column;background:#222;overflow:hidden;}
+.tl-top{background:#1a1a1a;padding:3px 8px;display:flex;align-items:center;gap:10px;font-size:10px;color:var(--dim);border-bottom:1px solid #000;flex-shrink:0;}
+.tl-top .comp-name{color:var(--text);font-weight:600;font-size:11px;}
+.tl-top .tltc{font-family:'Consolas',monospace;font-size:12px;color:var(--text);background:#111;padding:1px 7px;border-radius:2px;}
+.tl-top .dur{color:var(--mute);font-size:10px;font-family:'Consolas',monospace;}
+.tl-top .spacer{flex:1;}
+.tl-controls{display:flex;align-items:center;gap:4px;}
+.tl-btn{width:22px;height:22px;background:#2a2a2a;border:1px solid #1a1a1a;color:var(--dim);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:default;}
+.tl-btn:hover{background:#333;color:var(--text);}
+.tl-btn.play{color:#fff;background:var(--accent);border-color:var(--accent2);animation:playbreathe 2s ease-in-out infinite;}
+@keyframes playbreathe{0%,100%{box-shadow:0 0 0 0 rgba(38,128,235,.4);}50%{box-shadow:0 0 0 4px rgba(38,128,235,.15);}}
+.tl-tools{background:#222;padding:3px 8px;border-bottom:1px solid #111;display:flex;align-items:center;gap:6px;flex-shrink:0;font-size:10px;}
+.tl-tools .topt{padding:1px 5px;border-radius:2px;cursor:default;color:var(--dim);background:#2a2a2a;border:1px solid #1a1a1a;}
+.tl-tools .topt.on{color:var(--text);background:#333;}
+.tl-tools .sep{width:1px;height:14px;background:#333;margin:0 2px;}
+.tl-tools .spacer{flex:1;}
+.tl-tools .zoom-lbl{color:var(--mute);}
+/* ruler */
+.ruler{height:18px;background:#1e1e1e;border-bottom:1px solid #000;display:flex;align-items:flex-end;padding:0;position:relative;flex-shrink:0;overflow:hidden;}
+.ruler-marks{flex:1;position:relative;margin-left:200px;}
+.ruler-mark{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center;}
+.ruler-mark .lbl{font-size:8px;color:var(--mute);font-family:'Consolas',monospace;margin-bottom:1px;}
+.ruler-mark .tick{width:1px;background:#333;}
+.ruler-mark.major .tick{height:10px;background:#555;}
+.ruler-mark.minor .tick{height:5px;}
+.ruler-playhead{position:absolute;top:0;bottom:0;width:1px;background:#f08030;z-index:10;pointer-events:none;}
+.ruler-playhead::before{content:'▼';position:absolute;top:-1px;left:-4px;font-size:8px;color:#f08030;}
+/* layer list */
+.layers-area{flex:1;display:flex;overflow:hidden;}
+.layer-labels{width:200px;flex-shrink:0;overflow-y:auto;border-right:1px solid #111;}
+.layer-labels::-webkit-scrollbar{width:0;}
+.layer-row{height:26px;display:flex;align-items:center;padding:0 4px;gap:4px;border-bottom:1px solid #1a1a1a;font-size:10.5px;cursor:default;}
+.layer-row:hover{background:#2e2e2e;}
+.layer-row.active{background:rgba(38,128,235,.15);}
+.layer-row .lnum{width:18px;text-align:right;color:var(--mute);font-size:9px;font-family:'Consolas',monospace;flex-shrink:0;}
+.layer-row .ltoggle{width:13px;height:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.layer-row .eye{color:var(--dim);}
+.layer-row .lock{color:var(--mute);}
+.layer-row .shy{color:var(--mute);font-size:8px;}
+.layer-row .ltag{width:4px;height:18px;border-radius:1px;flex-shrink:0;margin-left:1px;}
+.layer-row .lname{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.layer-row .ltype{font-size:9px;color:var(--mute);margin-left:auto;flex-shrink:0;}
+/* keyframe area */
+.kf-area{flex:1;overflow:auto;position:relative;}
+.kf-area::-webkit-scrollbar{height:6px;width:6px;}
+.kf-area::-webkit-scrollbar-track{background:#1a1a1a;}
+.kf-area::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:3px;}
+.kf-track{height:26px;border-bottom:1px solid #1a1a1a;position:relative;}
+.kf-track.active{background:rgba(38,128,235,.05);}
+.kf-diamond{position:absolute;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:8px;height:8px;background:var(--gold);box-shadow:0 0 4px rgba(232,184,75,.6);}
+.kf-diamond.pulse{animation:kfpulse 1s ease-in-out infinite;}
+@keyframes kfpulse{0%,100%{box-shadow:0 0 4px rgba(232,184,75,.6);background:var(--gold);}50%{box-shadow:0 0 12px rgba(232,184,75,1),0 0 20px rgba(232,184,75,.5);background:var(--gold2);}}
+.kf-line{position:absolute;top:50%;height:1px;background:rgba(232,184,75,.3);}
+/* motion path on certain tracks */
+.motion-path{position:absolute;top:0;bottom:0;pointer-events:none;}
+/* playhead in kf area */
+.kf-playhead{position:absolute;top:0;bottom:0;width:1px;background:#f08030;opacity:.7;pointer-events:none;z-index:5;}
+/* status bar */
+.tl-status{background:#1a1a1a;border-top:1px solid #000;padding:2px 8px;display:flex;gap:14px;font-size:9px;color:var(--mute);flex-shrink:0;}
+.tl-status .s-key{color:var(--dim);}
+
+/* scrollbar global */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:#1a1a1a;}
+::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:3px;}
+
+/* motion path SVG overlay */
+.mp-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="tool" data-title="Q2_브랜드_오프닝.aep — After Effects" data-favicon="🎞" data-app="After Effects">
+
+<div class="app">
+
+  <!-- ── Menubar ── -->
+  <div class="menubar">
+    <span class="logo">Ae</span>
+    <span class="mitem">파일</span>
+    <span class="mitem">편집</span>
+    <span class="mitem">컴포지션</span>
+    <span class="mitem">레이어</span>
+    <span class="mitem">효과</span>
+    <span class="mitem">애니메이션</span>
+    <span class="mitem">뷰</span>
+    <span class="mitem">창</span>
+    <span class="mitem">도움말</span>
+    <span class="spacer"></span>
+    <span class="badge ram" id="ramBadge">RAM 미리보기</span>
+    <span class="ver">24.0.3</span>
+  </div>
+
+  <!-- ── Main grid ── -->
+  <div class="main">
+
+    <!-- ── Project Panel ── -->
+    <div class="panel project">
+      <div class="ph">
+        <span class="tab active">프로젝트</span>
+        <span class="tab">미디어 브라우저</span>
+        <span class="spacer"></span>
+        <span class="ico">⋯</span>
+      </div>
+      <div class="proj-toolbar">
+        <input class="search" placeholder="🔍 에셋 검색..." readonly>
+        <span class="btn">새 폴더</span>
+        <span class="btn">가져오기</span>
+      </div>
+      <div class="proj-body" id="projBody">
+
+        <div class="folder">
+          <div class="fhead"><span class="arr">▼</span><span class="lbl">컴포지션</span><span class="cnt">&nbsp;(2)</span></div>
+          <div class="asset sel" data-type="comp">
+            <div class="thumb comp">🎬</div>
+            <div class="ainfo"><div class="aname">Q2_브랜드_오프닝</div><div class="ameta">1920×1080 · 00:00:12:00</div></div>
+          </div>
+          <div class="asset" data-type="comp">
+            <div class="thumb comp">🎬</div>
+            <div class="ainfo"><div class="aname">로고_레이어_프리컴프</div><div class="ameta">640×360 · 00:00:05:00</div></div>
+          </div>
+        </div>
+
+        <div class="folder">
+          <div class="fhead"><span class="arr">▼</span><span class="lbl">비디오</span><span class="cnt">&nbsp;(4)</span></div>
+          <div class="asset" data-type="vid">
+            <div class="thumb vid">▶</div>
+            <div class="ainfo"><div class="aname">배경_소스_4K.mp4</div><div class="ameta">3840×2160 · 00:00:20:00</div></div>
+          </div>
+          <div class="asset" data-type="vid">
+            <div class="thumb vid">▶</div>
+            <div class="ainfo"><div class="aname">파티클_알파_오버레이.mov</div><div class="ameta">1920×1080 · α채널</div></div>
+          </div>
+          <div class="asset" data-type="vid">
+            <div class="thumb vid">▶</div>
+            <div class="ainfo"><div class="aname">로고_원본_소스.mov</div><div class="ameta">1920×1080 · ProRes</div></div>
+          </div>
+          <div class="asset" data-type="vid">
+            <div class="thumb vid">▶</div>
+            <div class="ainfo"><div class="aname">인트로_슬래이드.mp4</div><div class="ameta">1920×1080 · H.264</div></div>
+          </div>
+        </div>
+
+        <div class="folder">
+          <div class="fhead"><span class="arr">▼</span><span class="lbl">이미지</span><span class="cnt">&nbsp;(3)</span></div>
+          <div class="asset" data-type="img">
+            <div class="thumb img">🖼</div>
+            <div class="ainfo"><div class="aname">로고_벡터.ai</div><div class="ameta">SVG / 일러스트레이터</div></div>
+          </div>
+          <div class="asset" data-type="img">
+            <div class="thumb img">🖼</div>
+            <div class="ainfo"><div class="aname">텍스처_노이즈.png</div><div class="ameta">2048×2048 · 32bpc</div></div>
+          </div>
+          <div class="asset" data-type="img">
+            <div class="thumb img">🖼</div>
+            <div class="ainfo"><div class="aname">배경_그라디언트.psd</div><div class="ameta">3000×3000 · 레이어</div></div>
+          </div>
+        </div>
+
+        <div class="folder">
+          <div class="fhead"><span class="arr">▼</span><span class="lbl">오디오</span><span class="cnt">&nbsp;(2)</span></div>
+          <div class="asset" data-type="aud">
+            <div class="thumb aud">♪</div>
+            <div class="ainfo"><div class="aname">브랜드_BGM_v3.wav</div><div class="ameta">48kHz · 24bit · 스테레오</div></div>
+          </div>
+          <div class="asset" data-type="aud">
+            <div class="thumb aud">♪</div>
+            <div class="ainfo"><div class="aname">사운드FX_스윙.aiff</div><div class="ameta">48kHz · 16bit</div></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="proj-status">
+        <span>11개 항목</span>
+        <span>|</span>
+        <span>사용됨: 8</span>
+        <span>|</span>
+        <span>디스크: 2.3 GB</span>
+      </div>
+    </div>
+
+    <!-- ── Composition Viewport ── -->
+    <div class="panel compview">
+      <div class="ph">
+        <span class="tab active">컴포지션: Q2_브랜드_오프닝</span>
+        <span class="spacer"></span>
+        <span class="act" id="viewMode">활성 카메라</span>
+        <span class="ico" style="margin-left:6px;">⋯</span>
+      </div>
+      <div class="viewport">
+        <!-- Motion path SVG -->
+        <svg class="mp-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;z-index:2;pointer-events:none;">
+          <path d="M 20 80 Q 50 10 80 60" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width=".5" stroke-dasharray="3,3"/>
+          <path d="M 10 50 Q 30 20 60 40 T 90 55" fill="none" stroke="rgba(38,128,235,0.25)" stroke-width=".4" stroke-dasharray="2,4"/>
+        </svg>
+        <div class="vp-canvas">
+          <div class="comp-bg"></div>
+          <div class="comp-particles" id="particles"></div>
+          <div class="safe-outer"></div>
+          <div class="safe-inner"></div>
+          <!-- 3D grid indicator left -->
+          <div class="comp-grid">
+            <div class="grid-axi">X: +0.00°</div>
+            <div class="grid-axi">Y: +0.00°</div>
+            <div class="grid-axi" id="zRot">Z: 0.00°</div>
+          </div>
+          <!-- Logo center -->
+          <div class="comp-logo-wrap">
+            <div class="comp-logo">BRANDSTUDIO</div>
+            <div class="comp-sub">Motion&nbsp;&nbsp;·&nbsp;&nbsp;Design&nbsp;&nbsp;·&nbsp;&nbsp;2025</div>
+          </div>
+          <!-- Rotating ring right -->
+          <div class="comp-shape">
+            <div class="shape-ring">
+              <div class="shape-inner"></div>
+              <div class="shape-dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="vp-bar">
+        <span class="tc" id="vpTc">02:14:03</span>
+        <span class="mag">50%</span>
+        <span class="spacer"></span>
+        <span class="res">1920×1080 (1/2)</span>
+        <div class="channels">
+          <span class="ch active">RGB</span>
+          <span class="ch">A</span>
+          <span class="ch">R</span>
+          <span class="ch">G</span>
+          <span class="ch">B</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Effects & Presets ── -->
+    <div class="panel effects">
+      <div class="ph">
+        <span class="tab active">효과 및 프리셋</span>
+        <span class="spacer"></span>
+        <span class="ico">⋯</span>
+      </div>
+      <div class="fx-search">
+        <input placeholder="🔍 효과 검색..." readonly>
+      </div>
+      <div class="fx-body" id="fxBody">
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">블러 및 선명도</span></div>
+          <div class="fx-item applied" id="fxGaussian">
+            <div class="fxdot" style="background:#4a90d9;"></div>
+            <span class="fxname">가우시안 블러</span>
+            <span class="fxtag">GPU</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#4a90d9;"></div>
+            <span class="fxname">모션 블러</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#4a90d9;"></div>
+            <span class="fxname">카메라 렌즈 블러</span>
+            <span class="fxtag">GPU</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#4a90d9;"></div>
+            <span class="fxname">스마트 블러</span>
+          </div>
+        </div>
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">색상 보정</span></div>
+          <div class="fx-item applied">
+            <div class="fxdot" style="background:#d9a040;"></div>
+            <span class="fxname">루메트리 색상</span>
+            <span class="fxtag">GPU</span>
+          </div>
+          <div class="fx-item applied" id="fxCurves">
+            <div class="fxdot" style="background:#d9a040;"></div>
+            <span class="fxname">곡선</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#d9a040;"></div>
+            <span class="fxname">색조/채도</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#d9a040;"></div>
+            <span class="fxname">레벨</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#d9a040;"></div>
+            <span class="fxname">색상 균형</span>
+          </div>
+        </div>
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">키잉</span></div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#5ab85a;"></div>
+            <span class="fxname">Keylight (1.2)</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#5ab85a;"></div>
+            <span class="fxname">Advanced Spill Suppressor</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#5ab85a;"></div>
+            <span class="fxname">키 클리너</span>
+          </div>
+        </div>
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">노이즈 및 그레인</span></div>
+          <div class="fx-item applied">
+            <div class="fxdot" style="background:#a060c8;"></div>
+            <span class="fxname">노이즈 추가</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#a060c8;"></div>
+            <span class="fxname">그레인 (분석)</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#a060c8;"></div>
+            <span class="fxname">미디안</span>
+          </div>
+        </div>
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">일루전 (Stylize)</span></div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#c87840;"></div>
+            <span class="fxname">글로우</span>
+            <span class="fxtag">GPU</span>
+          </div>
+          <div class="fx-item applied" id="fxGlow">
+            <div class="fxdot" style="background:#c87840;"></div>
+            <span class="fxname">에코</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#c87840;"></div>
+            <span class="fxname">모자이크</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#c87840;"></div>
+            <span class="fxname">선명하게 하기</span>
+          </div>
+        </div>
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">텍스트</span></div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#58a8d8;"></div>
+            <span class="fxname">번호</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#58a8d8;"></div>
+            <span class="fxname">타임코드</span>
+          </div>
+        </div>
+
+        <div class="fx-cat">
+          <div class="fxhead"><span class="arr">▼</span><span class="lbl">트랜지션</span></div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#d85888;"></div>
+            <span class="fxname">선형 와이프</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#d85888;"></div>
+            <span class="fxname">카드 와이프</span>
+          </div>
+          <div class="fx-item">
+            <div class="fxdot" style="background:#d85888;"></div>
+            <span class="fxname">방사형 와이프</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="fx-info">
+        <div class="t">가우시안 블러 (적용됨)</div>
+        <div class="prop-row"><span class="k">블러도</span><span class="v">12.0</span></div>
+        <div class="prop-row"><span class="k">블러 크기</span><span class="v">가로 및 세로</span></div>
+        <div class="prop-row"><span class="k">가장자리 픽셀 반복</span><span class="v">켜짐</span></div>
+      </div>
+    </div>
+
+    <!-- ── Timeline ── -->
+    <div class="timeline">
+      <div class="tl-top">
+        <span class="comp-name">Q2_브랜드_오프닝</span>
+        <span class="tltc" id="tlTc">02:14:03</span>
+        <span class="dur">/ 12:00:00</span>
+        <span class="spacer"></span>
+        <div class="tl-controls">
+          <div class="tl-btn" title="맨 앞으로">⏮</div>
+          <div class="tl-btn" title="한 프레임 뒤로">◁</div>
+          <div class="tl-btn play" title="재생">▶</div>
+          <div class="tl-btn" title="한 프레임 앞으로">▷</div>
+          <div class="tl-btn" title="맨 뒤로">⏭</div>
+          <div class="tl-btn" title="RAM 미리보기" style="width:auto;padding:0 6px;font-size:9px;color:#8bc4f8;background:#1e3a6a;border-color:#1a3060;">RAM</div>
+          <div class="tl-btn" title="루프">⟳</div>
+        </div>
+      </div>
+      <div class="tl-tools">
+        <span class="topt on">모션 블러</span>
+        <span class="topt on">3D 레이어</span>
+        <span class="topt">가이드</span>
+        <span class="topt on">라이브 업데이트</span>
+        <div class="sep"></div>
+        <span class="topt">키프레임 표시</span>
+        <span class="topt on">자동 키프레임</span>
+        <div class="sep"></div>
+        <span class="spacer"></span>
+        <span class="zoom-lbl">타임라인 줌: </span>
+        <span class="topt on">100%</span>
+        <span class="topt">프레임 혼합</span>
+      </div>
+
+      <!-- Ruler -->
+      <div class="ruler">
+        <div style="width:200px;flex-shrink:0;background:#1a1a1a;border-right:1px solid #111;"></div>
+        <div class="ruler-marks" id="rulerMarks"></div>
+      </div>
+
+      <!-- Layers + Keyframes -->
+      <div class="layers-area">
+        <div class="layer-labels" id="layerLabels"></div>
+        <div class="kf-area" id="kfArea">
+          <div class="kf-playhead" id="kfPlayhead" style="left:120px;"></div>
+        </div>
+      </div>
+
+      <div class="tl-status">
+        <span><span class="s-key">현재 시간:</span> <span id="statusTc">02:14:03</span></span>
+        <span><span class="s-key">선택된 레이어:</span> 메인 텍스트</span>
+        <span><span class="s-key">키프레임:</span> 4개</span>
+        <span><span class="s-key">렌더:</span> 24fps · GPU 가속</span>
+        <span><span class="s-key">메모리:</span> 14.2 GB / 32 GB</span>
+        <span style="margin-left:auto;"><span class="s-key">픽셀 종횡비:</span> 정방형</span>
+      </div>
+    </div>
+
+  </div><!-- .main -->
+</div><!-- .app -->
+
+<script>
+// ── Layer data ──
+const LAYERS = [
+  { name:"메인 텍스트",    type:"T",  color:"#c94040", keyframes:[60,140,220,320] },
+  { name:"로고 마스크",    type:"▲",  color:"#d07030", keyframes:[30,180,300] },
+  { name:"배경 그라디언트",type:"■",  color:"#c8b84a", keyframes:[0,200,400] },
+  { name:"파티클 시뮬",    type:"✦",  color:"#5ba85a", keyframes:[50,160,260,370] },
+  { name:"3D 카메라",      type:"📷", color:"#4a80c8", keyframes:[10,130,250,380] },
+  { name:"조명 1",         type:"☀",  color:"#9b59b6", keyframes:[20,150] },
+  { name:"조명 2",         type:"☀",  color:"#9b59b6", keyframes:[80,200,340] },
+  { name:"널 오브젝트",    type:"○",  color:"#c94040", keyframes:[40,120,240,360] },
+  { name:"오디오",         type:"♪",  color:"#4a80c8", keyframes:[0,400] },
+  { name:"조정 레이어",    type:"◎",  color:"#d07030", keyframes:[100,300] },
+];
+
+const TOTAL_WIDTH = 480; // px for kf area (approx 12s at 40px/s)
+
+// ── Build ruler ──
+function buildRuler() {
+  const marks = document.getElementById('rulerMarks');
+  // marks span TOTAL_WIDTH: 0..12s, major every 1s, minor every 0.25s
+  const steps = 48; // 0.25s each
+  for (let i = 0; i <= steps; i++) {
+    const pct = i / steps * 100;
+    const sec = i * 0.25;
+    const m = document.createElement('div');
+    m.className = 'ruler-mark ' + (i % 4 === 0 ? 'major' : 'minor');
+    m.style.left = pct + '%';
+    if (i % 4 === 0) {
+      const s = Math.floor(sec);
+      const f = Math.round((sec - s) * 24);
+      m.innerHTML = `<span class="lbl">${String(s).padStart(2,'0')}:${String(f).padStart(2,'0')}</span><div class="tick"></div>`;
+    } else {
+      m.innerHTML = `<div class="tick"></div>`;
+    }
+    marks.appendChild(m);
+  }
+}
+
+// ── Build layer labels ──
+function buildLayers() {
+  const labels = document.getElementById('layerLabels');
+  const kfArea = document.getElementById('kfArea');
+
+  LAYERS.forEach((layer, i) => {
+    // Label row
+    const row = document.createElement('div');
+    row.className = 'layer-row' + (i === 0 ? ' active' : '');
+    row.innerHTML = `
+      <span class="lnum">${i+1}</span>
+      <span class="ltoggle eye">👁</span>
+      <span class="ltoggle lock">🔒</span>
+      <span class="ltoggle shy">S</span>
+      <span class="ltag" style="background:${layer.color};"></span>
+      <span class="lname">${layer.name}</span>
+      <span class="ltype">${layer.type}</span>
+    `;
+    labels.appendChild(row);
+
+    // KF track
+    const track = document.createElement('div');
+    track.className = 'kf-track' + (i === 0 ? ' active' : '');
+    track.style.width = TOTAL_WIDTH + 'px';
+
+    // Draw a connecting line between first and last kf
+    if (layer.keyframes.length >= 2) {
+      const x1 = layer.keyframes[0];
+      const x2 = layer.keyframes[layer.keyframes.length - 1];
+      const line = document.createElement('div');
+      line.className = 'kf-line';
+      line.style.left = x1 + 'px';
+      line.style.width = (x2 - x1) + 'px';
+      track.appendChild(line);
+    }
+
+    // Draw keyframe diamonds
+    layer.keyframes.forEach((x, ki) => {
+      const d = document.createElement('div');
+      d.className = 'kf-diamond' + (i === 0 ? ' pulse' : '');
+      d.style.left = x + 'px';
+      track.appendChild(d);
+    });
+
+    kfArea.appendChild(track);
+  });
+}
+
+// ── Timecode state ──
+// Start at 02:14:03 (frames at 24fps)
+// 02h 14m 03f = 2*3600*24 + 14*60*24 + 3 = 172800 + 20160 + 3 = 192963 frames
+let currentFrame = 192963;
+const FPS = 24;
+const MAX_FRAMES = 12 * 24; // 12 seconds of comp = 288 frames for playhead
+
+// We'll track comp position (0..288) for playhead
+let compFrame = 134; // roughly 02:14:03 into a 12s comp (approx 55% = ~134)
+
+function frameToTC(f) {
+  const totalSec = Math.floor(f / FPS);
+  const fr = f % FPS;
+  const s = totalSec % 60;
+  const m = Math.floor(totalSec / 60) % 60;
+  const h = Math.floor(totalSec / 3600);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}:${String(fr).padStart(2,'0')}`;
+}
+
+function updateTimecode() {
+  currentFrame += 1;
+  compFrame = (compFrame + 1) % MAX_FRAMES;
+
+  const tc = frameToTC(currentFrame);
+  document.getElementById('tlTc').textContent = tc;
+  document.getElementById('vpTc').textContent = tc;
+  document.getElementById('statusTc').textContent = tc;
+
+  // Update playhead position in kf area
+  const pct = compFrame / MAX_FRAMES;
+  const px = Math.round(pct * TOTAL_WIDTH);
+  document.getElementById('kfPlayhead').style.left = px + 'px';
+
+  // Update 3D rotation indicator
+  const deg = (compFrame / MAX_FRAMES * 360).toFixed(2);
+  document.getElementById('zRot').textContent = `Z: ${deg}°`;
+}
+
+// ── Particles ──
+function spawnParticle() {
+  const container = document.getElementById('particles');
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = 2 + Math.random() * 3;
+  const x = 10 + Math.random() * 80;
+  const dx = (Math.random() - 0.5) * 40 + 'px';
+  const dur = 3 + Math.random() * 5;
+  p.style.cssText = `
+    left:${x}%;bottom:0;
+    width:${size}px;height:${size}px;
+    --dx:${dx};
+    background:rgba(${Math.random()>0.5?'38,128,235':'150,100,255'},${0.4+Math.random()*0.5});
+    animation-duration:${dur}s;
+    animation-delay:${Math.random()*2}s;
+  `;
+  container.appendChild(p);
+  setTimeout(() => p.remove(), (dur + 2) * 1000);
+}
+
+// ── RAM badge cycling ──
+const ramLabels = ['RAM 미리보기', '렌더링 중...', 'RAM 미리보기', '캐시됨 ✓', 'RAM 미리보기'];
+let ramIdx = 0;
+function cycleRam() {
+  ramIdx = (ramIdx + 1) % ramLabels.length;
+  document.getElementById('ramBadge').textContent = ramLabels[ramIdx];
+}
+
+// ── Effects panel highlight cycling ──
+const fxItems = ['fxGaussian','fxCurves','fxGlow'];
+let fxIdx = 0;
+let lastFxEl = null;
+function cycleFx() {
+  if (lastFxEl) lastFxEl.classList.remove('active');
+  const el = document.getElementById(fxItems[fxIdx]);
+  if (el) { el.classList.add('active'); lastFxEl = el; }
+  fxIdx = (fxIdx + 1) % fxItems.length;
+}
+
+// ── Init ──
+buildRuler();
+buildLayers();
+
+setInterval(updateTimecode, 200);
+setInterval(() => spawnParticle(), 600);
+setInterval(cycleRam, 3500);
+setInterval(cycleFx, 2800);
+
+// Seed initial particles
+for (let i = 0; i < 8; i++) spawnParticle();
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Discover - Logs · Kibana</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafbfc;--panel:#fff;--border:#d3dae6;--border2:#e9edf3;
+  --text:#343741;--dim:#69707d;--dimmer:#98a2b3;
+  --teal:#00bfb3;--teal2:#007e78;--blue:#1ba9f5;--blue2:#0077cc;
+  --red:#bd271e;--red2:#c41717;--orange:#d97008;--gray:#6a717d;
+  --hover:#f5f7fa;--active:#e6f5ff;
+  --mono:'Consolas','JetBrains Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',sans-serif;font-size:13px;overflow:hidden}
+.app{display:grid;grid-template-rows:48px 1fr 26px;height:100vh}
+
+/* TOP BAR */
+.topbar{background:#1c2333;display:flex;align-items:center;padding:0 12px;gap:0;border-bottom:2px solid #00bfb3}
+.logo{display:flex;align-items:center;gap:8px;padding:0 14px 0 4px;border-right:1px solid #2e3b52;margin-right:8px}
+.logo-mark{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:28px;height:28px}
+.logo-text{color:#fff;font-size:15px;font-weight:700;letter-spacing:-0.3px}
+.top-nav{display:flex;align-items:center;gap:2px;flex:1}
+.top-nav-item{padding:6px 12px;color:#a8b5c8;font-size:12.5px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.top-nav-item:hover{color:#fff;background:#2e3b52}
+.top-nav-item.active{color:#fff;background:#2e3b52;font-weight:600}
+.top-spacer{flex:1}
+.spaces-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;background:#2e3b52;border-radius:4px;color:#a8b5c8;font-size:12px;cursor:pointer;border:1px solid #3d4f68}
+.spaces-btn .dot{width:10px;height:10px;background:var(--teal);border-radius:50%}
+.top-icon{padding:6px;color:#a8b5c8;cursor:pointer;border-radius:4px}
+.top-icon:hover{background:#2e3b52;color:#fff}
+
+/* MAIN LAYOUT */
+.main{display:grid;grid-template-columns:48px 220px 1fr;overflow:hidden}
+
+/* SIDE ICONS */
+.sidenav{background:#1c2333;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;border-right:1px solid #2e3b52}
+.snav{display:flex;flex-direction:column;align-items:center;justify-content:center;width:40px;height:40px;border-radius:6px;color:#a8b5c8;cursor:pointer;font-size:9px;gap:3px}
+.snav:hover{background:#2e3b52;color:#fff}
+.snav.active{background:#164155;color:var(--teal)}
+.snav svg{width:18px;height:18px}
+.snav span{font-size:8px;text-align:center}
+.snav-sep{width:32px;height:1px;background:#2e3b52;margin:4px 0}
+
+/* FIELD SIDEBAR */
+.fieldsbar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.fb-section{padding:10px 12px 6px;border-bottom:1px solid var(--border2)}
+.fb-label{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px}
+.index-pill{display:flex;align-items:center;gap:6px;background:#f0f4f9;border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--text);cursor:pointer}
+.index-pill .idx-dot{width:8px;height:8px;background:var(--teal);border-radius:50%;flex-shrink:0}
+.index-pill .idx-caret{margin-left:auto;color:var(--dim)}
+.field-search{width:100%;border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--text);background:#f5f7fa;outline:none}
+.field-search:focus{border-color:var(--blue);background:#fff}
+.fields-list{flex:1;overflow-y:auto;padding:6px 0}
+.fields-list::-webkit-scrollbar{width:4px}
+.fields-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.field-item{display:flex;align-items:center;gap:6px;padding:3px 12px;cursor:pointer;font-size:12px;color:var(--text)}
+.field-item:hover{background:var(--hover)}
+.field-item.popular{color:var(--teal2)}
+.ftype{width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border-radius:2px;flex-shrink:0}
+.ftype.date{background:#e6f5ff;color:var(--blue2)}
+.ftype.ip{background:#f0f4ff;color:#5a6aff}
+.ftype.kw{background:#fff0e8;color:var(--orange)}
+.ftype.num{background:#edfaf9;color:var(--teal2)}
+.ftype.txt{background:#f5f0ff;color:#7044cf}
+.ftype.bool{background:#fef7e0;color:#8a6800}
+.fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fadd{opacity:0;color:var(--blue);font-size:16px;line-height:1;font-weight:700;flex-shrink:0}
+.field-item:hover .fadd{opacity:1}
+
+/* CONTENT AREA */
+.content{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+/* SEARCH BAR ROW */
+.search-row{padding:10px 16px 8px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.kql-wrap{flex:1;position:relative;display:flex;align-items:center;border:1px solid var(--border);border-radius:4px;background:#fff;overflow:hidden}
+.kql-wrap:focus-within{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,191,179,0.15)}
+.kql-icon{padding:0 10px;color:var(--dim)}
+.kql-input{flex:1;border:none;outline:none;font-size:13px;font-family:var(--mono);padding:8px 6px 8px 0;color:transparent;caret-color:var(--text);background:transparent;position:relative;z-index:2}
+.kql-overlay{position:absolute;left:38px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:13px;pointer-events:none;display:flex;align-items:center;gap:0;white-space:nowrap}
+.kql-svc{color:#7044cf}.kql-op{color:var(--dim)}.kql-field{color:#0077cc}.kql-cmp{color:var(--dim)}.kql-val{color:var(--orange)}.kql-and{color:var(--teal);font-weight:600}.kql-field2{color:#0077cc}.kql-cmp2{color:var(--dim)}.kql-val2{color:var(--red)}
+.kql-val.blink{animation:kqlblink 3s ease-in-out infinite}
+@keyframes kqlblink{0%,100%{color:var(--orange)}50%{color:var(--teal);text-shadow:0 0 6px rgba(0,191,179,0.4)}}
+.kql-val2.blink2{animation:kqlblink2 4s ease-in-out infinite 1.5s}
+@keyframes kqlblink2{0%,100%{color:var(--red)}50%{color:#bd271e;text-shadow:0 0 6px rgba(189,39,30,0.4)}}
+.kql-badge{padding:2px 7px;background:#e6f5ff;color:var(--blue2);border-radius:3px;font-size:10.5px;font-family:var(--mono);cursor:pointer;border:1px solid #b3d8ff;flex-shrink:0}
+.search-btn{padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+.search-btn:hover{background:var(--teal2)}
+.time-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:4px;background:#fff;color:var(--text);font-size:12.5px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.time-btn .ti{color:var(--teal);font-size:14px}
+.refresh-btn{display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:#fff;color:var(--dim);font-size:12px;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.refresh-btn .ri{color:var(--teal)}
+
+/* HISTOGRAM HEADER */
+.hist-header{padding:8px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border2)}
+.hit-count{font-size:20px;font-weight:700;color:var(--text)}
+.hit-label{font-size:12px;color:var(--dim);margin-left:4px}
+.hit-sep{color:var(--border);margin:0 4px}
+.hist-range{font-size:12px;color:var(--dim)}
+.hist-spacer{flex:1}
+.chart-opts{font-size:12px;color:var(--blue);cursor:pointer}
+
+/* HISTOGRAM */
+.histogram{padding:8px 16px 4px;background:var(--panel);border-bottom:1px solid var(--border)}
+.hist-chart{height:80px;display:flex;align-items:flex-end;gap:2px;overflow:hidden}
+.hist-bar{flex:1;min-width:6px;background:#a0c4e0;border-radius:1px 1px 0 0;transition:height 0.3s ease;cursor:pointer;position:relative}
+.hist-bar:hover{background:var(--blue)}
+.hist-bar.latest{background:#1ba9f5;animation:barpulse 2s ease-in-out infinite}
+.hist-bar.latest2{background:#3cc5f7;animation:barpulse 2s ease-in-out infinite 0.7s}
+@keyframes barpulse{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.3)}}
+.hist-axis{display:flex;justify-content:space-between;padding:2px 0;font-size:10px;color:var(--dimmer)}
+
+/* DOC TABLE */
+.doc-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.doc-toolbar{padding:6px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border2);background:var(--panel)}
+.doc-toolbar select{border:1px solid var(--border);border-radius:3px;padding:3px 6px;font-size:12px;color:var(--text);background:#fff;outline:none}
+.sort-btn{padding:3px 8px;border:1px solid var(--border);border-radius:3px;background:#fff;font-size:12px;color:var(--dim);cursor:pointer}
+.sort-btn:hover{background:var(--hover)}
+.col-btn{padding:3px 8px;border:1px solid var(--teal);border-radius:3px;background:#edfaf9;font-size:12px;color:var(--teal2);cursor:pointer}
+.doc-spacer{flex:1}
+.doc-count{font-size:12px;color:var(--dim)}
+.doc-table-wrap{flex:1;overflow-y:auto}
+.doc-table-wrap::-webkit-scrollbar{width:6px}
+.doc-table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+table.doc-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.doc-table thead th{padding:6px 8px;background:#f0f4f9;border-bottom:2px solid var(--border);color:var(--dim);font-weight:600;font-size:11.5px;text-align:left;position:sticky;top:0;z-index:1;white-space:nowrap}
+.doc-table thead th:first-child{width:24px;padding:6px 4px}
+.doc-table tbody tr{border-bottom:1px solid var(--border2);cursor:pointer}
+.doc-table tbody tr:hover{background:#f5f7fa}
+.doc-table tbody tr.expanded{background:#f0f4f9}
+.doc-table td{padding:6px 8px;vertical-align:top}
+.doc-table td:first-child{padding:6px 4px;text-align:center;color:var(--dimmer)}
+.expand-btn{background:none;border:none;cursor:pointer;color:var(--dim);font-size:13px;padding:0;line-height:1}
+.doc-table tbody tr.new-entry{animation:fadein 0.8s ease-out}
+@keyframes fadein{from{background:#e6f5ff;opacity:0.4}to{background:transparent;opacity:1}}
+.ts-cell{color:var(--dim);font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+.level-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10.5px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px}
+.lvl-error{background:#fde8e8;color:var(--red2);border:1px solid #f5c0c0}
+.lvl-error.flash{animation:errflash 1.5s ease-in-out infinite}
+@keyframes errflash{0%,100%{background:#fde8e8;color:var(--red2)}50%{background:#fbbcbc;color:#900;box-shadow:0 0 6px rgba(189,39,30,0.3)}}
+.lvl-warn{background:#fff3e0;color:var(--orange);border:1px solid #ffd59e}
+.lvl-info{background:#e6f5ff;color:#0077cc;border:1px solid #aed4f5}
+.lvl-debug{background:#f5f5f5;color:var(--gray);border:1px solid #d0d5de}
+.svc-cell{font-family:var(--mono);font-size:11.5px;color:var(--teal2);white-space:nowrap}
+.msg-cell{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px}
+.msg-cell .path{color:var(--blue2)}
+.msg-cell .code-r{color:var(--red2);font-weight:600}
+.msg-cell .code-o{color:var(--orange);font-weight:600}
+.dur-cell{font-family:var(--mono);font-size:11.5px;color:var(--dim);white-space:nowrap}
+
+/* EXPANDED ROW */
+.expanded-content{background:#f8fafb;border-bottom:2px solid var(--border)}
+.exp-inner{padding:12px 24px;display:grid;grid-template-columns:180px 1fr;gap:0}
+.exp-label{font-size:11.5px;color:var(--dim);padding:2px 8px 2px 0}
+.exp-val{font-family:var(--mono);font-size:11.5px;padding:2px 0}
+.exp-json{grid-column:1/3;margin-top:8px;background:#fff;border:1px solid var(--border);border-radius:4px;padding:10px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.7}
+.jk{color:#0077cc}.jv-str{color:#008000}.jv-num{color:#c73a00}.jv-bool{color:#7044cf}.jv-null{color:#888}.jp{color:var(--text)}
+
+/* STATUS BAR */
+.statusbar{background:#1c2333;display:flex;align-items:center;padding:0 16px;gap:16px;font-size:11px;color:#8a9bae;border-top:1px solid #2e3b52}
+.sb-item{display:flex;align-items:center;gap:4px}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.sb-sep{color:#3d4f68}
+.sb-warn{color:#d97008}
+.sb-ok{color:var(--teal)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="Discover - Logs · Kibana" data-favicon="🔍" data-app="Kibana">
+
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="15" fill="#00bfb3"/>
+          <path d="M9 10h14l-6 6 6 6H9l6-6-6-6z" fill="#fff"/>
+        </svg>
+      </div>
+      <span class="logo-text">elastic</span>
+    </div>
+    <div class="top-nav">
+      <div class="top-nav-item active">Discover</div>
+      <div class="top-nav-item">Dashboard</div>
+      <div class="top-nav-item">Visualize</div>
+      <div class="top-nav-item">Canvas</div>
+      <div class="top-nav-item">Maps</div>
+      <div class="top-nav-item">ML</div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="spaces-btn">
+      <div class="dot"></div>
+      <span>Production</span>
+      <span class="idx-caret">▾</span>
+    </div>
+    <div class="top-icon" style="margin-left:8px">⚙</div>
+    <div class="top-icon">👤</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDE NAV ICONS -->
+    <div class="sidenav">
+      <div class="snav active" title="Discover">
+        <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M10 7v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+        <span>Discover</span>
+      </div>
+      <div class="snav" title="Dashboard">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="snav" title="Visualize">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,15 7,9 11,12 15,5 17,8"/></svg>
+        <span>Visualize</span>
+      </div>
+      <div class="snav" title="Maps">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3,4 8,2 13,4 17,2 17,16 13,18 8,16 3,18"/><line x1="8" y1="2" x2="8" y2="16"/><line x1="13" y1="4" x2="13" y2="18"/></svg>
+        <span>Maps</span>
+      </div>
+      <div class="snav-sep"></div>
+      <div class="snav" title="Machine Learning">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="3"/><circle cx="4" cy="6" r="2"/><circle cx="16" cy="6" r="2"/><circle cx="4" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><line x1="6" y1="7" x2="8" y2="9"/><line x1="14" y1="7" x2="12" y2="9"/><line x1="6" y1="13" x2="8" y2="11"/><line x1="14" y1="13" x2="12" y2="11"/></svg>
+        <span>ML</span>
+      </div>
+      <div class="snav" title="SIEM / Security">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2L3 6v5c0 4 3.5 7 7 8 3.5-1 7-4 7-8V6L10 2z"/></svg>
+        <span>SIEM</span>
+      </div>
+      <div class="snav" title="APM">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,13 5,8 8,11 11,6 14,9 17,4"/></svg>
+        <span>APM</span>
+      </div>
+      <div class="snav" title="Logs">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="12" y2="14"/></svg>
+        <span>Logs</span>
+      </div>
+      <div class="snav-sep"></div>
+      <div class="snav" title="Management">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1" stroke-width="1.5"/></svg>
+        <span>Mgmt</span>
+      </div>
+    </div>
+
+    <!-- FIELDS SIDEBAR -->
+    <div class="fieldsbar">
+      <div class="fb-section">
+        <div class="fb-label">Index pattern</div>
+        <div class="index-pill">
+          <div class="idx-dot"></div>
+          <span>logs-*</span>
+          <span class="idx-caret">▾</span>
+        </div>
+      </div>
+      <div class="fb-section">
+        <input class="field-search" type="text" placeholder="Search fields…" value="">
+      </div>
+      <div class="fields-list">
+        <div class="fb-label" style="padding:8px 12px 4px;font-size:10px">SELECTED FIELDS</div>
+        <div class="field-item popular">
+          <div class="ftype date">D</div><span class="fname">@timestamp</span><span class="fadd">+</span>
+        </div>
+        <div class="field-item popular">
+          <div class="ftype kw">K</div><span class="fname">log.level</span><span class="fadd">+</span>
+        </div>
+        <div class="field-item popular">
+          <div class="ftype kw">K</div><span class="fname">service.name</span><span class="fadd">+</span>
+        </div>
+        <div class="field-item popular">
+          <div class="ftype txt">T</div><span class="fname">message</span><span class="fadd">+</span>
+        </div>
+        <div class="fb-label" style="padding:8px 12px 4px;font-size:10px">AVAILABLE FIELDS</div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">agent.id</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">agent.version</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">cloud.region</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">container.id</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype ip">IP</div><span class="fname">client.ip</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype ip">IP</div><span class="fname">destination.ip</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">event.duration</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">event.outcome</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">host.hostname</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype ip">IP</div><span class="fname">host.ip</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">host.os.name</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">http.request.method</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">http.response.bytes</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">http.response.status_code</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">kubernetes.pod.name</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">kubernetes.namespace</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">network.protocol</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">process.name</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">process.pid</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">response.bytes</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">response.status_code</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype num">#</div><span class="fname">response.time_ms</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype ip">IP</div><span class="fname">source.ip</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">trace.id</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">transaction.id</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">url.path</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype bool">B</div><span class="fname">tls.established</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">user.name</span><span class="fadd">+</span></div>
+        <div class="field-item"><div class="ftype kw">K</div><span class="fname">user_agent.name</span><span class="fadd">+</span></div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- SEARCH ROW -->
+      <div class="search-row">
+        <div class="kql-wrap" style="position:relative">
+          <span class="kql-icon">🔍</span>
+          <input class="kql-input" type="text" value='service.name : "api-gateway" and response.status_code >= 500' spellcheck="false">
+          <div class="kql-overlay">
+            <span class="kql-field">service.name</span>
+            <span class="kql-op">&nbsp;:&nbsp;</span>
+            <span class="kql-val blink">"api-gateway"</span>
+            <span class="kql-and">&nbsp;and&nbsp;</span>
+            <span class="kql-field2">response.status_code</span>
+            <span class="kql-cmp2">&nbsp;&gt;=&nbsp;</span>
+            <span class="kql-val2 blink2">500</span>
+          </div>
+        </div>
+        <div class="kql-badge">KQL</div>
+        <button class="search-btn">Search ↵</button>
+        <div class="time-btn">
+          <span class="ti">⏱</span>
+          <span>Last 15 minutes</span>
+          <span style="color:var(--dimmer)">▾</span>
+        </div>
+        <div class="refresh-btn">
+          <span class="ri">↻</span>
+          <span id="refresh-cd">Refresh in 5s</span>
+        </div>
+      </div>
+
+      <!-- HISTOGRAM HEADER -->
+      <div class="hist-header" style="background:var(--panel)">
+        <div>
+          <span class="hit-count" id="hit-count">8,432</span>
+          <span class="hit-label">hits</span>
+        </div>
+        <span class="hit-sep">·</span>
+        <span class="hist-range">Apr 27, 2026 @ 14:03:00 — 14:18:00</span>
+        <div class="hist-spacer"></div>
+        <span class="chart-opts">⚙ Chart options</span>
+      </div>
+
+      <!-- HISTOGRAM -->
+      <div class="histogram">
+        <div class="hist-chart" id="hist-chart"></div>
+        <div class="hist-axis">
+          <span>14:03</span><span>14:05</span><span>14:07</span>
+          <span>14:09</span><span>14:11</span><span>14:13</span>
+          <span>14:15</span><span>14:17</span><span>14:18</span>
+        </div>
+      </div>
+
+      <!-- DOC TOOLBAR -->
+      <div class="doc-toolbar">
+        <span style="font-size:12px;color:var(--dim);font-weight:600">Documents</span>
+        <button class="sort-btn">⬇ Time (desc)</button>
+        <button class="col-btn">+ Add column</button>
+        <div class="doc-spacer"></div>
+        <span class="doc-count" id="doc-count">Showing 500 of 8,432 documents</span>
+      </div>
+
+      <!-- DOC TABLE -->
+      <div class="doc-area">
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>@timestamp ↕</th>
+                <th>level</th>
+                <th>service.name</th>
+                <th>message</th>
+                <th>response.time_ms</th>
+              </tr>
+            </thead>
+            <tbody id="doc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <div class="sb-item"><div class="sb-dot"></div><span class="sb-ok">Connected</span></div>
+    <span class="sb-sep">|</span>
+    <div class="sb-item">⏱ <span id="query-time">142ms</span></div>
+    <span class="sb-sep">|</span>
+    <div class="sb-item">8 shards</div>
+    <span class="sb-sep">|</span>
+    <div class="sb-item">1 index</div>
+    <span class="sb-sep">|</span>
+    <div class="sb-item">logs-* · <span style="color:#8a9bae">rolling 15m</span></div>
+    <div style="flex:1"></div>
+    <div class="sb-item sb-warn">⚠ 2 failed shards</div>
+    <span class="sb-sep">|</span>
+    <div class="sb-item">Kibana 8.13.2</div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+(function(){
+// ── Histogram ──────────────────────────────────────────────────────────────
+const histData = [
+  38,52,61,44,70,83,55,91,108,76,
+  88,115,99,72,130,142,118,109,155,143,
+  162,138,175,160,188,172,195,180,210,198,
+  220,215,228,218,235
+];
+const chart = document.getElementById('hist-chart');
+const maxVal = Math.max(...histData);
+function buildHistogram(){
+  chart.innerHTML='';
+  histData.forEach((v,i)=>{
+    const bar=document.createElement('div');
+    bar.className='hist-bar'+(i===histData.length-1?' latest':i===histData.length-2?' latest2':'');
+    bar.style.height=Math.max(4,Math.round((v/maxVal)*76))+'px';
+    bar.title=v+' events';
+    chart.appendChild(bar);
+  });
+}
+buildHistogram();
+
+// Pulse latest bar heights
+let pulseDir=1, pulseAmt=0;
+setInterval(()=>{
+  pulseAmt+=pulseDir*2;
+  if(pulseAmt>14||pulseAmt<0) pulseDir*=-1;
+  const bars=chart.querySelectorAll('.hist-bar');
+  if(bars.length>=2){
+    const base=Math.round((histData[histData.length-1]/maxVal)*76);
+    bars[bars.length-1].style.height=(base+pulseAmt)+'px';
+    bars[bars.length-2].style.height=(Math.round((histData[histData.length-2]/maxVal)*76)+Math.round(pulseAmt*0.6))+'px';
+  }
+},120);
+
+// ── Hit count tick up ─────────────────────────────────────────────────────
+let hitCount=8432;
+const hitEl=document.getElementById('hit-count');
+const docCountEl=document.getElementById('doc-count');
+function fmtNum(n){return n.toLocaleString('en-US')}
+setInterval(()=>{
+  const inc=Math.floor(Math.random()*3)+1;
+  hitCount+=inc;
+  hitEl.textContent=fmtNum(hitCount);
+  docCountEl.textContent='Showing 500 of '+fmtNum(hitCount)+' documents';
+},2800);
+
+// ── Refresh countdown ─────────────────────────────────────────────────────
+let cdSec=5;
+const cdEl=document.getElementById('refresh-cd');
+setInterval(()=>{
+  cdSec--;
+  if(cdSec<=0) cdSec=15;
+  cdEl.textContent='Refresh in '+cdSec+'s ↻';
+},1000);
+
+// ── Log data ──────────────────────────────────────────────────────────────
+const services=['api-gateway','auth-service','payment-svc','user-service','notification-svc','order-service','inventory-svc'];
+const levels=['ERROR','ERROR','ERROR','WARN','WARN','INFO','INFO','INFO','DEBUG'];
+const errorMsgs=[
+  'Upstream timeout after 30000ms — <span class="code-r">503</span> Service Unavailable',
+  'Connection refused to redis://cache-01:6379 — retry <span class="code-r">5/5</span>',
+  'Unhandled exception in route handler <span class="path">/api/v2/orders</span> — <span class="code-r">500</span>',
+  'Circuit breaker OPEN for <span class="path">payment-processor</span> — rejecting requests',
+  'JWT validation failed: signature verification error — <span class="code-r">401</span>',
+  'Database pool exhausted (max=50) — waiting for connection',
+  'Failed to parse response body — unexpected token at position 0',
+  'TLS handshake timeout to downstream <span class="path">10.0.4.22:443</span>',
+];
+const warnMsgs=[
+  'Response time <span class="code-o">4823ms</span> exceeds SLA threshold 2000ms',
+  'Memory usage at <span class="code-o">87%</span> — approaching pod limit 512Mi',
+  'Rate limit applied to client <span class="code-o">192.168.1.44</span> — <span class="code-o">429</span>',
+  'Slow query detected <span class="path">/db/orders</span> — <span class="code-o">2341ms</span> execution time',
+  'Retry attempt <span class="code-o">3/5</span> for upstream <span class="path">inventory-svc</span>',
+  'Cache miss rate elevated — <span class="code-o">74%</span> over last 5m',
+];
+const infoMsgs=[
+  'Request completed <span class="path">GET /api/v2/users/profile</span> — <span style="color:#0077cc">200</span> OK in 88ms',
+  'Health check passed — all 4 replicas responding',
+  'Session created for user <span class="path">usr_29a4f1e</span> — expires 3600s',
+  'Deployment rollout complete — v2.14.3 → v2.14.4 canary 10%',
+  'Kafka consumer lag: <span class="path">orders.created</span> offset +12 — lag=0',
+  'gRPC stream established to <span class="path">inventory-svc:50051</span>',
+  'Config reload triggered — etcd watch event on <span class="path">/config/api-gateway</span>',
+  'Request completed <span class="path">POST /api/v2/orders</span> — <span style="color:#0077cc">201</span> Created in 142ms',
+];
+const debugMsgs=[
+  'Routing <span class="path">OPTIONS /api/v2/auth</span> — preflight CORS check',
+  'Cache set <span class="path">user:profile:29a4f1e</span> TTL=300s',
+  'DNS lookup <span class="path">payment-svc.svc.cluster.local</span> → 10.0.8.31',
+  'Span ended — trace_id=4f2a3b1c duration=14ms op=db.query',
+];
+function randMsg(level){
+  if(level==='ERROR') return errorMsgs[Math.floor(Math.random()*errorMsgs.length)];
+  if(level==='WARN') return warnMsgs[Math.floor(Math.random()*warnMsgs.length)];
+  if(level==='DEBUG') return debugMsgs[Math.floor(Math.random()*debugMsgs.length)];
+  return infoMsgs[Math.floor(Math.random()*infoMsgs.length)];
+}
+function randDur(level){
+  if(level==='ERROR') return (Math.floor(Math.random()*20000)+5000)+'ms';
+  if(level==='WARN') return (Math.floor(Math.random()*3000)+2000)+'ms';
+  if(level==='DEBUG') return (Math.floor(Math.random()*5)+1)+'ms';
+  return (Math.floor(Math.random()*200)+20)+'ms';
+}
+const hosts=['k8s-node-01','k8s-node-02','k8s-node-03','k8s-node-04'];
+const pods=['api-gateway-7d9f8b-xk2vp','api-gateway-7d9f8b-mn4qt','api-gateway-7d9f8b-rz7lw'];
+const traceIds=['4f2a3b1c8e','9c1d4e2f7a','2e8b5c3d6f','7a4f1e9c2b','3d6c8a1f4e'];
+
+function nowISOLocal(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const ms=String(d.getMilliseconds()).padStart(3,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} `+
+         `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
+}
+function recentTS(offsetSec){
+  const d=new Date(Date.now()-offsetSec*1000);
+  const pad=n=>String(n).padStart(2,'0');
+  const ms=String(d.getMilliseconds()).padStart(3,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} `+
+         `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
+}
+
+function makeBadge(level){
+  let cls='lvl-debug', txt=level;
+  if(level==='ERROR') cls='lvl-error'+(Math.random()<0.4?' flash':'');
+  else if(level==='WARN') cls='lvl-warn';
+  else if(level==='INFO') cls='lvl-info';
+  return `<span class="level-badge ${cls}">${txt}</span>`;
+}
+
+function buildJsonExpansion(row){
+  const {ts,level,svc,dur}=row;
+  const sc=level==='ERROR'?String(500+Math.floor(Math.random()*10)):
+           level==='WARN'?'429':
+           level==='INFO'?'200':'200';
+  const tid=traceIds[Math.floor(Math.random()*traceIds.length)];
+  const pod=pods[Math.floor(Math.random()*pods.length)];
+  const host=hosts[Math.floor(Math.random()*hosts.length)];
+  const pid=Math.floor(Math.random()*20000)+1000;
+  const bytes=Math.floor(Math.random()*8000)+200;
+  function jkv(k,v,type){
+    let vc=`<span class="jv-${type}">${v}</span>`;
+    return `<div><span class="jp">&nbsp;&nbsp;</span><span class="jk">"${k}"</span><span class="jp">: </span>${vc}</div>`;
+  }
+  return `<div class="exp-json"><span class="jp">{</span>`+
+    jkv('@timestamp','"'+ts+'"','str')+
+    jkv('log.level','"'+level+'"','str')+
+    jkv('service.name','"'+svc+'"','str')+
+    jkv('message','"'+row.rawMsg+'"','str')+
+    jkv('http.response.status_code',sc,'num')+
+    jkv('response.time_ms',dur.replace('ms',''),'num')+
+    jkv('http.response.bytes',bytes,'num')+
+    jkv('host.hostname','"'+host+'"','str')+
+    jkv('kubernetes.pod.name','"'+pod+'"','str')+
+    jkv('trace.id','"'+tid+'"','str')+
+    jkv('process.pid',pid,'num')+
+    jkv('tls.established',(Math.random()>0.3).toString(),'bool')+
+    `<span class="jp">}</span></div>`;
+}
+
+// Build initial rows
+function makeRowData(offsetSec){
+  const level=levels[Math.floor(Math.random()*levels.length)];
+  const svc=services[Math.floor(Math.random()*services.length)];
+  const dur=randDur(level);
+  const msgHtml=randMsg(level);
+  const rawMsg=msgHtml.replace(/<[^>]+>/g,'');
+  return {ts:recentTS(offsetSec),level,svc,dur,msgHtml,rawMsg};
+}
+
+const tbody=document.getElementById('doc-tbody');
+let expandedRow=null;
+let rows=[];
+
+function renderRow(rowData,prepend=false,isNew=false){
+  const tr=document.createElement('tr');
+  if(isNew) tr.className='new-entry';
+  tr.innerHTML=`<td><button class="expand-btn" title="Expand">▶</button></td>`+
+    `<td class="ts-cell">${rowData.ts}</td>`+
+    `<td>${makeBadge(rowData.level)}</td>`+
+    `<td class="svc-cell">${rowData.svc}</td>`+
+    `<td class="msg-cell">${rowData.msgHtml}</td>`+
+    `<td class="dur-cell">${rowData.dur}</td>`;
+  tr.querySelector('.expand-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    toggleExpand(tr,rowData);
+  });
+  tr.addEventListener('click',()=>toggleExpand(tr,rowData));
+  if(prepend && tbody.firstChild){
+    tbody.insertBefore(tr,tbody.firstChild);
+  } else {
+    tbody.appendChild(tr);
+  }
+  return tr;
+}
+
+function toggleExpand(tr,rowData){
+  // Remove existing expansion
+  const existing=tbody.querySelector('tr.exp-row');
+  if(existing){
+    existing.remove();
+    if(expandedRow===tr){
+      expandedRow=null;
+      tr.classList.remove('expanded');
+      tr.querySelector('.expand-btn').textContent='▶';
+      return;
+    }
+    if(expandedRow) {expandedRow.classList.remove('expanded'); expandedRow.querySelector('.expand-btn').textContent='▶';}
+  }
+  expandedRow=tr;
+  tr.classList.add('expanded');
+  tr.querySelector('.expand-btn').textContent='▼';
+  const expTr=document.createElement('tr');
+  expTr.className='exp-row';
+  expTr.innerHTML=`<td colspan="6"><div class="expanded-content">`+
+    `<div class="exp-inner">`+
+    buildJsonExpansion(rowData)+
+    `</div></div></td>`;
+  tr.insertAdjacentElement('afterend',expTr);
+}
+
+// Seed initial rows
+const initialOffsets=[2,5,9,14,18,23,27,32,38,44,51,58,67,78,92];
+initialOffsets.forEach(off=>{
+  const rd=makeRowData(off);
+  rows.push(rd);
+  renderRow(rd);
+});
+
+// Expand first row by default
+if(tbody.firstChild){
+  setTimeout(()=>{
+    const firstTr=tbody.querySelector('tr');
+    if(firstTr) firstTr.click();
+  },200);
+}
+
+// ── Prepend new log entries periodically ──────────────────────────────────
+function addNewEntry(){
+  const rd=makeRowData(0);
+  rd.ts=nowISOLocal();
+  rows.unshift(rd);
+  const tr=renderRow(rd,true,true);
+  // Remove extra rows to keep table manageable
+  const allRows=tbody.querySelectorAll('tr:not(.exp-row)');
+  if(allRows.length>22){
+    allRows[allRows.length-1].remove();
+  }
+  // Bump histogram latest bar
+  histData[histData.length-1]+=Math.floor(Math.random()*4)+1;
+}
+
+const entryInterval=8000+Math.floor(Math.random()*7000);
+setInterval(()=>{
+  addNewEntry();
+}, entryInterval);
+// stagger a few more
+setTimeout(()=>{ setInterval(addNewEntry, 9000+Math.floor(Math.random()*6000)); }, 4000);
+
+})();
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

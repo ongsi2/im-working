@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AAPL US Equity · Bloomberg Terminal</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #000000;
+  --panel: #050505;
+  --panel2: #0a0a0a;
+  --border: #1a1a1a;
+  --border-hi: #2a2a2a;
+  --orange: #ff8c00;
+  --yellow: #ffcc00;
+  --green: #00ff66;
+  --red: #ff4040;
+  --white: #ffffff;
+  --dim: #884400;
+  --dimmer: #552200;
+}
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--orange);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ─── TOP HEADER ─────────────────────────────────────────── */
+#header {
+  height: 28px;
+  background: #0d0d0d;
+  border-bottom: 1px solid #ff8c0055;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 0;
+  flex-shrink: 0;
+}
+#logo {
+  color: var(--orange);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  padding: 0 10px 0 4px;
+  border-right: 1px solid #ff8c0040;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+#logo span { color: var(--yellow); }
+#cmdbar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #0f0f0f;
+  border: 1px solid #ff8c0060;
+  height: 20px;
+  padding: 0 8px;
+  gap: 0;
+  max-width: 480px;
+  margin-right: 12px;
+}
+#cmdtext {
+  color: var(--yellow);
+  font-size: 11px;
+  font-family: 'Consolas', monospace;
+  letter-spacing: 0.5px;
+}
+#cursor {
+  display: inline-block;
+  width: 7px;
+  height: 12px;
+  background: var(--orange);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+#cmdgo {
+  color: var(--bg);
+  background: var(--orange);
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+  letter-spacing: 0.5px;
+}
+.hdr-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--dim);
+}
+.hdr-btn {
+  border: 1px solid #ff8c0050;
+  padding: 1px 6px;
+  color: var(--orange);
+  cursor: pointer;
+  font-size: 10px;
+  font-family: monospace;
+}
+.hdr-btn:hover { background: #ff8c0020; }
+#clock-utc { color: var(--yellow); font-size: 10px; }
+
+/* ─── MAIN GRID ──────────────────────────────────────────── */
+#main {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  grid-template-rows: 1fr 1fr;
+  height: calc(100vh - 28px - 24px);
+  gap: 1px;
+  background: #ff8c0025;
+}
+.pane {
+  background: var(--bg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.pane-hdr {
+  background: #0d0d0d;
+  border-bottom: 1px solid #ff8c0040;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 20px;
+}
+.pane-hdr .fn {
+  color: var(--bg);
+  background: var(--orange);
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.pane-hdr .fn.yellow { background: var(--yellow); }
+.pane-hdr .title { color: var(--white); font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.pane-hdr .sub { color: var(--dim); font-size: 10px; }
+.pane-hdr .spacer { flex: 1; }
+.pane-hdr .tag { color: var(--yellow); font-size: 10px; }
+
+/* ─── PANE 1: EQUITY DESCRIPTION ────────────────────────── */
+#p-des { grid-column: 1; grid-row: 1; }
+#des-body {
+  padding: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+.des-symbol {
+  color: var(--yellow);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+.des-name {
+  color: var(--white);
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.des-price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border-hi);
+  padding-bottom: 6px;
+}
+.des-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--orange);
+  font-family: 'Consolas', monospace;
+  transition: color 0.3s;
+}
+.des-chg { font-size: 13px; font-weight: 700; }
+.des-chgpct { font-size: 11px; }
+.up { color: var(--green); }
+.dn { color: var(--red); }
+
+.des-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.des-table tr { border-bottom: 1px solid #111; }
+.des-table td {
+  padding: 3px 4px;
+  font-size: 10.5px;
+  vertical-align: top;
+}
+.des-table td:first-child { color: var(--dim); width: 100px; }
+.des-table td:last-child { color: var(--orange); text-align: right; }
+.val-hi { color: var(--yellow); }
+.des-bidask {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 6px;
+}
+.ba-box {
+  border: 1px solid #ff8c0030;
+  padding: 4px 6px;
+  text-align: center;
+}
+.ba-label { color: var(--dim); font-size: 9px; letter-spacing: 1px; }
+.ba-val { color: var(--orange); font-size: 13px; font-weight: 700; }
+
+/* ─── PANE 2: CHART ──────────────────────────────────────── */
+#p-chart { grid-column: 2; grid-row: 1; }
+#chart-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+canvas#mainChart {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── PANE 3: NEWS ───────────────────────────────────────── */
+#p-news { grid-column: 1; grid-row: 2; }
+#news-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.news-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 8px;
+  border-bottom: 1px solid #0f0f0f;
+  gap: 6px;
+  transition: background 0.3s;
+}
+.news-item:hover { background: #0d0d0d; }
+.news-time { color: var(--dim); font-size: 10px; white-space: nowrap; flex-shrink: 0; width: 36px; }
+.news-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 0 4px;
+  height: 13px;
+  line-height: 13px;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+.news-txt { color: var(--orange); font-size: 10.5px; line-height: 1.4; }
+.news-txt .ticker { color: var(--yellow); font-weight: 700; }
+.news-src { color: var(--dimmer); font-size: 9.5px; margin-top: 1px; }
+
+/* ─── PANE 4: MARKET DATA ────────────────────────────────── */
+#p-mkt { grid-column: 2; grid-row: 2; }
+#mkt-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.mkt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.mkt-table thead tr { border-bottom: 1px solid #ff8c0040; }
+.mkt-table thead td {
+  padding: 3px 8px;
+  font-size: 9.5px;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.mkt-table tbody tr { border-bottom: 1px solid #0d0d0d; }
+.mkt-table tbody tr:hover { background: #0d0d0d; }
+.mkt-table tbody td {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: 'Consolas', monospace;
+}
+.mkt-sym { color: var(--yellow); font-weight: 700; letter-spacing: 0.5px; width: 110px; }
+.mkt-last { color: var(--orange); text-align: right; width: 90px; }
+.mkt-chg { text-align: right; width: 70px; }
+.mkt-chgpct { text-align: right; width: 70px; }
+.mkt-arrow { text-align: center; width: 20px; font-size: 10px; }
+.mkt-bar-wrap { width: 60px; padding-right: 8px; }
+.mkt-bar {
+  height: 3px;
+  background: #1a1a1a;
+  position: relative;
+  overflow: hidden;
+}
+.mkt-bar-fill {
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.5s;
+}
+.flash-up { animation: flashUp 0.4s ease; }
+.flash-dn { animation: flashDn 0.4s ease; }
+@keyframes flashUp { 0%,100% { background: transparent; } 50% { background: #00ff6630; } }
+@keyframes flashDn { 0%,100% { background: transparent; } 50% { background: #ff404030; } }
+
+/* ─── BOTTOM STATUS BAR ──────────────────────────────────── */
+#statusbar {
+  height: 24px;
+  background: #0d0d0d;
+  border-top: 1px solid #ff8c0040;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.sb-item { color: var(--dim); font-size: 10px; display: flex; align-items: center; gap: 4px; }
+.sb-item .val { color: var(--orange); }
+.sb-item .green { color: var(--green); }
+.sb-item .red { color: var(--red); }
+.sb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.sb-fn {
+  color: var(--bg);
+  background: var(--orange);
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+.sb-fn:hover { background: var(--yellow); }
+.sb-spacer { flex: 1; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #ff8c0040; }
+::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="AAPL US Equity · Bloomberg Terminal" data-favicon="🟧" data-app="Bloomberg">
+
+<!-- ═══ HEADER ══════════════════════════════════════════════ -->
+<div id="header">
+  <div id="logo">BLOOM<span>BERG</span></div>
+  <div id="cmdbar">
+    <span id="cmdtext">AAPL US Equity DES </span><span id="cursor"></span>
+    <span id="cmdgo">&lt;GO&gt;</span>
+  </div>
+  <div class="hdr-controls">
+    <span id="clock-utc">00:00:00 UTC</span>
+    <div class="hdr-btn">NEWS</div>
+    <div class="hdr-btn">GP</div>
+    <div class="hdr-btn">TRA</div>
+    <div class="hdr-btn">BQ</div>
+    <div class="hdr-btn">HELP</div>
+  </div>
+</div>
+
+<!-- ═══ MAIN GRID ════════════════════════════════════════════ -->
+<div id="main">
+
+  <!-- PANE 1: DES -->
+  <div class="pane" id="p-des">
+    <div class="pane-hdr">
+      <span class="fn">DES</span>
+      <span class="title">EQUITY DESCRIPTION</span>
+      <span class="spacer"></span>
+      <span class="tag">XNAS</span>
+    </div>
+    <div id="des-body">
+      <div class="des-symbol">AAPL US</div>
+      <div class="des-name">APPLE INC — COMMON STOCK</div>
+      <div class="des-price-block">
+        <div id="des-price" class="des-price">245.67</div>
+        <div id="des-chg" class="des-chg up">+1.24</div>
+        <div id="des-chgpct" class="des-chgpct up">(+0.51%)</div>
+        <div id="des-arrow" style="font-size:14px;color:var(--green);">▲</div>
+      </div>
+      <div class="des-bidask">
+        <div class="ba-box">
+          <div class="ba-label">BID</div>
+          <div class="ba-val" id="bid-val">245.65</div>
+        </div>
+        <div class="ba-box">
+          <div class="ba-label">ASK</div>
+          <div class="ba-val" id="ask-val">245.69</div>
+        </div>
+      </div>
+      <table class="des-table">
+        <tr><td>VOLUME</td><td id="vol-val" class="val-hi">48,234,100</td></tr>
+        <tr><td>MKT CAP</td><td class="val-hi">3.76T USD</td></tr>
+        <tr><td>52W HIGH</td><td class="up">259.81</td></tr>
+        <tr><td>52W LOW</td><td class="dn">164.08</td></tr>
+        <tr><td>P/E RATIO</td><td>32.41</td></tr>
+        <tr><td>EPS TTM</td><td>7.58</td></tr>
+        <tr><td>DIV YIELD</td><td>0.44%</td></tr>
+        <tr><td>DIV/SHR</td><td>0.25 USD</td></tr>
+        <tr><td>BETA</td><td>1.24</td></tr>
+        <tr><td>SHARES OUT</td><td>15.32B</td></tr>
+        <tr><td>AVG VOL 30D</td><td>55,412,000</td></tr>
+        <tr><td>OPEN</td><td>244.50</td></tr>
+        <tr><td>PREV CLOSE</td><td>244.43</td></tr>
+        <tr><td>CURRENCY</td><td>USD</td></tr>
+        <tr><td>EXCHANGE</td><td>NASDAQ GS</td></tr>
+        <tr><td>SECTOR</td><td>TECHNOLOGY</td></tr>
+        <tr><td>INDUSTRY</td><td>TECHNOLOGY HARDWARE</td></tr>
+        <tr><td>COUNTRY</td><td>UNITED STATES</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANE 2: CHART -->
+  <div class="pane" id="p-chart">
+    <div class="pane-hdr">
+      <span class="fn yellow">GP</span>
+      <span class="title">AAPL US — 1D INTRADAY</span>
+      <span class="spacer"></span>
+      <span class="sub">MA20 &nbsp; MA50 &nbsp; CANDLESTICK</span>
+      <span class="tag" style="margin-left:8px;">09:30–16:00 EDT</span>
+    </div>
+    <div id="chart-area">
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
+
+  <!-- PANE 3: NEWS -->
+  <div class="pane" id="p-news">
+    <div class="pane-hdr">
+      <span class="fn">NEWS</span>
+      <span class="title">HEADLINES</span>
+      <span class="spacer"></span>
+      <span class="sub">AAPL US / GLOBAL MACRO</span>
+    </div>
+    <div id="news-list"></div>
+  </div>
+
+  <!-- PANE 4: MARKET DATA -->
+  <div class="pane" id="p-mkt">
+    <div class="pane-hdr">
+      <span class="fn yellow">WMD</span>
+      <span class="title">WORLD MARKET DATA</span>
+      <span class="spacer"></span>
+      <span class="sub">FX · COMMODITIES · INDICES</span>
+    </div>
+    <div id="mkt-body">
+      <table class="mkt-table">
+        <thead>
+          <tr>
+            <td>SYMBOL</td>
+            <td style="text-align:right">LAST</td>
+            <td style="text-align:right">CHG</td>
+            <td style="text-align:right">CHG%</td>
+            <td style="text-align:center">▲▼</td>
+            <td>RANGE</td>
+          </tr>
+        </thead>
+        <tbody id="mkt-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ STATUS BAR ═══════════════════════════════════════════ -->
+<div id="statusbar">
+  <div class="sb-item"><span class="sb-dot"></span><span class="val green">MARKET OPEN</span></div>
+  <div class="sb-item">UTC <span class="val" id="sb-utc">--:--:--</span></div>
+  <div class="sb-item">EDT <span class="val" id="sb-est">--:--:--</span></div>
+  <div class="sb-item">AAPL <span class="val" id="sb-price">245.67</span></div>
+  <div class="sb-spacer"></div>
+  <div class="sb-fn">F1 HELP</div>
+  <div class="sb-fn">F2 NEWS</div>
+  <div class="sb-fn">F3 GRAPH</div>
+  <div class="sb-fn">F4 BQ</div>
+  <div class="sb-fn">F8 MSGS</div>
+  <div class="sb-fn">F9 LOGIN</div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   BLOOMBERG TERMINAL — AAPL US EQUITY
+   ════════════════════════════════════════════════════════════ */
+
+// ── CLOCK ────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const utc = now.toISOString().slice(11,19);
+  const est = now.toLocaleTimeString('en-US',{hour12:false,timeZone:'America/New_York'});
+  document.getElementById('clock-utc').textContent = utc + ' UTC';
+  document.getElementById('sb-utc').textContent = utc;
+  document.getElementById('sb-est').textContent = est;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── PRICE TICK ───────────────────────────────────────────────
+let aaplPrice = 245.67;
+let aaplBase = 245.67;
+const priceEl = document.getElementById('des-price');
+const chgEl   = document.getElementById('des-chg');
+const chgPctEl= document.getElementById('des-chgpct');
+const arrowEl = document.getElementById('des-arrow');
+const bidEl   = document.getElementById('bid-val');
+const askEl   = document.getElementById('ask-val');
+const sbPrice = document.getElementById('sb-price');
+
+function fmtPrice(v) { return v.toFixed(2); }
+
+function tickAapl() {
+  const dir = Math.random() > 0.45 ? 1 : -1;
+  const delta = dir * (Math.random() * 0.04 + 0.01);
+  aaplPrice = Math.max(243, Math.min(248, aaplPrice + delta));
+  const chg = aaplPrice - aaplBase;
+  const chgPct = (chg / aaplBase) * 100;
+
+  priceEl.textContent = fmtPrice(aaplPrice);
+  chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2);
+  chgPctEl.textContent = '(' + (chg >= 0 ? '+' : '') + chgPct.toFixed(2) + '%)';
+
+  const isUp = delta > 0;
+  const cls = isUp ? 'up' : 'dn';
+  priceEl.style.color = isUp ? 'var(--green)' : 'var(--red)';
+  chgEl.className = 'des-chg ' + (chg >= 0 ? 'up' : 'dn');
+  chgPctEl.className = 'des-chgpct ' + (chg >= 0 ? 'up' : 'dn');
+  arrowEl.textContent = isUp ? '▲' : '▼';
+  arrowEl.style.color = isUp ? 'var(--green)' : 'var(--red)';
+  sbPrice.textContent = fmtPrice(aaplPrice);
+
+  bidEl.textContent = fmtPrice(aaplPrice - 0.02);
+  askEl.textContent = fmtPrice(aaplPrice + 0.02);
+
+  setTimeout(() => { priceEl.style.color = 'var(--orange)'; }, 350);
+}
+setInterval(tickAapl, 1200 + Math.random() * 800);
+
+// ── VOLUME TICK ──────────────────────────────────────────────
+let vol = 48234100;
+const volEl = document.getElementById('vol-val');
+setInterval(() => {
+  vol += Math.floor(Math.random() * 12000 + 3000);
+  volEl.textContent = vol.toLocaleString();
+}, 3000);
+
+// ── MARKET DATA ──────────────────────────────────────────────
+const mktData = [
+  { sym:'USD/KRW',  last:1410.23, dec:2, type:'fx',    ref:1410.23 },
+  { sym:'EUR/KRW',  last:1557.84, dec:2, type:'fx',    ref:1557.84 },
+  { sym:'JPY/KRW',  last:9.42,   dec:3, type:'fx',    ref:9.42    },
+  { sym:'CNH/KRW',  last:193.51, dec:2, type:'fx',    ref:193.51  },
+  { sym:'GOLD',     last:3342.10, dec:2, type:'cmdty', ref:3342.10 },
+  { sym:'BRENT',    last:84.32,  dec:2, type:'cmdty', ref:84.32   },
+  { sym:'KOSPI',    last:2643.77, dec:2, type:'idx',   ref:2643.77 },
+  { sym:'S&P 500',  last:5648.92, dec:2, type:'idx',   ref:5648.92 },
+  { sym:'NASDAQ',   last:18214.33,dec:2, type:'idx',   ref:18214.33 },
+  { sym:'BTC/USD',  last:96847.00,dec:0, type:'crypto',ref:96847.00 },
+];
+
+function renderMktTable() {
+  const tbody = document.getElementById('mkt-tbody');
+  tbody.innerHTML = '';
+  mktData.forEach((row, i) => {
+    const chg = row.last - row.ref;
+    const chgPct = (chg / row.ref) * 100;
+    const isUp = chg >= 0;
+    const arrow = isUp ? '▲' : '▼';
+    const chgCls = isUp ? 'up' : 'dn';
+    const barW = Math.min(100, Math.max(5, 50 + chgPct * 20));
+
+    const tr = document.createElement('tr');
+    tr.id = 'mkt-row-' + i;
+    tr.innerHTML = `
+      <td class="mkt-sym">${row.sym}</td>
+      <td class="mkt-last" id="mkt-last-${i}">${row.last.toFixed(row.dec)}</td>
+      <td class="mkt-chg ${chgCls}" id="mkt-chg-${i}">${(chg>=0?'+':'')}${chg.toFixed(row.dec)}</td>
+      <td class="mkt-chgpct ${chgCls}" id="mkt-pct-${i}">${(chgPct>=0?'+':'')}${chgPct.toFixed(2)}%</td>
+      <td class="mkt-arrow ${chgCls}" id="mkt-arr-${i}">${arrow}</td>
+      <td class="mkt-bar-wrap"><div class="mkt-bar"><div class="mkt-bar-fill" id="mkt-bar-${i}" style="width:${barW}%;background:${isUp?'var(--green)':'var(--red)'}"></div></div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+renderMktTable();
+
+function tickMkt() {
+  const i = Math.floor(Math.random() * mktData.length);
+  const row = mktData[i];
+  const pct = (Math.random() * 0.001 - 0.0005) * (row.type === 'crypto' ? 5 : row.type === 'cmdty' ? 1.5 : 1);
+  row.last = Math.max(row.last * 0.98, row.last * (1 + pct));
+
+  const chg = row.last - row.ref;
+  const chgPct = (chg / row.ref) * 100;
+  const isUp = chg >= 0;
+  const barW = Math.min(100, Math.max(5, 50 + chgPct * 20));
+
+  const lastEl  = document.getElementById('mkt-last-' + i);
+  const chgEl2  = document.getElementById('mkt-chg-' + i);
+  const pctEl   = document.getElementById('mkt-pct-' + i);
+  const arrEl   = document.getElementById('mkt-arr-' + i);
+  const barEl   = document.getElementById('mkt-bar-' + i);
+  const rowEl   = document.getElementById('mkt-row-' + i);
+
+  if (!lastEl) return;
+
+  lastEl.textContent = row.last.toFixed(row.dec);
+  chgEl2.textContent = (chg>=0?'+':'') + chg.toFixed(row.dec);
+  chgEl2.className = 'mkt-chg ' + (isUp ? 'up' : 'dn');
+  pctEl.textContent = (chgPct>=0?'+':'') + chgPct.toFixed(2) + '%';
+  pctEl.className = 'mkt-chgpct ' + (isUp ? 'up' : 'dn');
+  arrEl.textContent = isUp ? '▲' : '▼';
+  arrEl.className = 'mkt-arrow ' + (isUp ? 'up' : 'dn');
+  barEl.style.width = barW + '%';
+  barEl.style.background = isUp ? 'var(--green)' : 'var(--red)';
+
+  rowEl.classList.remove('flash-up', 'flash-dn');
+  void rowEl.offsetWidth;
+  rowEl.classList.add(isUp ? 'flash-up' : 'flash-dn');
+}
+setInterval(tickMkt, 800 + Math.random() * 1400);
+setInterval(tickMkt, 2000 + Math.random() * 3000);
+
+// ── NEWS FEED ────────────────────────────────────────────────
+const NEWS_POOL = [
+  { time:'14:23', txt:'AAPL: Goldman Sachs Raises Target to $260 from $245, Maintains Buy', src:'GS RESEARCH', ko:false },
+  { time:'14:18', txt:'Federal Reserve Holds Rates at 5.25-5.50%; Powell: "Data Dependent"', src:'FED / BLOOMBERG', ko:false },
+  { time:'14:11', txt:'원·달러 환율 BOK 금리동결에 강보합…1,410원대 초반', src:'연합뉴스 / 서울', ko:true },
+  { time:'14:07', txt:'AAPL: iPhone 16e Demand Exceeds Supply in Korea, Japan Channels', src:'BARCLAYS EQUITY', ko:false },
+  { time:'13:58', txt:'삼성전자 1분기 영업이익 6.1조원…반도체 HBM 수요 회복세', src:'한국경제 / SEOUL', ko:true },
+  { time:'13:51', txt:'Brent Crude Climbs Above $84 on OPEC+ Supply Discipline Signal', src:'PLATTS / ICE', ko:false },
+  { time:'13:44', txt:'코스피 2,640선 안착…외국인 순매수 3거래일 연속', src:'증권부 / KRX', ko:true },
+  { time:'13:38', txt:'MSFT Overtakes AAPL in Intraday Market Cap on AI Upgrade Cycle', src:'BLOOMBERG MARKETS', ko:false },
+  { time:'13:31', txt:'BTC Surges Past $96,800 on Spot ETF Net Inflows of $680M', src:'COINDESK / BLOOMBERG', ko:false },
+  { time:'13:22', txt:'한국은행, 기준금리 3.25% 동결…성장률 전망 2.1% 하향', src:'한국은행 / BOK', ko:true },
+  { time:'13:15', txt:'NVIDIA Q1 Beat: EPS $5.21 vs Est $4.88; Data Center Rev +421% YoY', src:'NV EARNINGS', ko:false },
+  { time:'13:09', txt:'ECB 라가르드 총재: "유로존 인플레이션 목표 2% 근접"', src:'ECB / BLOOMBERG', ko:true },
+  { time:'12:57', txt:'US Jobs Data: Nonfarm Payrolls +204K, Unemployment Rate 3.8%', src:'BLS / BLOOMBERG', ko:false },
+  { time:'12:50', txt:'AAPL: Cook Comments on India Manufacturing Expansion at Conf', src:'AAPL INVESTOR REL', ko:false },
+  { time:'12:44', txt:'Gold Hits 3-Month High at $3,342 as Dollar Index Retreats', src:'COMEX / BLOOMBERG', ko:false },
+];
+
+let newsItems = [...NEWS_POOL];
+const newsFeed = document.getElementById('news-list');
+
+function renderNews() {
+  newsFeed.innerHTML = '';
+  newsItems.slice(0, 14).forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'news-item';
+    div.innerHTML = `
+      <span class="news-time">${item.time}</span>
+      ${item._new ? '<span class="news-badge">NEW</span>' : ''}
+      <div>
+        <div class="news-txt">${item.txt}</div>
+        <div class="news-src">${item.src}</div>
+      </div>`;
+    newsFeed.appendChild(div);
+  });
+}
+renderNews();
+
+const EXTRA_NEWS = [
+  { txt:'AAPL 공급업체 LG이노텍, 아이폰17 부품 생산 증가 예고', src:'LG이노텍 / YONHAP', ko:true },
+  { txt:'S&P 500 Tests Key 5,650 Resistance; Bulls Eye Year-End 6,000', src:'TECHNICAL RESEARCH', ko:false },
+  { txt:'엔비디아·마이크론, 한국 HBM 추가 계약 협상 중', src:'디지털타임스 / DT', ko:true },
+  { txt:'AAPL: Activist Investor Discloses 2.1% Stake via 13D Filing', src:'SEC FILING', ko:false },
+  { txt:'WTI Crude Options: Record Open Interest at $90 Call Strike', src:'CME GROUP', ko:false },
+  { txt:'달러인덱스(DXY) 102.4 하락…아시아 통화 전반 강세', src:'BLOOMBERG FX', ko:true },
+  { txt:'TSMC Feb Revenue +13.5% YoY; Q1 Guidance Above Consensus', src:'TSMC IR / BLOOMBERG', ko:false },
+  { txt:'국고채 3년물 금리 3.12%…채권시장 강세 마감', src:'금융투자협회 / KOFIA', ko:true },
+];
+let extraIdx = 0;
+
+function addBreakingNews() {
+  const now = new Date();
+  const hh = String(now.getUTCHours()).padStart(2,'0');
+  const mm = String(now.getUTCMinutes()).padStart(2,'0');
+  const item = { ...EXTRA_NEWS[extraIdx % EXTRA_NEWS.length], time: hh+':'+mm, _new: true };
+  extraIdx++;
+  newsItems.unshift(item);
+  renderNews();
+  setTimeout(() => { item._new = false; renderNews(); }, 3000);
+}
+setInterval(addBreakingNews, 18000 + Math.random() * 12000);
+
+// ── CANDLESTICK CHART ─────────────────────────────────────────
+const canvas = document.getElementById('mainChart');
+const ctx = canvas.getContext('2d');
+
+// Generate historical candles (09:30 → 15:59 in 5-min bars = 78 bars)
+let candles = [];
+const OPEN_PRICE = 244.50;
+let runningClose = OPEN_PRICE;
+
+for (let i = 0; i < 74; i++) {
+  const open = runningClose;
+  const change = (Math.random() - 0.47) * 1.2;
+  const close = Math.max(242, Math.min(249, open + change));
+  const high = Math.max(open, close) + Math.random() * 0.6;
+  const low  = Math.min(open, close) - Math.random() * 0.6;
+  const volume = Math.floor(300000 + Math.random() * 900000);
+  candles.push({ open, high, low, close, volume });
+  runningClose = close;
+}
+
+// Current (live) candle
+let liveCandle = {
+  open: runningClose,
+  high: runningClose + 0.1,
+  low: runningClose - 0.1,
+  close: aaplPrice,
+  volume: 400000,
+};
+
+// MA calculation
+function calcMA(arr, period) {
+  return arr.map((_, i) => {
+    if (i < period - 1) return null;
+    const slice = arr.slice(i - period + 1, i + 1);
+    return slice.reduce((s, c) => s + c.close, 0) / period;
+  });
+}
+
+function resizeCanvas() {
+  const area = document.getElementById('chart-area');
+  canvas.width  = area.clientWidth;
+  canvas.height = area.clientHeight;
+  drawChart();
+}
+
+function drawChart() {
+  const W = canvas.width;
+  const H = canvas.height;
+  if (W === 0 || H === 0) return;
+
+  const VOL_H = Math.floor(H * 0.22);
+  const CHART_H = H - VOL_H - 4;
+  const PAD_L = 52, PAD_R = 8, PAD_T = 8, PAD_B = 2;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  const allCandles = [...candles, liveCandle];
+  const N = allCandles.length;
+  const candleW = Math.max(2, Math.floor((W - PAD_L - PAD_R) / N));
+  const gap = Math.max(1, Math.floor(candleW * 0.15));
+  const bodyW = Math.max(1, candleW - gap * 2);
+
+  // Price range
+  let priceMin = Infinity, priceMax = -Infinity;
+  allCandles.forEach(c => {
+    priceMin = Math.min(priceMin, c.low);
+    priceMax = Math.max(priceMax, c.high);
+  });
+  const priceRange = priceMax - priceMin || 1;
+  const priceToY = p => PAD_T + (CHART_H - PAD_T - PAD_B) * (1 - (p - priceMin) / priceRange);
+
+  // Volume range
+  let volMax = 0;
+  allCandles.forEach(c => { volMax = Math.max(volMax, c.volume); });
+
+  // Grid lines
+  ctx.strokeStyle = '#111';
+  ctx.lineWidth = 1;
+  for (let gi = 0; gi <= 4; gi++) {
+    const y = PAD_T + (CHART_H - PAD_T - PAD_B) * gi / 4;
+    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W - PAD_R, y); ctx.stroke();
+    const price = priceMax - (priceRange * gi / 4);
+    ctx.fillStyle = '#553300';
+    ctx.font = '9px Consolas, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(price.toFixed(2), PAD_L - 3, y + 3);
+  }
+
+  // Price chart divider
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD_L, CHART_H); ctx.lineTo(W - PAD_R, CHART_H); ctx.stroke();
+
+  // MA lines
+  const ma20 = calcMA(allCandles, 20);
+  const ma50 = calcMA(allCandles, 50);
+
+  function drawMA(maArr, color, label) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    let started = false;
+    maArr.forEach((val, i) => {
+      if (val === null) return;
+      const x = PAD_L + i * candleW + candleW / 2;
+      const y = priceToY(val);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+  drawMA(ma20, '#ff8c00', 'MA20');
+  drawMA(ma50, '#ffcc00', 'MA50');
+
+  // MA legend
+  ctx.font = '9px Consolas, monospace';
+  ctx.fillStyle = '#ff8c00'; ctx.textAlign = 'left'; ctx.fillText('MA20', PAD_L + 2, PAD_T + 10);
+  ctx.fillStyle = '#ffcc00'; ctx.fillText('MA50', PAD_L + 42, PAD_T + 10);
+
+  // Candles
+  allCandles.forEach((c, i) => {
+    const isLive = i === N - 1;
+    const x = PAD_L + i * candleW;
+    const cx = x + gap;
+    const isUp = c.close >= c.open;
+    const upColor = '#00ff66', dnColor = '#ff4040';
+    const color = isUp ? upColor : dnColor;
+
+    // Wick
+    ctx.strokeStyle = isLive ? '#ffffff' : color;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx + bodyW / 2, priceToY(c.high));
+    ctx.lineTo(cx + bodyW / 2, priceToY(c.low));
+    ctx.stroke();
+
+    // Body
+    const yOpen  = priceToY(c.open);
+    const yClose = priceToY(c.close);
+    const bodyTop = Math.min(yOpen, yClose);
+    const bodyHt  = Math.max(1, Math.abs(yClose - yOpen));
+
+    ctx.fillStyle = color;
+    if (isLive) {
+      // Live candle: pulse outline
+      ctx.fillStyle = isUp ? upColor : dnColor;
+      ctx.globalAlpha = 0.85 + 0.15 * Math.sin(Date.now() / 200);
+    }
+    ctx.fillRect(cx, bodyTop, bodyW, bodyHt);
+    ctx.globalAlpha = 1;
+  });
+
+  // Volume bars
+  const volYBase = H - 2;
+  allCandles.forEach((c, i) => {
+    const isLive = i === N - 1;
+    const x = PAD_L + i * candleW + gap;
+    const volBarH = Math.max(2, (c.volume / volMax) * (VOL_H - 4));
+    const isUp = c.close >= c.open;
+    ctx.fillStyle = isUp ? '#00ff6660' : '#ff404060';
+    if (isLive) {
+      ctx.fillStyle = isUp ? '#00ff66aa' : '#ff4040aa';
+    }
+    ctx.fillRect(x, volYBase - volBarH, bodyW, volBarH);
+  });
+
+  // Current price line
+  const curY = priceToY(aaplPrice);
+  ctx.strokeStyle = '#ffcc0066';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(PAD_L, curY); ctx.lineTo(W - PAD_R, curY); ctx.stroke();
+  ctx.setLineDash([]);
+  // Price label
+  ctx.fillStyle = '#ffcc00';
+  ctx.fillRect(W - PAD_R - 46, curY - 7, 44, 13);
+  ctx.fillStyle = '#000';
+  ctx.font = '9px Consolas, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(aaplPrice.toFixed(2), W - PAD_R - 24, curY + 3);
+
+  // Time axis
+  const timeLabels = ['9:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30'];
+  ctx.fillStyle = '#553300';
+  ctx.font = '8px Consolas, monospace';
+  ctx.textAlign = 'center';
+  timeLabels.forEach((lbl, ti) => {
+    const barIdx = Math.round(ti * (N - 1) / (timeLabels.length - 1));
+    const x = PAD_L + barIdx * candleW + candleW / 2;
+    ctx.fillText(lbl, x, CHART_H + 10);
+  });
+}
+
+// Live candle update
+function updateLiveCandle() {
+  liveCandle.close = aaplPrice;
+  liveCandle.high  = Math.max(liveCandle.high, aaplPrice);
+  liveCandle.low   = Math.min(liveCandle.low, aaplPrice);
+  liveCandle.volume += Math.floor(Math.random() * 8000 + 2000);
+}
+
+// Chart animation loop
+let lastCandle = Date.now();
+function animLoop() {
+  updateLiveCandle();
+  // New candle every ~5 min simulated (every 30s real)
+  if (Date.now() - lastCandle > 30000 && candles.length < 78) {
+    candles.push({ ...liveCandle });
+    liveCandle = {
+      open: liveCandle.close,
+      high: liveCandle.close + 0.05,
+      low: liveCandle.close - 0.05,
+      close: liveCandle.close,
+      volume: 200000,
+    };
+    lastCandle = Date.now();
+  }
+  drawChart();
+  requestAnimationFrame(animLoop);
+}
+
+window.addEventListener('resize', resizeCanvas);
+setTimeout(() => { resizeCanvas(); animLoop(); }, 100);
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

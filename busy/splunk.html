@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Search · Production Logs · Splunk</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f5;--header-bg:#1a1a1a;--panel:#ffffff;--panel2:#f0f0f0;
+  --border:#d9d9d9;--border2:#e8e8e8;
+  --text:#333333;--dim:#666666;--dimmer:#999999;
+  --green:#65a637;--green-dark:#4d7d29;--green-light:#edf5e5;
+  --blue:#0070d4;--blue-muted:#5b9bd5;--blue-pale:#ddeeff;
+  --orange:#f47b20;--orange-pale:#fff3e6;
+  --red:#c00;--yellow:#f5c518;
+  --tab-active:#ffffff;--tab-bg:#f0f0f0;
+  --font-mono:'Consolas','Courier New','Lucida Console',monospace;
+  --font-ui:'Segoe UI','Helvetica Neue',Arial,sans-serif;
+}
+
+/* Dark mode */
+body.dark{
+  --bg:#1a1a1a;--header-bg:#0d0d0d;--panel:#252525;--panel2:#1f1f1f;
+  --border:#3a3a3a;--border2:#2e2e2e;
+  --text:#d0d0d0;--dim:#999;--dimmer:#666;
+  --green-light:#1a2e0f;--blue-pale:#0a1e33;--orange-pale:#2e1a08;
+  --tab-active:#2e2e2e;--tab-bg:#1f1f1f;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:12px;overflow:hidden;}
+.app{display:grid;grid-template-rows:auto auto auto 1fr 22px;height:100vh;min-height:0;}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--header-bg);
+  display:flex;align-items:center;padding:0 14px;height:40px;gap:0;
+  border-bottom:2px solid var(--green);flex-shrink:0;
+}
+.logo-area{display:flex;align-items:center;gap:10px;margin-right:20px;flex-shrink:0;}
+.logo-svg{width:26px;height:26px;}
+.logo-text{color:#ffffff;font-size:16px;font-weight:900;letter-spacing:-0.5px;font-family:var(--font-ui);}
+.logo-text span{color:var(--green);}
+.app-pill{
+  background:#2a2a2a;border:1px solid #444;border-radius:3px;
+  color:#ccc;font-size:11px;padding:3px 10px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.app-pill:hover{background:#333;}
+.app-pill::after{content:'▾';font-size:10px;color:#888;}
+.topbar-spacer{flex:1;}
+.topbar-right{display:flex;align-items:center;gap:6px;}
+.tb-icon-btn{
+  background:transparent;border:1px solid #444;border-radius:3px;
+  color:#bbb;padding:4px 8px;font-size:11px;cursor:pointer;
+  display:flex;align-items:center;gap:4px;white-space:nowrap;
+}
+.tb-icon-btn:hover{background:#2a2a2a;color:#fff;}
+.tb-icon-btn.green{background:var(--green);border-color:var(--green-dark);color:#fff;}
+.tb-icon-btn.green:hover{background:var(--green-dark);}
+.user-avatar{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--green);color:#fff;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;
+}
+.dark-toggle{
+  background:transparent;border:1px solid #444;border-radius:12px;
+  color:#bbb;padding:3px 8px;font-size:10px;cursor:pointer;
+  white-space:nowrap;
+}
+.dark-toggle:hover{color:#fff;border-color:#888;}
+
+/* ── SEARCH BAR AREA ── */
+.search-area{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  padding:10px 14px 8px;flex-shrink:0;
+}
+.search-row{display:flex;align-items:flex-start;gap:8px;}
+.search-box-wrap{flex:1;position:relative;}
+.search-box{
+  width:100%;background:var(--panel2);border:2px solid var(--border);
+  border-radius:3px;padding:7px 10px 7px 34px;
+  font-family:var(--font-mono);font-size:12px;color:var(--text);
+  line-height:1.55;resize:none;outline:none;
+  transition:border-color .15s;
+}
+.search-box:focus{border-color:var(--green);}
+.search-icon{
+  position:absolute;left:10px;top:9px;
+  color:var(--dimmer);font-size:14px;pointer-events:none;
+}
+.spl-cursor::after{
+  content:'|';color:var(--green);
+  animation:blink 1s step-end infinite;
+}
+@keyframes blink{50%{opacity:0;}}
+.search-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.btn-search{
+  background:var(--green);border:none;border-radius:3px;
+  color:#fff;padding:7px 18px;font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+}
+.btn-search:hover{background:var(--green-dark);}
+.btn-search-opts{
+  background:var(--panel2);border:1px solid var(--border);border-radius:3px;
+  color:var(--dim);padding:4px 10px;font-size:11px;cursor:pointer;
+  text-align:center;
+}
+.btn-search-opts:hover{border-color:var(--green);color:var(--green);}
+
+/* SPL syntax highlight effect (CSS only) */
+.spl-kw{color:#0070d4;}
+.spl-pipe{color:var(--green);}
+.spl-str{color:#a31515;}
+.spl-op{color:var(--orange);}
+
+/* ── TIME PICKER ── */
+.time-row{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.time-btn{
+  background:var(--panel2);border:1px solid var(--border);border-radius:3px;
+  color:var(--text);padding:4px 10px;font-size:11.5px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+.time-btn:hover{border-color:var(--green);color:var(--green);}
+.time-btn .caret{color:var(--dimmer);font-size:9px;}
+.time-presets{display:flex;gap:4px;}
+.time-preset{
+  background:transparent;border:1px solid transparent;border-radius:3px;
+  color:var(--dim);padding:3px 8px;font-size:11px;cursor:pointer;
+}
+.time-preset:hover{border-color:var(--border);background:var(--panel2);}
+.time-preset.active{background:var(--green-light);border-color:var(--green);color:var(--green);font-weight:600;}
+.refresh-btn{
+  margin-left:auto;background:var(--panel2);border:1px solid var(--border);
+  border-radius:3px;color:var(--dim);padding:4px 10px;font-size:11px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+}
+.refresh-btn:hover{border-color:var(--green);color:var(--green);}
+.refresh-icon{display:inline-block;transition:transform 0.6s;}
+.refresh-icon.spin{animation:spin360 0.6s linear;}
+@keyframes spin360{to{transform:rotate(360deg);}}
+.status-live{
+  background:var(--green);color:#fff;border-radius:3px;
+  padding:2px 7px;font-size:10px;font-weight:600;letter-spacing:.5px;
+  animation:pulse-green 2s ease-in-out infinite;
+}
+@keyframes pulse-green{0%,100%{opacity:1;}50%{opacity:.75;}}
+
+/* ── THREE-PANE ── */
+.three-pane{
+  display:grid;
+  grid-template-columns:250px 1fr 34px;
+  min-height:0;overflow:hidden;
+}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar{
+  background:var(--panel);border-right:1px solid var(--border);
+  overflow-y:auto;padding:0;flex-shrink:0;
+}
+.sidebar::-webkit-scrollbar{width:5px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);}
+.sidebar-section{border-bottom:1px solid var(--border2);}
+.sidebar-section-hdr{
+  padding:8px 10px;font-size:11px;font-weight:700;
+  color:var(--dim);text-transform:uppercase;letter-spacing:.8px;
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  background:var(--panel2);user-select:none;
+}
+.sidebar-section-hdr:hover{color:var(--text);}
+.sidebar-section-hdr .caret{margin-left:auto;font-size:9px;}
+.sidebar-section-hdr .count{
+  margin-left:auto;margin-right:4px;
+  background:var(--border);border-radius:9px;
+  padding:1px 6px;font-size:10px;color:var(--dimmer);
+}
+.field-list{padding:4px 0;}
+.field-item{
+  padding:4px 10px;display:flex;align-items:center;gap:7px;
+  cursor:pointer;font-size:11.5px;
+}
+.field-item:hover{background:var(--panel2);}
+.field-item.selected-field{font-weight:600;color:var(--text);}
+.field-icon{
+  width:16px;height:16px;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;font-family:var(--font-mono);
+  flex-shrink:0;
+}
+.fi-str{background:#ddeeff;color:#0055cc;}
+.fi-num{background:#fff0dd;color:#c05800;}
+.fi-ip {background:#eef5e8;color:#3d7a1a;}
+.fi-ts {background:#f5eeff;color:#6b28cc;}
+body.dark .fi-str{background:#0a1e33;color:#5b9bd5;}
+body.dark .fi-num{background:#2e1a08;color:#f47b20;}
+body.dark .fi-ip {background:#1a2e0f;color:#65a637;}
+body.dark .fi-ts {background:#1a0a2e;color:#a070e0;}
+.field-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.field-bar{width:40px;height:5px;background:var(--border2);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.field-bar-fill{height:100%;background:var(--blue-muted);border-radius:2px;}
+.field-pct{font-size:10px;color:var(--dimmer);width:28px;text-align:right;flex-shrink:0;}
+
+/* ── CENTER EVENTS ── */
+.events-center{
+  display:grid;grid-template-rows:auto auto 1fr;
+  overflow:hidden;background:var(--bg);
+}
+
+/* Tabs */
+.tabs-row{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;flex-shrink:0;
+}
+.tab{
+  padding:9px 14px 8px;font-size:12px;color:var(--dim);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  white-space:nowrap;
+}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:600;}
+.tab .tab-count{
+  background:var(--panel2);border:1px solid var(--border);
+  border-radius:9px;padding:1px 6px;font-size:10px;
+  margin-left:5px;color:var(--dim);
+}
+.tab.active .tab-count{background:var(--green-light);border-color:var(--green);color:var(--green);}
+.tabs-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+.small-btn{
+  background:transparent;border:1px solid var(--border);border-radius:3px;
+  color:var(--dim);padding:3px 8px;font-size:11px;cursor:pointer;
+}
+.small-btn:hover{border-color:var(--green);color:var(--green);}
+
+/* Histogram */
+.histogram-wrap{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  padding:8px 14px 6px;flex-shrink:0;
+}
+.histogram-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.histogram-hdr .hdr-label{font-size:11px;color:var(--dim);font-weight:600;}
+.histogram-hdr .hdr-range{font-size:11px;color:var(--dimmer);}
+.histogram-hdr .hdr-zoom{margin-left:auto;font-size:10px;color:var(--blue);cursor:pointer;}
+.histogram-hdr .hdr-zoom:hover{text-decoration:underline;}
+.histogram{
+  display:flex;align-items:flex-end;gap:1px;
+  height:48px;padding:0 2px;overflow:hidden;
+}
+.hbar{
+  flex:1;background:var(--blue-muted);border-radius:1px 1px 0 0;
+  min-width:3px;opacity:.8;transition:height .3s ease;cursor:pointer;
+}
+.hbar:hover{background:var(--blue);opacity:1;}
+.hbar.pulse{animation:bar-pulse 1.5s ease-in-out infinite;}
+@keyframes bar-pulse{
+  0%,100%{opacity:.8;transform:scaleY(1);}
+  50%{opacity:1;transform:scaleY(1.08);transform-origin:bottom;}
+}
+.hbar.alert-bar{background:var(--orange);}
+.histogram-x{display:flex;justify-content:space-between;padding:3px 2px 0;font-size:10px;color:var(--dimmer);}
+
+/* Events list */
+.events-list{overflow-y:auto;padding:6px 14px;}
+.events-list::-webkit-scrollbar{width:6px;}
+.events-list::-webkit-scrollbar-thumb{background:var(--border);}
+
+.event-row{
+  border:1px solid var(--border2);border-radius:3px;
+  background:var(--panel);margin-bottom:4px;
+  font-family:var(--font-mono);font-size:11px;
+  transition:border-color .2s, background .2s;
+  overflow:hidden;
+}
+.event-row:hover{border-color:var(--blue-muted);}
+.event-row.new-event{animation:fade-in-slide .5s ease-out;}
+@keyframes fade-in-slide{
+  from{opacity:0;transform:translateY(-6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.event-row.alert-event{
+  border-color:var(--orange);background:var(--orange-pale);
+}
+body.dark .event-row.alert-event{background:#2e1a08;}
+.event-row.alert-event .event-header{background:#fff3e6;}
+body.dark .event-row.alert-event .event-header{background:#241508;}
+
+.event-header{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 10px;background:var(--panel2);
+  border-bottom:1px solid var(--border2);cursor:pointer;
+}
+.event-row.alert-event .event-header{border-bottom-color:var(--orange);}
+.event-expand{color:var(--dimmer);font-size:10px;flex-shrink:0;}
+.event-time{color:var(--dim);font-size:10.5px;white-space:nowrap;flex-shrink:0;}
+.event-host{
+  background:var(--blue-pale);color:var(--blue);
+  border-radius:2px;padding:1px 5px;font-size:10px;flex-shrink:0;
+}
+body.dark .event-host{background:#0a1e33;color:#5b9bd5;}
+.event-row.alert-event .event-host{background:#ffe0c0;color:#c05800;}
+body.dark .event-row.alert-event .event-host{background:#2e1a08;color:#f47b20;}
+.event-status{
+  border-radius:2px;padding:1px 5px;font-size:10px;flex-shrink:0;
+}
+.status-200{background:#edf5e5;color:var(--green);}
+.status-404{background:#fff0dd;color:var(--orange);}
+.status-500{background:#ffeeee;color:var(--red);}
+.status-301{background:#f0f0f0;color:var(--dimmer);}
+body.dark .status-200{background:#1a2e0f;color:#65a637;}
+body.dark .status-404{background:#2e1a08;color:#f47b20;}
+body.dark .status-500{background:#2e0a0a;color:#f07070;}
+body.dark .status-301{background:#2a2a2a;color:#888;}
+.event-source{color:var(--dimmer);font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.event-ms{color:var(--dim);font-size:10px;flex-shrink:0;}
+.event-ms.slow{color:var(--orange);}
+.event-ms.fast{color:var(--green);}
+.event-alert-badge{
+  background:var(--orange);color:#fff;
+  border-radius:2px;padding:1px 5px;font-size:10px;font-weight:700;
+  flex-shrink:0;animation:badge-pulse 1.5s ease-in-out infinite;
+}
+@keyframes badge-pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+.event-body{
+  padding:6px 10px;font-size:11px;color:var(--text);
+  line-height:1.6;word-break:break-all;
+}
+.ev-field{color:var(--dim);}
+.ev-val{color:var(--text);}
+.ev-val.hl{color:var(--green);font-weight:600;}
+.ev-val.err{color:var(--red);}
+.ev-val.warn{color:var(--orange);}
+
+/* Collapsed event row */
+.event-row.collapsed .event-body{display:none;}
+
+/* ── RIGHT ACTION PANEL ── */
+.right-actions{
+  background:var(--panel);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:8px 0;gap:10px;overflow:hidden;
+}
+.action-btn{
+  width:26px;height:26px;border-radius:3px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--dim);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;position:relative;
+}
+.action-btn:hover{border-color:var(--green);color:var(--green);background:var(--green-light);}
+.action-btn[title]:hover::after{
+  content:attr(title);
+  position:absolute;right:32px;top:50%;transform:translateY(-50%);
+  background:#333;color:#fff;font-size:10px;white-space:nowrap;
+  padding:3px 6px;border-radius:3px;font-family:var(--font-ui);
+  pointer-events:none;z-index:999;
+}
+
+/* ── STATUS BAR ── */
+.statusbar{
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;padding:0 14px;gap:16px;
+  font-size:10.5px;font-weight:600;flex-shrink:0;height:22px;
+}
+.statusbar .stat-sep{opacity:.4;}
+.statusbar .stat-dim{opacity:.8;font-weight:400;}
+.statusbar .stat-count{font-variant-numeric:tabular-nums;}
+.statusbar-right{margin-left:auto;display:flex;gap:12px;opacity:.85;font-weight:400;}
+
+/* Scrollbar general */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+/* Search highlight in events */
+mark{background:#fff3cd;color:inherit;border-radius:1px;}
+body.dark mark{background:#4a3a00;color:inherit;}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="Search · Production Logs · Splunk" data-favicon="🟩" data-app="Splunk">
+
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo-area">
+      <!-- Splunk logo: > symbol stylized -->
+      <svg class="logo-svg" viewBox="0 0 26 26" fill="none">
+        <rect width="26" height="26" rx="3" fill="#65a637"/>
+        <path d="M7 7 L19 13 L7 19" stroke="#fff" stroke-width="3" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="logo-text">splunk<span>&gt;</span></span>
+    </div>
+    <div class="app-pill">Search &amp; Reporting</div>
+    &nbsp;&nbsp;
+    <div class="app-pill" style="color:#888;font-size:10.5px;">prod-cluster-01</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-right">
+      <button class="dark-toggle" id="darkToggle">🌙 Dark</button>
+      <button class="tb-icon-btn">⚙ 설정</button>
+      <button class="tb-icon-btn">? 도움말</button>
+      <button class="tb-icon-btn">🔔</button>
+      <div class="user-avatar" title="Kim Jisoo · admin">K</div>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="search-area">
+    <div class="search-row">
+      <div class="search-box-wrap">
+        <span class="search-icon">🔍</span>
+        <textarea class="search-box" rows="3" id="spl-input" spellcheck="false">index=production source="*-api*" sourcetype=accesslog
+| stats count by status, host
+| where count &gt; 100</textarea>
+      </div>
+      <div class="search-btns">
+        <button class="btn-search" id="searchBtn">&#9654; Search</button>
+        <button class="btn-search-opts">▾ 저장된 검색</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIME ROW -->
+  <div class="time-row">
+    <span style="font-size:11px;color:var(--dim);margin-right:4px;">시간 범위:</span>
+    <button class="time-btn" id="timeBtn">
+      📅 Last 24 hours <span class="caret">▾</span>
+    </button>
+    <div class="time-presets">
+      <button class="time-preset">5m</button>
+      <button class="time-preset">1h</button>
+      <button class="time-preset active">24h</button>
+      <button class="time-preset">7d</button>
+      <button class="time-preset">30d</button>
+      <button class="time-preset">All time</button>
+    </div>
+    <span class="status-live">LIVE</span>
+    <button class="refresh-btn" id="refreshBtn">
+      <span class="refresh-icon" id="refreshIcon">↻</span> Refresh
+    </button>
+  </div>
+
+  <!-- THREE PANE -->
+  <div class="three-pane">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- Selected fields -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-hdr">
+          <span>Selected Fields</span>
+          <span class="count">10</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="field-list" id="selectedFields">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- Interesting fields -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-hdr">
+          <span>Interesting Fields</span>
+          <span class="count">32</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="field-list" id="interestingFields">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+
+    <!-- CENTER EVENTS -->
+    <div class="events-center">
+
+      <!-- Tabs -->
+      <div class="tabs-row">
+        <div class="tab active">
+          Events
+          <span class="tab-count" id="eventsTabCount">5,832,123</span>
+        </div>
+        <div class="tab">Statistics <span class="tab-count">—</span></div>
+        <div class="tab">Visualization <span class="tab-count">—</span></div>
+        <div class="tab">Patterns <span class="tab-count">14</span></div>
+        <div class="tabs-right">
+          <button class="small-btn">Format</button>
+          <button class="small-btn">↓ 정렬</button>
+          <button class="small-btn" id="clearBtn">× 초기화</button>
+        </div>
+      </div>
+
+      <!-- Histogram -->
+      <div class="histogram-wrap">
+        <div class="histogram-hdr">
+          <span class="hdr-label">이벤트 분포</span>
+          <span class="hdr-range">2026-04-26 14:00 — 2026-04-27 14:00 (1-minute buckets)</span>
+          <span class="hdr-zoom">확대 ⊕</span>
+        </div>
+        <div class="histogram" id="histogram"></div>
+        <div class="histogram-x">
+          <span>-24h</span><span>-20h</span><span>-16h</span>
+          <span>-12h</span><span>-8h</span><span>-4h</span>
+          <span>Now</span>
+        </div>
+      </div>
+
+      <!-- Events List -->
+      <div class="events-list" id="eventsList"></div>
+
+    </div><!-- /events-center -->
+
+    <!-- RIGHT ACTIONS -->
+    <div class="right-actions">
+      <button class="action-btn" title="저장">💾</button>
+      <button class="action-btn" title="공유">🔗</button>
+      <button class="action-btn" title="내보내기">↓</button>
+      <button class="action-btn" title="대시보드 추가">⊞</button>
+      <button class="action-btn" title="알림 설정">🔔</button>
+      <button class="action-btn" title="예약 실행">⏰</button>
+      <div style="flex:1;"></div>
+      <button class="action-btn" title="패널 숨기기" id="collapsePanelBtn">▶</button>
+    </div>
+
+  </div><!-- /three-pane -->
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span class="stat-count" id="statusCount">5,832,123</span>
+    <span class="stat-dim">events</span>
+    <span class="stat-sep">·</span>
+    <span id="statusMs">142ms</span>
+    <span class="stat-sep">·</span>
+    <span class="stat-dim">21 indexers</span>
+    <span class="stat-sep">·</span>
+    <span class="stat-dim">index=production</span>
+    <div class="statusbar-right">
+      <span>Splunk Enterprise 9.3.1</span>
+      <span class="stat-sep">·</span>
+      <span>prod-cluster-01</span>
+      <span class="stat-sep">·</span>
+      <span id="clockDisplay">--:--:--</span>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const SELECTED_FIELDS = [
+  {icon:'ts', name:'_time',       pct:100},
+  {icon:'str',name:'host',        pct:100},
+  {icon:'str',name:'source',      pct:100},
+  {icon:'num',name:'status',      pct:100},
+  {icon:'num',name:'response_time', pct:98},
+  {icon:'str',name:'method',      pct:99},
+  {icon:'str',name:'url',         pct:97},
+  {icon:'str',name:'user',        pct:84},
+  {icon:'ip', name:'client_ip',   pct:91},
+  {icon:'num',name:'bytes',       pct:88},
+];
+
+const INTERESTING_FIELDS = [
+  {icon:'str',name:'user_id',       pct:81},
+  {icon:'str',name:'session_id',    pct:78},
+  {icon:'num',name:'error_code',    pct:12},
+  {icon:'str',name:'country',       pct:64},
+  {icon:'str',name:'region',        pct:59},
+  {icon:'str',name:'device_type',   pct:72},
+  {icon:'str',name:'os',            pct:68},
+  {icon:'str',name:'browser',       pct:65},
+  {icon:'num',name:'latency_p99',   pct:44},
+  {icon:'num',name:'queue_depth',   pct:30},
+  {icon:'str',name:'endpoint',      pct:97},
+  {icon:'str',name:'version',       pct:89},
+  {icon:'str',name:'dc',            pct:100},
+  {icon:'ip', name:'x_forwarded_for', pct:55},
+  {icon:'num',name:'req_size',      pct:77},
+  {icon:'num',name:'resp_size',     pct:82},
+  {icon:'str',name:'auth_method',   pct:61},
+  {icon:'str',name:'trace_id',      pct:94},
+  {icon:'str',name:'span_id',       pct:92},
+  {icon:'str',name:'cache',         pct:45},
+  {icon:'num',name:'retry_count',   pct:8},
+  {icon:'str',name:'protocol',      pct:99},
+  {icon:'num',name:'ssl_version',   pct:88},
+  {icon:'str',name:'content_type',  pct:76},
+  {icon:'num',name:'thread_id',     pct:33},
+  {icon:'str',name:'pod',           pct:100},
+  {icon:'str',name:'namespace',     pct:100},
+  {icon:'str',name:'cluster',       pct:100},
+  {icon:'str',name:'image_version', pct:89},
+  {icon:'num',name:'cpu_ms',        pct:22},
+  {icon:'num',name:'mem_kb',        pct:20},
+  {icon:'str',name:'feature_flag',  pct:41},
+];
+
+const HOSTS  = ['api-prod-1','api-prod-2','api-prod-3','api-prod-4','api-prod-5'];
+const PATHS  = [
+  '/v1/users/4382','/v1/orders/8812','/v1/products','/v1/auth/token',
+  '/v1/sessions','/v1/payments/3310','/v1/reports','/v1/search',
+  '/v1/users/profile','/v1/cart','/v1/webhooks','/v1/health',
+  '/v2/analytics/summary','/v2/events/track','/v2/flags',
+];
+const USERS  = ['usr_x9k','usr_m4p','usr_a7r','usr_z1q','usr_b8w','usr_k3n','usr_p5t','—'];
+const IPS    = ['203.0.113.45','198.51.100.82','10.0.0.51','172.16.4.23','93.184.216.34','192.168.1.100'];
+const METHODS= ['GET','GET','GET','POST','PUT','DELETE','GET','POST'];
+const STATUSES= [200,200,200,200,200,201,301,400,404,500,503];
+const STATUS_W = [40,15,10,5,5,3,3,3,3,2,1]; // weights
+
+function weightedRandom(arr, weights) {
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total;
+  for(let i=0;i<arr.length;i++){r-=weights[i];if(r<=0)return arr[i];}
+  return arr[arr.length-1];
+}
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[rand(0,arr.length-1)];}
+function fmtMs(n){return n>=1000?`${(n/1000).toFixed(1)}s`:`${n}ms`;}
+
+let eventIdCounter = 0;
+function generateEvent(forceAlert=false){
+  const now = new Date();
+  const tsOffset = rand(0,5000); // ms ago
+  const ts = new Date(now.getTime() - tsOffset);
+  const pad=(n,z=2)=>String(n).padStart(z,'0');
+  const tsStr = `${ts.getFullYear()}-${pad(ts.getMonth()+1)}-${pad(ts.getDate())} ${pad(ts.getHours())}:${pad(ts.getMinutes())}:${pad(ts.getSeconds())}`;
+
+  const status = forceAlert ? pick([500,503,429]) : weightedRandom(STATUSES, STATUS_W);
+  const host   = pick(HOSTS);
+  const path   = pick(PATHS);
+  const user   = pick(USERS);
+  const ip     = pick(IPS);
+  const method = pick(METHODS);
+  const ms     = forceAlert ? rand(2000,8000) : rand(8,4200);
+  const bytes  = rand(200,48000);
+  const traceId= Math.random().toString(36).slice(2,18);
+
+  const isAlert = forceAlert || status >= 500 || ms > 3000;
+
+  return {
+    id: ++eventIdCounter,
+    tsStr, host, status, path, user, ip, method, ms, bytes, traceId, isAlert,
+    raw: `${tsStr} method=${method} status=${status} host=${host} url=${path} ms=${ms} bytes=${bytes} user=${user} ip=${ip} trace_id=${traceId}`
+  };
+}
+
+// ─── RENDER FIELDS ──────────────────────────────────────────────────────────
+function renderField(f){
+  const iconClass = `fi-${f.icon}`;
+  const iconChar  = {str:'a',num:'#',ip:'IP',ts:'t'}[f.icon] || 'a';
+  const pct = f.pct;
+  const div = document.createElement('div');
+  div.className = 'field-item' + (SELECTED_FIELDS.includes(f) ? ' selected-field' : '');
+  div.innerHTML = `
+    <span class="field-icon ${iconClass}">${iconChar}</span>
+    <span class="field-name">${f.name}</span>
+    <div class="field-bar"><div class="field-bar-fill" style="width:${pct}%"></div></div>
+    <span class="field-pct">${pct}%</span>
+  `;
+  return div;
+}
+
+function populateSidebar(){
+  const sf = document.getElementById('selectedFields');
+  const inf= document.getElementById('interestingFields');
+  SELECTED_FIELDS.forEach(f=>sf.appendChild(renderField(f)));
+  INTERESTING_FIELDS.forEach(f=>inf.appendChild(renderField(f)));
+}
+
+// ─── RENDER EVENTS ──────────────────────────────────────────────────────────
+function statusClass(s){
+  if(s>=500)return 'status-500';
+  if(s>=400)return 'status-404';
+  if(s>=300)return 'status-301';
+  return 'status-200';
+}
+function msClass(ms){
+  if(ms>2000)return 'slow';
+  if(ms<100) return 'fast';
+  return '';
+}
+
+function renderEvent(evt, isNew=false){
+  const div = document.createElement('div');
+  div.className = 'event-row' + (evt.isAlert ? ' alert-event' : '') + (isNew ? ' new-event' : '');
+  div.setAttribute('data-id', evt.id);
+
+  const alertBadge = evt.isAlert
+    ? `<span class="event-alert-badge">ALERT</span>`
+    : '';
+
+  const msC = msClass(evt.ms);
+  div.innerHTML = `
+    <div class="event-header">
+      <span class="event-expand">▶</span>
+      <span class="event-time">${evt.tsStr}</span>
+      <span class="event-host">${evt.host}</span>
+      <span class="event-status ${statusClass(evt.status)}">${evt.status}</span>
+      <span class="event-source">${evt.method} ${evt.path}</span>
+      <span class="event-ms ${msC}">${fmtMs(evt.ms)}</span>
+      ${alertBadge}
+    </div>
+    <div class="event-body">
+      <span class="ev-field">_time=</span><span class="ev-val hl">${evt.tsStr}</span>&nbsp;
+      <span class="ev-field">method=</span><span class="ev-val">${evt.method}</span>&nbsp;
+      <span class="ev-field">status=</span><span class="ev-val ${evt.status>=500?'err':evt.status>=400?'warn':''}">${evt.status}</span>&nbsp;
+      <span class="ev-field">host=</span><span class="ev-val">${evt.host}</span>&nbsp;
+      <span class="ev-field">url=</span><span class="ev-val">${evt.path}</span>&nbsp;
+      <span class="ev-field">ms=</span><span class="ev-val ${msC||''}">${evt.ms}</span>&nbsp;
+      <span class="ev-field">bytes=</span><span class="ev-val">${evt.bytes}</span>&nbsp;
+      <span class="ev-field">user=</span><span class="ev-val">${evt.user}</span>&nbsp;
+      <span class="ev-field">ip=</span><span class="ev-val">${evt.ip}</span>&nbsp;
+      <span class="ev-field">trace_id=</span><span class="ev-val" style="color:var(--dimmer)">${evt.traceId}</span>
+    </div>
+  `;
+
+  // toggle expand
+  div.querySelector('.event-header').addEventListener('click', ()=>{
+    div.classList.toggle('collapsed');
+    div.querySelector('.event-expand').textContent = div.classList.contains('collapsed') ? '▶' : '▼';
+  });
+
+  return div;
+}
+
+// ─── HISTOGRAM ──────────────────────────────────────────────────────────────
+const HIST_BARS = 72;
+let histData = [];
+
+function generateHistData(){
+  const data = [];
+  for(let i=0;i<HIST_BARS;i++){
+    // simulate a realistic traffic curve with spikes
+    const hour = (i / HIST_BARS) * 24;
+    const base = 30 + 50*Math.sin((hour-7)*Math.PI/12) + 20*Math.sin((hour-14)*Math.PI/6);
+    const noise= rand(-8,12);
+    data.push(Math.max(5, base + noise));
+  }
+  return data;
+}
+
+function renderHistogram(){
+  const container = document.getElementById('histogram');
+  container.innerHTML = '';
+  const max = Math.max(...histData);
+  histData.forEach((v,i)=>{
+    const bar = document.createElement('div');
+    bar.className = 'hbar' + (i>=HIST_BARS-3 ? ' pulse' : '') + (i%17===11 ? ' alert-bar' : '');
+    bar.style.height = `${Math.max(4, (v/max)*44)}px`;
+    bar.title = `${Math.round(v*800)} events`;
+    container.appendChild(bar);
+  });
+}
+
+// Animate latest bars growing
+function animateLatestBars(){
+  const bars = document.querySelectorAll('.hbar');
+  if(!bars.length) return;
+  const lastIdx = bars.length - 1;
+  const last = bars[lastIdx];
+  const prev = bars[lastIdx-1];
+  const max = Math.max(...histData);
+  // bump last two values slightly
+  histData[lastIdx] = Math.min(histData[lastIdx]+rand(1,6), max*1.15);
+  histData[lastIdx-1] = Math.min(histData[lastIdx-1]+rand(0,3), max*1.1);
+  last.style.height = `${Math.max(4,(histData[lastIdx]/max)*44)}px`;
+  if(prev) prev.style.height = `${Math.max(4,(histData[lastIdx-1]/max)*44)}px`;
+}
+
+// ─── EVENTS LIST ────────────────────────────────────────────────────────────
+const MAX_EVENTS = 60;
+let eventsList_el;
+let liveEvents = [];
+
+function seedEvents(){
+  // generate 13 initial events (some collapsed, some alert)
+  for(let i=0;i<13;i++){
+    const forceAlert = (i===2||i===7);
+    const evt = generateEvent(forceAlert);
+    liveEvents.push(evt);
+  }
+}
+
+function renderAllEvents(){
+  eventsList_el.innerHTML = '';
+  liveEvents.forEach((evt,i)=>{
+    const el = renderEvent(evt, false);
+    // collapse most except first 4
+    if(i>3){
+      el.classList.add('collapsed');
+      el.querySelector('.event-expand').textContent='▶';
+    }
+    eventsList_el.appendChild(el);
+  });
+}
+
+function prependNewEvent(){
+  const forceAlert = Math.random()<0.12;
+  const evt = generateEvent(forceAlert);
+  liveEvents.unshift(evt);
+  if(liveEvents.length > MAX_EVENTS) liveEvents.pop();
+
+  const el = renderEvent(evt, true);
+  el.classList.add('collapsed');
+  el.querySelector('.event-expand').textContent='▶';
+
+  const firstChild = eventsList_el.firstChild;
+  eventsList_el.insertBefore(el, firstChild);
+
+  // remove last child if over limit
+  const children = eventsList_el.children;
+  if(children.length > MAX_EVENTS){
+    eventsList_el.removeChild(children[children.length-1]);
+  }
+
+  // bump bars
+  animateLatestBars();
+}
+
+// ─── COUNTER ────────────────────────────────────────────────────────────────
+let baseCount = 5832123;
+let displayCount = baseCount;
+let countEl, statusCountEl;
+
+function fmtCount(n){
+  return n.toLocaleString('en-US');
+}
+
+function tickCount(){
+  const increment = rand(12,280);
+  baseCount += increment;
+  // smooth display
+  const diff = baseCount - displayCount;
+  displayCount += Math.max(1, Math.floor(diff*0.3));
+  const s = fmtCount(displayCount);
+  if(countEl) countEl.textContent = s;
+  if(statusCountEl) statusCountEl.textContent = s;
+}
+
+// ─── CLOCK ──────────────────────────────────────────────────────────────────
+function updateClock(){
+  const now = new Date();
+  const pad=(n)=>String(n).padStart(2,'0');
+  document.getElementById('clockDisplay').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+
+// ─── DARK MODE ──────────────────────────────────────────────────────────────
+document.getElementById('darkToggle').addEventListener('click',()=>{
+  document.body.classList.toggle('dark');
+  document.getElementById('darkToggle').textContent =
+    document.body.classList.contains('dark') ? '☀ Light' : '🌙 Dark';
+});
+
+// ─── REFRESH ────────────────────────────────────────────────────────────────
+document.getElementById('refreshBtn').addEventListener('click',()=>{
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('spin');
+  setTimeout(()=>icon.classList.remove('spin'),650);
+  // re-gen a few events
+  for(let i=0;i<3;i++) prependNewEvent();
+});
+
+// ─── SEARCH BUTTON ──────────────────────────────────────────────────────────
+document.getElementById('searchBtn').addEventListener('click',()=>{
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('spin');
+  setTimeout(()=>icon.classList.remove('spin'),650);
+  baseCount = rand(100000, 9999999);
+  displayCount = baseCount - rand(500,3000);
+  for(let i=0;i<5;i++) prependNewEvent();
+  document.getElementById('statusMs').textContent = rand(80,420)+'ms';
+});
+
+// ─── TIME PRESETS ───────────────────────────────────────────────────────────
+document.querySelectorAll('.time-preset').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.time-preset').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('timeBtn').innerHTML = `📅 Last ${this.textContent} <span class="caret">▾</span>`;
+  });
+});
+
+// ─── COLLAPSE RIGHT PANEL ───────────────────────────────────────────────────
+document.getElementById('collapsePanelBtn').addEventListener('click',function(){
+  const tp = document.querySelector('.three-pane');
+  const isCollapsed = tp.style.gridTemplateColumns.includes('0px');
+  if(isCollapsed){
+    tp.style.gridTemplateColumns = '250px 1fr 34px';
+    this.textContent = '▶';
+  } else {
+    tp.style.gridTemplateColumns = '250px 1fr 0px';
+    this.textContent = '◀';
+  }
+});
+
+// ─── SPL textarea tweaks ────────────────────────────────────────────────────
+const splInput = document.getElementById('spl-input');
+splInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){
+    e.preventDefault();
+    document.getElementById('searchBtn').click();
+  }
+});
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+function init(){
+  eventsList_el = document.getElementById('eventsList');
+  countEl = document.getElementById('eventsTabCount');
+  statusCountEl = document.getElementById('statusCount');
+
+  populateSidebar();
+  histData = generateHistData();
+  renderHistogram();
+  seedEvents();
+  renderAllEvents();
+
+  // Count tick every 800ms
+  setInterval(tickCount, 800);
+
+  // New event every 6-10s
+  function scheduleNewEvent(){
+    const delay = rand(6000,10000);
+    setTimeout(()=>{
+      prependNewEvent();
+      scheduleNewEvent();
+    }, delay);
+  }
+  scheduleNewEvent();
+
+  // Occasional alert highlight on random existing events
+  setInterval(()=>{
+    const rows = document.querySelectorAll('.event-row:not(.alert-event)');
+    if(rows.length < 4) return;
+    const r = rows[rand(1, Math.min(rows.length-1, 8))];
+    r.classList.add('alert-event');
+    setTimeout(()=>r.classList.remove('alert-event'), rand(4000,8000));
+  }, rand(12000,20000));
+
+  // Clock
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Histogram bar growth on interval
+  setInterval(animateLatestBars, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Q2_매출분석_v8 - Google Sheets</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#1a73e8;--accent-light:#e8f0fe;--accent-mid:#4285f4;
+  --green:#137333;--green-bg:#e6f4ea;--red:#c5221f;--red-bg:#fce8e6;
+  --border:#e0e0e0;--border-dark:#bdbdbd;
+  --text:#202124;--dim:#5f6368;--muted:#9aa0a6;
+  --frozen-bg:#f8f9fa;--header-bg:#f1f3f4;
+  --sel-border:#1a73e8;--sel-bg:#e8f0fe22;
+  --bar-orange:#f4a022;--bar-blue:#4285f4;
+}
+html,body{height:100%;background:#fff;color:var(--text);font-family:'Roboto',system-ui,'Segoe UI',sans-serif;font-size:12px;overflow:hidden}
+.app{display:grid;grid-template-rows:30px 40px 32px 28px 1fr 24px;height:100vh}
+
+/* ── TOP BAR ── */
+.topbar{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:6px;position:relative}
+.logo{display:flex;align-items:center;gap:5px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:22px;height:22px;display:flex;flex-direction:column;gap:1.5px;padding:2px}
+.logo-icon span{display:block;background:#0f9d58;height:3px;border-radius:1px}
+.logo-icon span:nth-child(2){background:#0f9d58;width:75%}
+.logo-icon span:nth-child(3){background:#0f9d58;width:50%}
+.filename{font-size:14px;color:var(--text);font-weight:500;cursor:pointer;padding:2px 4px;border-radius:3px;display:flex;align-items:center;gap:5px}
+.filename:hover{background:var(--header-bg)}
+.filename .star{color:#f9ab00;font-size:13px}
+.cloud-saved{font-size:11px;color:var(--dim);margin-left:2px;display:flex;align-items:center;gap:4px}
+.last-edit{font-size:11px;color:var(--dim);margin-left:4px;white-space:nowrap}
+.topbar-space{flex:1}
+.share-btn{background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:6px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.share-btn:hover{background:#1557b0}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4285f4,#0f9d58);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;cursor:pointer;margin-left:6px}
+
+/* ── MENU BAR ── */
+.menubar{background:#fff;display:flex;align-items:center;padding:0 8px;font-size:12.5px;border-bottom:1px solid transparent}
+.menubar .mi{padding:5px 9px;border-radius:3px;cursor:pointer;color:var(--text);white-space:nowrap}
+.menubar .mi:hover{background:var(--header-bg)}
+
+/* ── TOOLBAR ── */
+.toolbar{background:#f8f9fa;border-bottom:1px solid var(--border);border-top:1px solid var(--border);display:flex;align-items:center;padding:2px 6px;gap:1px;overflow:hidden}
+.tb{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:3px;cursor:pointer;color:var(--dim);font-size:13px;flex-shrink:0}
+.tb:hover{background:var(--border)}
+.tb.active{background:var(--accent-light);color:var(--accent)}
+.tb-sep{width:1px;height:18px;background:var(--border-dark);margin:0 3px;flex-shrink:0}
+.tb-select{border:none;background:transparent;font-size:12px;color:var(--text);cursor:pointer;padding:2px 4px;border-radius:3px;height:24px;font-family:inherit}
+.tb-select:hover{background:var(--border)}
+.font-name{width:90px;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:12px;color:var(--text);background:#fff;height:22px;font-family:inherit;cursor:pointer}
+.font-size-box{width:36px;border:1px solid var(--border);border-radius:3px;padding:1px 4px;font-size:12px;color:var(--text);background:#fff;height:22px;text-align:center;font-family:inherit}
+.color-btn{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;padding:1px 3px;border-radius:3px}
+.color-btn:hover{background:var(--border)}
+.color-btn span{font-size:11px;font-weight:700}
+.color-btn .swatch{width:16px;height:3px;border-radius:1px;background:#000}
+.color-btn .swatch.r{background:#c5221f}
+
+/* ── FORMULA BAR ── */
+.fbar{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;padding:0}
+.cell-ref{width:60px;border-right:1px solid var(--border);padding:4px 8px;font-size:12px;color:var(--text);font-family:'Roboto Mono',monospace;flex-shrink:0;text-align:center;cursor:pointer}
+.fbar-dividers{display:flex;align-items:center;padding:0 6px;gap:4px;color:var(--dim);font-size:13px;border-right:1px solid var(--border);flex-shrink:0}
+.fbar-dividers span{cursor:pointer;padding:2px 3px;border-radius:3px}
+.fbar-dividers span:hover{background:var(--header-bg)}
+.formula-input{flex:1;padding:4px 10px;font-size:12px;font-family:'Roboto Mono',monospace;color:var(--text);border:none;outline:none;background:#fff;cursor:text}
+.formula-input .fn{color:#1a73e8;font-weight:500}
+.formula-input .str{color:#0f9d58}
+.formula-caret{display:inline-block;width:1.5px;height:13px;background:var(--text);margin-left:1px;animation:blink 1s step-end infinite;vertical-align:text-bottom}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── SHEET BODY ── */
+.sheet-wrap{overflow:auto;position:relative;background:#fff}
+.sheet-wrap::-webkit-scrollbar{width:10px;height:10px}
+.sheet-wrap::-webkit-scrollbar-track{background:#f1f3f4}
+.sheet-wrap::-webkit-scrollbar-thumb{background:#bdc1c6;border-radius:5px}
+.sheet-wrap::-webkit-scrollbar-thumb:hover{background:#9aa0a6}
+
+table.grid{border-collapse:collapse;table-layout:fixed;width:max-content;min-width:100%}
+table.grid th,table.grid td{border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Corner */
+.corner-cell{width:40px;min-width:40px;height:22px;background:var(--header-bg);border:1px solid var(--border);position:sticky;top:0;left:0;z-index:5}
+
+/* Column headers */
+table.grid .ch{height:22px;background:var(--header-bg);font-size:11px;font-weight:500;color:var(--dim);text-align:center;position:sticky;top:0;z-index:3;cursor:pointer;user-select:none;vertical-align:middle}
+table.grid .ch:hover{background:#e8eaed}
+table.grid .ch.sel{background:#d2e3fc;color:var(--accent);font-weight:700}
+
+/* Row numbers */
+table.grid .rn{width:40px;min-width:40px;background:var(--header-bg);font-size:11px;color:var(--dim);text-align:center;position:sticky;left:0;z-index:2;cursor:pointer;user-select:none;vertical-align:middle;padding:0 4px}
+table.grid .rn:hover{background:#e8eaed}
+table.grid .rn.sel{background:#d2e3fc;color:var(--accent);font-weight:700}
+
+/* Frozen row 1 */
+table.grid tr.frozen td,table.grid tr.frozen .rn{background:var(--frozen-bg);font-weight:600;font-size:11.5px;position:sticky;top:22px;z-index:2}
+table.grid tr.frozen .rn{z-index:4}
+
+/* Data cells */
+table.grid td{height:22px;padding:0 6px;font-size:12px;vertical-align:middle;background:#fff}
+table.grid td.num{text-align:right;font-family:'Roboto Mono',monospace;font-size:11.5px}
+table.grid td.ctr{text-align:center}
+table.grid td.bold{font-weight:600}
+table.grid td.hdr-frozen{position:sticky;left:0;z-index:2;background:var(--frozen-bg);font-weight:600;border-right:2px solid var(--border-dark)}
+
+/* Conditional formatting */
+table.grid td.pos{color:var(--green);background:var(--green-bg);font-weight:500}
+table.grid td.neg{color:var(--red);background:var(--red-bg);font-weight:500}
+table.grid td.pos-light{color:var(--green)}
+table.grid td.neg-light{color:var(--red)}
+
+/* Data bar */
+.dbar{position:relative;display:flex;align-items:center}
+.dbar-fill{position:absolute;left:0;top:2px;bottom:2px;border-radius:2px;opacity:.45;pointer-events:none}
+.dbar-text{position:relative;z-index:1;text-align:right;width:100%}
+
+/* Selected cell */
+table.grid td.selected{border:2px solid var(--sel-border) !important;background:var(--sel-bg) !important;z-index:1;position:relative}
+@keyframes sel-pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,115,232,.35)}50%{box-shadow:0 0 0 3px rgba(26,115,232,.15)}}
+table.grid td.selected{animation:sel-pulse 2.5s ease-in-out infinite}
+
+/* Comment indicator */
+.comment-dot{width:0;height:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #f9ab00 transparent transparent;position:absolute;top:0;right:0;pointer-events:none}
+td.has-comment{position:relative}
+
+/* Value flash */
+@keyframes val-flash{0%{background:#fff8c5}60%{background:#fff8c5}100%{background:#fff}}
+.val-flash{animation:val-flash .8s ease-out}
+
+/* Bounce comment */
+@keyframes comment-bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-2px)}70%{transform:translateY(-1px)}}
+.comment-bounce{animation:comment-bounce .5s ease-out}
+
+/* ── SIDE PANEL ── */
+.side-panel{background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;font-size:12px;overflow:hidden}
+.sp-header{padding:8px 12px;font-weight:600;font-size:12.5px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--header-bg)}
+.sp-section{padding:10px 12px;border-bottom:1px solid var(--border)}
+.sp-section h4{font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.filter-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.filter-row label{font-size:11px;color:var(--dim)}
+.filter-row select{border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-size:12px;font-family:inherit;color:var(--text);background:#fff;cursor:pointer;outline:none}
+.filter-row select:focus{border-color:var(--accent)}
+.apply-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:4px;padding:6px 0;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:4px}
+.apply-btn:hover{background:#1557b0}
+.mini-chart{height:80px;background:#f8f9fa;border:1px solid var(--border);border-radius:4px;margin-top:6px;display:flex;align-items:flex-end;gap:3px;padding:6px 8px;overflow:hidden}
+.bar-col{flex:1;border-radius:2px 2px 0 0;min-width:6px;cursor:pointer;transition:opacity .2s}
+.bar-col:hover{opacity:.7}
+.chart-label{font-size:10px;color:var(--dim);margin-top:4px;text-align:center}
+.sp-stat{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:11.5px}
+.sp-stat .val{font-weight:600;color:var(--text);font-family:'Roboto Mono',monospace;font-size:11px}
+
+/* ── BODY LAYOUT ── */
+.body{display:grid;grid-template-columns:1fr 200px;overflow:hidden;flex:1}
+.sheet-area{overflow:hidden;display:flex;flex-direction:column}
+
+/* ── BOTTOM BAR ── */
+.bottombar{background:#f8f9fa;border-top:2px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:0;font-size:12px;overflow:hidden}
+.sheet-tabs{display:flex;align-items:center;flex:1;gap:1px;overflow:hidden}
+.tab{padding:4px 16px;border-right:1px solid var(--border);cursor:pointer;color:var(--dim);font-size:12px;white-space:nowrap;height:24px;display:flex;align-items:center;border-top:3px solid transparent;transition:border-color .1s}
+.tab:hover{background:#fff;color:var(--text)}
+.tab.active{background:#fff;color:var(--accent);border-top-color:var(--accent);font-weight:500}
+.add-tab{width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:16px;border-radius:50%;flex-shrink:0}
+.add-tab:hover{background:var(--border)}
+.bottom-space{flex:1}
+.bottom-stats{display:flex;align-items:center;gap:14px;padding:0 8px;font-size:12px;color:var(--dim);flex-shrink:0}
+.bottom-stats .sum-val{color:var(--text);font-weight:500;font-family:'Roboto Mono',monospace}
+@keyframes stat-tick{0%{transform:scale(1)}30%{transform:scale(1.08);color:#1a73e8}100%{transform:scale(1);color:inherit}}
+.stat-tick{animation:stat-tick .4s ease-out}
+.zoom-ctrl{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--dim);padding-left:8px;border-left:1px solid var(--border);flex-shrink:0}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="table" data-title="Q2_매출분석_v8 - Google Sheets" data-favicon="🟩" data-app="Sheets">
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a class="logo" href="#">
+    <div class="logo-icon"><span></span><span></span><span></span></div>
+  </a>
+  <div class="filename">Q2_매출분석_v8 <span class="star">⭐</span></div>
+  <div class="cloud-saved">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+  </div>
+  <span class="last-edit" id="lastEdit">마지막 편집: 방금 전</span>
+  <div class="topbar-space"></div>
+  <button class="share-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+    공유
+  </button>
+  <div class="avatar">김PM</div>
+</div>
+
+<!-- MENU BAR -->
+<div class="menubar">
+  <div class="mi">파일</div><div class="mi">편집</div><div class="mi">보기</div>
+  <div class="mi">삽입</div><div class="mi">서식</div><div class="mi">데이터</div>
+  <div class="mi">도구</div><div class="mi">확장프로그램</div><div class="mi">도움말</div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <!-- Undo/Redo -->
+  <div class="tb" title="실행취소">↩</div>
+  <div class="tb" title="다시실행" style="opacity:.4">↪</div>
+  <div class="tb-sep"></div>
+  <!-- Print -->
+  <div class="tb" title="인쇄">🖨</div>
+  <div class="tb-sep"></div>
+  <!-- Format paint -->
+  <div class="tb" title="서식 복사/붙여넣기">🖌</div>
+  <div class="tb-sep"></div>
+  <!-- Zoom -->
+  <select class="tb-select" title="확대/축소" style="width:52px">
+    <option>100%</option><option>75%</option><option>125%</option>
+  </select>
+  <div class="tb-sep"></div>
+  <!-- Font -->
+  <input class="font-name" value="Arial" readonly>
+  <div class="tb" style="font-size:10px;width:16px;padding:0;color:var(--dim)">▾</div>
+  <div class="tb-sep"></div>
+  <!-- Size -->
+  <input class="font-size-box" value="10" readonly>
+  <div class="tb" style="font-size:10px;width:12px;padding:0;color:var(--dim)">▾</div>
+  <div class="tb-sep"></div>
+  <!-- Bold/Italic/Strike/Underline -->
+  <div class="tb active" title="굵게" style="font-weight:700">B</div>
+  <div class="tb" title="기울임" style="font-style:italic">I</div>
+  <div class="tb" title="밑줄" style="text-decoration:underline">U</div>
+  <div class="tb" title="취소선" style="text-decoration:line-through">S</div>
+  <div class="tb-sep"></div>
+  <!-- Colors -->
+  <div class="color-btn" title="텍스트 색">
+    <span>A</span><div class="swatch"></div>
+  </div>
+  <div class="color-btn" title="채우기 색">
+    <span style="font-size:12px">🪣</span><div class="swatch" style="background:#fff8c5;border:1px solid #ccc"></div>
+  </div>
+  <div class="tb-sep"></div>
+  <!-- Borders -->
+  <div class="tb" title="테두리">⊞</div>
+  <div class="tb-sep"></div>
+  <!-- Merge -->
+  <div class="tb" title="셀 병합">⬚</div>
+  <div class="tb-sep"></div>
+  <!-- Align H -->
+  <div class="tb" title="왼쪽 맞춤">☰</div>
+  <div class="tb" title="가운데 맞춤">≡</div>
+  <div class="tb active" title="오른쪽 맞춤">☷</div>
+  <div class="tb-sep"></div>
+  <!-- Valign -->
+  <div class="tb" title="세로 맞춤 위">⬆</div>
+  <div class="tb active" title="세로 가운데">⬛</div>
+  <div class="tb" title="세로 맞춤 아래">⬇</div>
+  <div class="tb-sep"></div>
+  <!-- Wrap -->
+  <div class="tb" title="텍스트 줄바꿈">⏎</div>
+  <!-- Rotate -->
+  <div class="tb" title="텍스트 회전">↷</div>
+  <div class="tb-sep"></div>
+  <!-- Link / Comment / Chart / Filter / Func -->
+  <div class="tb" title="링크">🔗</div>
+  <div class="tb" title="댓글">💬</div>
+  <div class="tb" title="차트 삽입">📊</div>
+  <div class="tb" title="필터">▽</div>
+  <div class="tb" title="함수">Σ</div>
+</div>
+
+<!-- FORMULA BAR -->
+<div class="fbar">
+  <div class="cell-ref">K42</div>
+  <div class="fbar-dividers">
+    <span>✕</span><span>✓</span><span style="font-size:11px">Σ</span>
+  </div>
+  <div class="formula-input">
+    <span style="color:#1a73e8;font-weight:500">=SUMIFS</span>(<span style="color:#5f6368">매출!G:G</span>, <span style="color:#5f6368">매출!B:B</span>, <span style="color:#0f9d58">"서울"</span>, <span style="color:#5f6368">매출!D:D</span>, <span style="color:#0f9d58">"&gt;=2026-04-01"</span>)<span class="formula-caret"></span>
+  </div>
+</div>
+
+<!-- BODY: grid + side panel -->
+<div class="body">
+  <div class="sheet-area">
+    <div class="sheet-wrap" id="sheetWrap">
+      <table class="grid" id="grid">
+        <thead>
+          <tr>
+            <th class="corner-cell"></th>
+            <th class="ch" style="width:40px">A</th>
+            <th class="ch" style="width:28px">B</th>
+            <th class="ch" style="width:72px">C</th>
+            <th class="ch sel" style="width:72px">D</th>
+            <th class="ch" style="width:60px">E</th>
+            <th class="ch" style="width:60px">F</th>
+            <th class="ch" style="width:60px">G</th>
+            <th class="ch" style="width:72px">H</th>
+            <th class="ch" style="width:56px">I</th>
+            <th class="ch" style="width:56px">J</th>
+            <th class="ch sel" style="width:80px">K</th>
+            <th class="ch" style="width:56px">L</th>
+            <th class="ch" style="width:56px">M</th>
+            <th class="ch" style="width:56px">N</th>
+          </tr>
+        </thead>
+        <tbody id="gridBody">
+          <!-- Row 1: Frozen header -->
+          <tr class="frozen">
+            <td class="rn sel">1</td>
+            <td class="hdr-frozen bold ctr">권역</td>
+            <td class="bold ctr">채널</td>
+            <td class="bold ctr">카테고리</td>
+            <td class="bold ctr">4월 매출</td>
+            <td class="bold ctr">5월 매출</td>
+            <td class="bold ctr">6월 매출</td>
+            <td class="bold ctr">Q2 합계</td>
+            <td class="bold ctr">Q1 합계</td>
+            <td class="bold ctr">YoY%</td>
+            <td class="bold ctr">목표</td>
+            <td class="bold ctr">달성률</td>
+            <td class="bold ctr">담당자</td>
+            <td class="bold ctr">상태</td>
+            <td class="bold ctr">비고</td>
+          </tr>
+          <!-- Data rows 2-50 will be injected by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE PANEL -->
+  <div class="side-panel">
+    <div class="sp-header">
+      <span>필터 & 차트</span>
+      <span style="cursor:pointer;color:var(--dim);font-size:14px">✕</span>
+    </div>
+    <div class="sp-section">
+      <h4>필터</h4>
+      <div class="filter-row">
+        <label>권역</label>
+        <select><option>전체</option><option>서울</option><option>경기</option><option>부산</option><option>대전</option><option>광주</option></select>
+      </div>
+      <div class="filter-row">
+        <label>채널</label>
+        <select><option>전체</option><option>직접판매</option><option>대리점</option><option>온라인</option><option>도매</option></select>
+      </div>
+      <div class="filter-row">
+        <label>카테고리</label>
+        <select><option>전체</option><option>HW</option><option>SW</option><option>서비스</option><option>솔루션</option></select>
+      </div>
+      <button class="apply-btn">필터 적용</button>
+    </div>
+    <div class="sp-section">
+      <h4>권역별 Q2 매출</h4>
+      <div class="mini-chart" id="miniChart"></div>
+      <div class="chart-label" style="font-size:10px;color:var(--dim);margin-top:4px">단위: ₩M</div>
+    </div>
+    <div class="sp-section">
+      <h4>요약 통계</h4>
+      <div class="sp-stat"><span>합계</span><span class="val sum-display">₩1,847M</span></div>
+      <div class="sp-stat"><span>평균</span><span class="val">₩42M</span></div>
+      <div class="sp-stat"><span>최대</span><span class="val">₩198M</span></div>
+      <div class="sp-stat"><span>최소</span><span class="val">₩11M</span></div>
+      <div class="sp-stat"><span>건수</span><span class="val">44건</span></div>
+    </div>
+    <div class="sp-section">
+      <h4>조건부 서식</h4>
+      <div style="font-size:11px;color:var(--dim);line-height:1.6">
+        <div>🟢 YoY &gt; 0% → 녹색</div>
+        <div>🔴 YoY &lt; 0% → 빨간색</div>
+        <div>📊 매출 열 데이터 막대</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <div class="sheet-tabs">
+    <div class="tab">요약</div>
+    <div class="tab active">매출</div>
+    <div class="tab">비용</div>
+    <div class="tab">예측</div>
+    <div class="tab">원본</div>
+    <div class="add-tab">+</div>
+  </div>
+  <div class="bottom-space"></div>
+  <div class="bottom-stats">
+    <span>합계: <span class="sum-val" id="sumVal">₩1,847M</span></span>
+    <span>평균: <span class="sum-val">₩42M</span></span>
+    <span>데이터 개수: <span class="sum-val">44</span></span>
+  </div>
+  <div class="zoom-ctrl">
+    <span style="cursor:pointer">−</span>
+    <span style="font-weight:500;color:var(--text)">100%</span>
+    <span style="cursor:pointer">+</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+(function(){
+  // ── DATA ──────────────────────────────────────────────────────────────
+  const regions  = ['서울','서울','서울','서울','서울','서울','서울','서울',
+                    '경기','경기','경기','경기','경기','경기','경기',
+                    '부산','부산','부산','부산','부산','부산',
+                    '대전','대전','대전','대전','대전',
+                    '광주','광주','광주','광주','광주',
+                    '인천','인천','인천','인천',
+                    '대구','대구','대구','대구',
+                    '울산','울산','울산',
+                    '제주','제주'];
+  const channels = ['직접판매','대리점','온라인','도매'];
+  const cats     = ['HW','SW','서비스','솔루션'];
+  const persons  = ['이민준','박서연','최동욱','김지은','오현석','류나영','정태윤'];
+
+  function rnd(min,max){return Math.round(Math.random()*(max-min)+min)}
+
+  const rows=[];
+  for(let i=0;i<44;i++){
+    const apr=rnd(11,198);
+    const may=rnd(9,210);
+    const jun=rnd(10,205);
+    const q2=apr+may+jun;
+    const q1=rnd(80,580);
+    const yoy=Math.round((q2-q1)/q1*1000)/10;
+    const target=rnd(q2-30,q2+40);
+    const ach=Math.round(q2/target*1000)/10;
+    rows.push({
+      region:regions[i]||'기타',
+      channel:channels[i%4],
+      cat:cats[i%4],
+      apr,may,jun,q2,q1,yoy,target,ach,
+      person:persons[i%7],
+      status:ach>=100?'달성':'진행중',
+      note:''
+    });
+  }
+
+  // ── RENDER GRID ───────────────────────────────────────────────────────
+  const tbody=document.getElementById('gridBody');
+
+  function fmt(n){
+    if(n>=1000) return '₩'+(n/1000).toFixed(1)+'B';
+    return '₩'+n+'M';
+  }
+  function pct(v){return (v>0?'+':'')+v.toFixed(1)+'%'}
+
+  function dataBar(val,max,color){
+    const w=Math.max(4,Math.round(val/max*100));
+    return `<div class="dbar"><div class="dbar-fill" style="width:${w}%;background:${color}"></div><div class="dbar-text">${fmt(val)}</div></div>`;
+  }
+
+  const maxQ2=Math.max(...rows.map(r=>r.q2));
+
+  rows.forEach((r,i)=>{
+    const rowNum=i+2; // row 1 is header
+    const tr=document.createElement('tr');
+    if(rowNum===42) tr.id='row42';
+
+    const yoyClass=r.yoy>=0?'pos':'neg';
+    const achClass=r.ach>=100?'pos-light':'neg-light';
+    const isK42=(rowNum===42);
+
+    tr.innerHTML=`
+      <td class="rn${rowNum===42?' sel':''}">${rowNum}</td>
+      <td class="hdr-frozen bold">${r.region}</td>
+      <td class="ctr">${r.channel}</td>
+      <td class="ctr${rowNum===5?' has-comment':''}" id="${rowNum===5?'cellD5':''}">${r.cat}${rowNum===5?'<div class="comment-dot" id="commentDot"></div>':''}</td>
+      <td class="num" id="${rowNum===42?'cellD42':''}" style="">
+        ${rowNum===42
+          ? `<span id="k42val">${fmt(r.apr)}</span>`
+          : fmt(r.apr)
+        }
+      </td>
+      <td class="num">${fmt(r.may)}</td>
+      <td class="num">${fmt(r.jun)}</td>
+      <td class="num" style="padding:0 2px">${dataBar(r.q2,maxQ2,'linear-gradient(90deg,#4285f4,#34a853)')}</td>
+      <td class="num">${fmt(r.q1)}</td>
+      <td class="num ${yoyClass}">${pct(r.yoy)}</td>
+      <td class="num">${fmt(r.target)}</td>
+      <td class="num ${isK42?'selected':''}${achClass?' '+achClass:''}" ${isK42?'id="cellK42"':''}>
+        ${isK42?`<span id="k42pct">${r.ach.toFixed(1)}%</span>`:`${r.ach.toFixed(1)}%`}
+      </td>
+      <td class="ctr" style="font-size:11px">${r.person}</td>
+      <td class="ctr" style="font-size:11px;color:${r.status==='달성'?'var(--green)':'var(--dim)'};font-weight:${r.status==='달성'?'600':'400'}">${r.status}</td>
+      <td></td>`;
+    tbody.appendChild(tr);
+  });
+
+  // ── SCROLL K42 INTO VIEW ───────────────────────────────────────────────
+  setTimeout(()=>{
+    const k=document.getElementById('cellK42');
+    if(k) k.scrollIntoView({block:'center',inline:'center'});
+  },100);
+
+  // ── MINI CHART ─────────────────────────────────────────────────────────
+  const chartData=[
+    {label:'서울',val:198,color:'#4285f4'},
+    {label:'경기',val:145,color:'#34a853'},
+    {label:'부산',val:112,color:'#fbbc04'},
+    {label:'대전',val:87,color:'#ea4335'},
+    {label:'광주',val:76,color:'#9c27b0'},
+    {label:'인천',val:65,color:'#00bcd4'},
+    {label:'대구',val:58,color:'#ff7043'},
+    {label:'울산',val:42,color:'#8bc34a'},
+    {label:'제주',val:28,color:'#f06292'},
+  ];
+  const mc=document.getElementById('miniChart');
+  const maxMC=Math.max(...chartData.map(d=>d.val));
+  mc.innerHTML=chartData.map(d=>{
+    const h=Math.round(d.val/maxMC*64);
+    return `<div class="bar-col" style="height:${h}px;background:${d.color}" title="${d.label}: ₩${d.val}M"></div>`;
+  }).join('');
+
+  // ── ANIMATIONS ─────────────────────────────────────────────────────────
+
+  // 1. Last-edit timer
+  const editEl=document.getElementById('lastEdit');
+  let editSeconds=0;
+  setInterval(()=>{
+    editSeconds++;
+    if(editSeconds<60) editEl.textContent='마지막 편집: 방금 전';
+    else if(editSeconds<120) editEl.textContent='마지막 편집: 1분 전';
+    else if(editSeconds<180) editEl.textContent='마지막 편집: 2분 전';
+    else { editSeconds=0; } // reset cycle
+  },1000);
+
+  // 2. Occasional cell value flash (a random data cell)
+  function flashRandomCell(){
+    const allCells=[...document.querySelectorAll('table.grid td.num:not(.selected)')];
+    if(!allCells.length) return;
+    const cell=allCells[Math.floor(Math.random()*allCells.length)];
+    cell.classList.add('val-flash');
+    setTimeout(()=>cell.classList.remove('val-flash'),900);
+  }
+  setInterval(flashRandomCell, 3200 + Math.random()*2000);
+
+  // 3. Comment indicator bounce on D5
+  const commentDot=document.getElementById('commentDot');
+  if(commentDot){
+    setInterval(()=>{
+      commentDot.classList.add('comment-bounce');
+      setTimeout(()=>commentDot.classList.remove('comment-bounce'),600);
+    }, 4000 + Math.random()*3000);
+  }
+
+  // 4. Status bar sum ticks
+  const sumValEl=document.getElementById('sumVal');
+  let baseSum=1847;
+  function tickSum(){
+    const delta=(Math.random()>0.5?1:-1)*Math.round(Math.random()*10);
+    baseSum+=delta;
+    const txt=`₩${baseSum}M`;
+    sumValEl.textContent=txt;
+    sumValEl.classList.add('stat-tick');
+    setTimeout(()=>sumValEl.classList.remove('stat-tick'),450);
+    // also update side panel
+    const sd=document.querySelector('.sum-display');
+    if(sd) sd.textContent=txt;
+  }
+  setInterval(tickSum, 5000 + Math.random()*4000);
+
+  // 5. K42 selected cell pulse is CSS animation — ensure class is set
+  const k42=document.getElementById('cellK42');
+  if(k42) k42.classList.add('selected');
+
+  // 6. Occasionally update K42 value to simulate live recalc
+  const k42ValEl=document.getElementById('k42pct');
+  if(k42ValEl){
+    let k42base=parseFloat(k42ValEl.textContent)||97.3;
+    setInterval(()=>{
+      k42base+=(Math.random()-0.5)*0.4;
+      k42base=Math.max(80,Math.min(115,k42base));
+      k42ValEl.textContent=k42base.toFixed(1)+'%';
+      if(k42) k42.classList.add('val-flash');
+      setTimeout(()=>{ if(k42) k42.classList.remove('val-flash'); },900);
+    }, 7000 + Math.random()*5000);
+  }
+
+})();
+</script>
+
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

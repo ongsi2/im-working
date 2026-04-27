@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>WealthDesk · 이재민 고객 포트폴리오</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a3360;
+  --navy-light:#2a4a80;
+  --navy-dark:#0f1f3d;
+  --gold:#c4a35a;
+  --gold-light:#d4b86a;
+  --bg:#f5f6f8;
+  --card:#ffffff;
+  --border:#dde2ec;
+  --text:#1a2340;
+  --text-muted:#6b7a99;
+  --up:#1a8f5c;
+  --up-bg:#eaf7f2;
+  --dn:#d94040;
+  --dn-bg:#fdf0f0;
+  --radius:12px;
+  --shadow:0 2px 12px rgba(26,51,96,.08);
+  --shadow-md:0 4px 24px rgba(26,51,96,.13);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;overflow:hidden}
+.app{display:grid;grid-template-rows:60px 44px 1fr;height:100vh;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{
+  background:var(--navy);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  position:relative;z-index:10;
+}
+.logo{
+  font-family:'Noto Serif KR',serif;
+  font-size:20px;font-weight:700;
+  color:#fff;letter-spacing:-.5px;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+}
+.logo-icon{
+  width:32px;height:32px;background:var(--gold);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.logo-sub{font-size:10px;font-weight:300;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.5px}
+.logo-wrap{display:flex;flex-direction:column}
+.divider{width:1px;height:32px;background:rgba(255,255,255,.2);flex-shrink:0}
+.client-info{display:flex;align-items:center;gap:10px;color:#fff}
+.client-name{font-size:15px;font-weight:600;font-family:'Noto Serif KR',serif}
+.client-tier{
+  background:var(--gold);color:var(--navy-dark);
+  font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:20px;letter-spacing:.5px;
+}
+.spacer{flex:1}
+.search{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:6px 14px;color:#fff;
+  font-size:12px;width:200px;outline:none;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.search::placeholder{color:rgba(255,255,255,.5)}
+.search:focus{background:rgba(255,255,255,.18);border-color:var(--gold)}
+.notif-btn{
+  width:36px;height:36px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);border-radius:8px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:16px;position:relative;transition:.2s;
+}
+.notif-btn:hover{background:rgba(255,255,255,.2)}
+.notif-badge{
+  position:absolute;top:5px;right:5px;
+  width:8px;height:8px;background:#e05050;border-radius:50%;
+  border:1.5px solid var(--navy);
+}
+.pb-info{
+  display:flex;align-items:center;gap:8px;color:#fff;
+  background:rgba(255,255,255,.1);border-radius:8px;
+  padding:6px 12px;cursor:pointer;transition:.2s;border:1px solid rgba(255,255,255,.1);
+}
+.pb-info:hover{background:rgba(255,255,255,.18)}
+.pb-avatar{
+  width:28px;height:28px;background:var(--gold);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--navy-dark);
+}
+.pb-name{font-size:12px;font-weight:500}
+.pb-role{font-size:10px;color:rgba(255,255,255,.6)}
+
+/* ── Sub-nav ── */
+.subnav{
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:2px;
+  box-shadow:0 1px 4px rgba(26,51,96,.06);
+}
+.nav-item{
+  padding:0 14px;height:44px;display:flex;align-items:center;
+  font-size:13px;font-weight:500;color:var(--text-muted);
+  cursor:pointer;border-bottom:2px solid transparent;
+  transition:.18s;white-space:nowrap;
+}
+.nav-item:hover{color:var(--navy);background:rgba(26,51,96,.04);border-radius:6px 6px 0 0}
+.nav-item.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:600}
+
+/* ── Main grid ── */
+.main{
+  display:grid;
+  grid-template-columns:1fr 320px;
+  grid-template-rows:auto 1fr auto;
+  gap:14px;padding:14px 16px;
+  overflow:hidden;
+}
+.main-left{
+  display:flex;flex-direction:column;gap:12px;
+  overflow-y:auto;overflow-x:hidden;
+  padding-right:2px;
+}
+.main-right{
+  display:flex;flex-direction:column;gap:12px;
+  overflow-y:auto;overflow-x:hidden;
+}
+/* scrollbar */
+.main-left::-webkit-scrollbar,.main-right::-webkit-scrollbar{width:4px}
+.main-left::-webkit-scrollbar-track,.main-right::-webkit-scrollbar-track{background:transparent}
+.main-left::-webkit-scrollbar-thumb,.main-right::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ── KPI Row ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;
+  box-shadow:var(--shadow);transition:.2s;cursor:default;
+  position:relative;overflow:hidden;
+}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--navy),var(--navy-light));
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.kpi-card:first-child::before{background:linear-gradient(90deg,var(--navy),var(--navy-light))}
+.kpi-card:nth-child(2)::before{background:linear-gradient(90deg,var(--up),#2abf7a)}
+.kpi-card:nth-child(3)::before{background:linear-gradient(90deg,#4a80d0,#6a9aef)}
+.kpi-card:nth-child(4)::before{background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kpi-label{font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:6px;letter-spacing:.3px}
+.kpi-value{font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.5px;font-family:'Noto Serif KR',serif}
+.kpi-sub{font-size:11.5px;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi-up{color:var(--up)}
+.kpi-dn{color:var(--dn)}
+.kpi-neutral{color:var(--text-muted)}
+
+/* ── Mid row: Pie + Chart ── */
+.mid-row{display:grid;grid-template-columns:320px 1fr;gap:12px}
+
+/* ── Card ── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.card-header{
+  padding:12px 16px 0;display:flex;align-items:center;
+  justify-content:space-between;
+}
+.card-title{
+  font-family:'Noto Serif KR',serif;
+  font-size:14px;font-weight:600;color:var(--navy);
+}
+.card-badge{
+  font-size:10px;background:var(--bg);border:1px solid var(--border);
+  color:var(--text-muted);padding:2px 8px;border-radius:20px;
+}
+.card-body{padding:12px 16px 14px}
+
+/* ── Allocation Pie ── */
+.alloc-wrap{padding:12px 16px 16px}
+.pie-container{
+  display:flex;align-items:center;gap:16px;
+}
+.pie-svg-wrap{position:relative;flex-shrink:0}
+.pie-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.pie-center-val{font-size:16px;font-weight:700;color:var(--navy);font-family:'Noto Serif KR',serif;line-height:1.1}
+.pie-center-lbl{font-size:9px;color:var(--text-muted);margin-top:2px}
+.alloc-legend{flex:1;display:flex;flex-direction:column;gap:6px}
+.legend-row{display:flex;align-items:center;gap:8px;cursor:pointer}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.legend-name{font-size:12px;color:var(--text);flex:1}
+.legend-pct{font-size:12px;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums;min-width:32px;text-align:right}
+.legend-bar-wrap{width:80px;background:var(--bg);border-radius:4px;height:4px;overflow:hidden}
+.legend-bar-fill{height:4px;border-radius:4px;transition:width .4s}
+
+/* ── Performance Chart ── */
+.chart-wrap{padding:0 16px 14px}
+.chart-tabs{display:flex;gap:4px;padding:10px 16px 0}
+.chart-tab{
+  padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--border);color:var(--text-muted);background:#fff;
+  transition:.15s;
+}
+.chart-tab.active,.chart-tab:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+canvas.perf-chart{width:100%;height:160px;display:block}
+.chart-legend{display:flex;gap:16px;padding:6px 16px 10px;font-size:11px;color:var(--text-muted)}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.chart-legend i{display:inline-block;width:18px;height:2px;border-radius:2px}
+.cl-port{background:var(--navy)}
+.cl-bench{background:var(--gold)}
+
+/* ── Holdings Table ── */
+.holdings-wrap{overflow:hidden}
+.holdings-table{width:100%;border-collapse:collapse;font-size:12px}
+.holdings-table th{
+  background:var(--bg);color:var(--text-muted);font-weight:500;
+  padding:7px 10px;text-align:right;font-size:11px;
+  border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.2px;
+  position:sticky;top:0;
+}
+.holdings-table th:first-child{text-align:left}
+.holdings-table td{
+  padding:8px 10px;border-bottom:1px solid #f0f2f7;
+  text-align:right;font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.holdings-table td:first-child{text-align:left}
+.holdings-table tr:last-child td{border-bottom:none}
+.holdings-table tr:hover td{background:rgba(26,51,96,.03)}
+.holdings-table tr.updating td{background:rgba(196,163,90,.07)}
+.stock-name{font-weight:600;color:var(--text);display:block}
+.stock-type{font-size:10px;color:var(--text-muted);font-weight:400}
+.tag{
+  display:inline-block;padding:1px 6px;border-radius:4px;
+  font-size:9.5px;font-weight:600;letter-spacing:.3px;
+}
+.tag-kr{background:#eef2fc;color:#3a60c0}
+.tag-us{background:#fff4e0;color:#b07030}
+.tag-etf{background:#f0f8f0;color:#2a8050}
+.tag-bond{background:#f5eeff;color:#7040b0}
+.pct-up{color:var(--up);font-weight:600}
+.pct-dn{color:var(--dn);font-weight:600}
+.pct-neutral{color:var(--text-muted)}
+.chg-flash{animation:flash-up .6s ease}
+.chg-flash-dn{animation:flash-dn .6s ease}
+@keyframes flash-up{0%,100%{color:var(--up)}50%{color:#fff;background:var(--up-bg)}}
+@keyframes flash-dn{0%,100%{color:var(--dn)}50%{color:#fff;background:var(--dn-bg)}}
+
+/* ── Right Panel: Alerts ── */
+.alert-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 14px;
+  box-shadow:var(--shadow);transition:.25s;cursor:pointer;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.alert-card:hover,.alert-card.highlight{
+  box-shadow:var(--shadow-md);
+  border-color:var(--navy);
+  transform:translateX(-2px);
+}
+.alert-card.highlight .alert-icon-wrap{background:var(--navy);color:#fff}
+.alert-icon-wrap{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;transition:.25s;
+}
+.alert-content{flex:1;min-width:0}
+.alert-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;line-height:1.3}
+.alert-body{font-size:11px;color:var(--text-muted);line-height:1.4}
+.alert-time{font-size:10px;color:var(--text-muted);margin-top:4px}
+.alert-urgent .alert-icon-wrap{background:#fff5f5;color:var(--dn)}
+.alert-urgent .alert-title{color:var(--dn)}
+.alert-meet .alert-icon-wrap{background:#f0f4ff;color:var(--navy)}
+.alert-report .alert-icon-wrap{background:#f0fff7;color:var(--up)}
+.right-section-title{
+  font-size:11px;font-weight:600;color:var(--text-muted);
+  letter-spacing:.8px;text-transform:uppercase;
+  padding:4px 2px 6px;
+}
+
+/* ── Rebalance band ── */
+.rebal-banner{
+  background:linear-gradient(90deg,#fff8ee,#fffcf4);
+  border:1px solid #f0d890;border-radius:var(--radius);
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 2px 8px rgba(196,163,90,.1);
+}
+.rebal-icon{font-size:20px}
+.rebal-text{flex:1}
+.rebal-title{font-size:12px;font-weight:700;color:#8a6010}
+.rebal-body{font-size:11px;color:#b07020;margin-top:1px}
+.rebal-btn{
+  background:var(--gold);color:#fff;border:none;
+  padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;
+  cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;
+  transition:.15s;
+}
+.rebal-btn:hover{background:var(--gold-light)}
+
+/* ── Risk meter ── */
+.risk-meter{display:flex;align-items:center;gap:8px;margin-top:6px}
+.risk-track{
+  flex:1;height:6px;background:linear-gradient(90deg,#3abf6a,#ffc840,#e04040);
+  border-radius:4px;position:relative;
+}
+.risk-thumb{
+  width:12px;height:12px;background:#fff;border:2.5px solid var(--navy);
+  border-radius:50%;position:absolute;top:50%;transform:translateY(-50%);
+  transition:left .5s ease;box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.risk-label{font-size:11px;color:var(--text-muted);white-space:nowrap}
+
+/* ── PB Widget ── */
+.pb-widget{
+  background:linear-gradient(135deg,var(--navy-dark),var(--navy));
+  border-radius:var(--radius);padding:14px;color:#fff;
+  box-shadow:var(--shadow-md);
+}
+.pb-widget-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pb-avatar-lg{
+  width:42px;height:42px;background:var(--gold);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;color:var(--navy-dark);flex-shrink:0;
+}
+.pb-name-lg{font-size:14px;font-weight:600;font-family:'Noto Serif KR',serif}
+.pb-title{font-size:11px;color:rgba(255,255,255,.65);margin-top:1px}
+.pb-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.pb-stat{background:rgba(255,255,255,.08);border-radius:8px;padding:8px 10px}
+.pb-stat-lbl{font-size:10px;color:rgba(255,255,255,.55);margin-bottom:2px}
+.pb-stat-val{font-size:13px;font-weight:600;color:#fff}
+.pb-next-meet{
+  margin-top:10px;background:rgba(196,163,90,.2);border-radius:8px;
+  padding:8px 10px;display:flex;align-items:center;gap:8px;
+}
+.pb-next-meet-icon{font-size:18px}
+.pb-next-meet-text{font-size:11px;color:rgba(255,255,255,.85)}
+.pb-next-meet-date{font-weight:700;color:var(--gold-light)}
+
+/* ── Responsive ── */
+@media(max-width:1280px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .mid-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="dashboard" data-title="이재민 고객 — WealthDesk PB" data-favicon="💼" data-app="WealthDesk">
+
+<div class="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">W</div>
+      <div class="logo-wrap">
+        <span>WealthDesk</span>
+        <span class="logo-sub">PRIVATE BANKING</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="client-info">
+      <span class="client-name">이재민님</span>
+      <span class="client-tier">A++ Tier</span>
+    </div>
+    <div class="spacer"></div>
+    <input class="search" placeholder="🔍  종목, 리포트 검색..." type="text">
+    <div class="notif-btn" title="알림">
+      🔔
+      <span class="notif-badge"></span>
+    </div>
+    <div class="pb-info">
+      <div class="pb-avatar">김</div>
+      <div>
+        <div class="pb-name">김PM</div>
+        <div class="pb-role">담당 PB</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-nav -->
+  <div class="subnav">
+    <div class="nav-item active">종합</div>
+    <div class="nav-item">포트폴리오</div>
+    <div class="nav-item">거래</div>
+    <div class="nav-item">분석</div>
+    <div class="nav-item">보고서</div>
+    <div class="nav-item">가이드</div>
+    <div class="nav-item">회의록</div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <!-- Left column -->
+    <div class="main-left">
+
+      <!-- KPI Row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">평가 자산</div>
+          <div class="kpi-value" id="kpi-total">₩4.82억</div>
+          <div class="kpi-sub kpi-up" id="kpi-total-chg">+₩2.4M (+0.05%)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">YTD 수익률</div>
+          <div class="kpi-value kpi-up" id="kpi-ytd">+12.4%</div>
+          <div class="kpi-sub kpi-neutral">기준일 2026.01.01</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">현금 비중</div>
+          <div class="kpi-value" id="kpi-cash">8.2%</div>
+          <div class="kpi-sub kpi-neutral">₩39.5M 가용</div>
+          <div class="risk-meter" style="margin-top:8px">
+            <div class="risk-track">
+              <div class="risk-thumb" style="left:calc(8.2% - 6px)"></div>
+            </div>
+            <span class="risk-label">적정</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">위험도</div>
+          <div class="kpi-value" style="font-size:18px">보통</div>
+          <div class="kpi-sub kpi-neutral" style="margin-bottom:4px">5 / 10</div>
+          <div class="risk-meter">
+            <div class="risk-track">
+              <div class="risk-thumb" style="left:calc(50% - 6px)"></div>
+            </div>
+            <span class="risk-label">5/10</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mid row: Allocation + Chart -->
+      <div class="mid-row">
+
+        <!-- Allocation Pie -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">자산 배분</span>
+            <span class="card-badge">권장 5자산</span>
+          </div>
+          <div class="alloc-wrap">
+            <div class="pie-container">
+              <div class="pie-svg-wrap">
+                <svg id="pie-svg" width="130" height="130" viewBox="0 0 130 130"></svg>
+                <div class="pie-center">
+                  <div class="pie-center-val">₩4.82억</div>
+                  <div class="pie-center-lbl">총 평가자산</div>
+                </div>
+              </div>
+              <div class="alloc-legend" id="alloc-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="card" style="display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0">
+            <span class="card-title">성과 추이</span>
+            <div class="chart-tabs">
+              <div class="chart-tab active" data-range="1Y">1Y</div>
+              <div class="chart-tab" data-range="6M">6M</div>
+              <div class="chart-tab" data-range="3M">3M</div>
+              <div class="chart-tab" data-range="1M">1M</div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <span><i class="cl-port"></i> 포트폴리오</span>
+            <span><i class="cl-bench"></i> KOSPI 벤치마크</span>
+          </div>
+          <div class="chart-wrap" style="flex:1">
+            <canvas id="perf-canvas" class="perf-chart"></canvas>
+          </div>
+        </div>
+
+      </div><!-- /mid-row -->
+
+      <!-- Holdings Table -->
+      <div class="card holdings-wrap">
+        <div class="card-header" style="padding-bottom:8px">
+          <span class="card-title">보유 종목</span>
+          <span class="card-badge">12 종목</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="holdings-table" id="holdings-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;min-width:140px">종목명</th>
+                <th>비중</th>
+                <th>평가금액</th>
+                <th>매수단가</th>
+                <th>평가단가</th>
+                <th>수익률</th>
+                <th>전일대비</th>
+              </tr>
+            </thead>
+            <tbody id="holdings-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /main-left -->
+
+    <!-- Right column -->
+    <div class="main-right">
+
+      <!-- PB Widget -->
+      <div class="pb-widget">
+        <div class="pb-widget-header">
+          <div class="pb-avatar-lg">김</div>
+          <div>
+            <div class="pb-name-lg">김수정 PB</div>
+            <div class="pb-title">WealthDesk · 강남 PB 센터</div>
+          </div>
+        </div>
+        <div class="pb-stats">
+          <div class="pb-stat">
+            <div class="pb-stat-lbl">담당 기간</div>
+            <div class="pb-stat-val">3년 4개월</div>
+          </div>
+          <div class="pb-stat">
+            <div class="pb-stat-lbl">전담 자산</div>
+            <div class="pb-stat-val">₩82억+</div>
+          </div>
+        </div>
+        <div class="pb-next-meet">
+          <div class="pb-next-meet-icon">📅</div>
+          <div class="pb-next-meet-text">
+            다음 정기 미팅<br>
+            <span class="pb-next-meet-date">2026년 5월 3일 (일) 14:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="right-section-title">알림 &amp; 추천</div>
+
+      <div class="rebal-banner">
+        <div class="rebal-icon">⚖️</div>
+        <div class="rebal-text">
+          <div class="rebal-title">리밸런싱 권장</div>
+          <div class="rebal-body">주식 비중 47% — 목표 대비 +5% 초과</div>
+        </div>
+        <button class="rebal-btn">실행</button>
+      </div>
+
+      <div id="alert-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+    </div><!-- /main-right -->
+
+  </div><!-- /main -->
+
+</div><!-- /app -->
+
+<script>
+/* ═══════════════════════════════════════════
+   WealthDesk · Portfolio Dashboard
+   Vanilla JS — no dependencies
+═══════════════════════════════════════════ */
+
+// ── 1. Data ──────────────────────────────────
+
+const ALLOC = [
+  { name:'주식',    pct:42, color:'#1a3360' },
+  { name:'채권',    pct:28, color:'#c4a35a' },
+  { name:'대체투자', pct:18, color:'#4a80d0' },
+  { name:'현금',    pct:8,  color:'#6abf90' },
+  { name:'부동산',  pct:4,  color:'#d0805a' },
+];
+
+const HOLDINGS = [
+  { name:'삼성전자',     type:'KR',  tag:'tag-kr',   weight:12.4, eval:59.8,  buy:62000,  cur:67400,  ret:8.7,   chg:+0.4 },
+  { name:'SK하이닉스',   type:'KR',  tag:'tag-kr',   weight:9.8,  eval:47.2,  buy:138000, cur:161500, ret:17.0,  chg:+1.2 },
+  { name:'네이버',       type:'KR',  tag:'tag-kr',   weight:6.2,  eval:29.9,  buy:195000, cur:182000, ret:-6.7,  chg:-0.8 },
+  { name:'카카오',       type:'KR',  tag:'tag-kr',   weight:4.1,  eval:19.7,  buy:54000,  cur:48500,  ret:-10.2, chg:-0.3 },
+  { name:'NVDA',         type:'US',  tag:'tag-us',   weight:7.6,  eval:36.6,  buy:485,    cur:872,    ret:79.8,  chg:+2.1 },
+  { name:'MSFT',         type:'US',  tag:'tag-us',   weight:5.3,  eval:25.5,  buy:310,    cur:418,    ret:34.8,  chg:+0.6 },
+  { name:'GOOGL',        type:'US',  tag:'tag-us',   weight:3.8,  eval:18.3,  buy:142,    cur:175,    ret:23.2,  chg:-0.4 },
+  { name:'KODEX 200 ETF', type:'ETF', tag:'tag-etf', weight:8.2,  eval:39.5,  buy:32000,  cur:35200,  ret:10.0,  chg:+0.2 },
+  { name:'TIGER 나스닥100', type:'ETF', tag:'tag-etf', weight:4.6, eval:22.2, buy:16000,  cur:19400,  ret:21.3,  chg:+0.9 },
+  { name:'KTB 국고채 ETF', type:'채권', tag:'tag-bond', weight:9.4, eval:45.3, buy:99500,  cur:103200, ret:3.7,   chg:+0.1 },
+  { name:'BBRJ 회사채 ETF', type:'채권', tag:'tag-bond', weight:8.3, eval:40.0, buy:50000, cur:51800,  ret:3.6,   chg:0.0 },
+  { name:'KRX 부동산 리츠', type:'대체', tag:'tag-etf', weight:4.1, eval:19.8, buy:8200,  cur:9450,   ret:15.2,  chg:+0.5 },
+];
+
+const ALERTS = [
+  {
+    icon:'📊', cls:'',
+    title:'주간 시장 코멘트 도착',
+    body:'한국 증시 변동성 확대 — 2Q 실적 시즌 진입. 기술주 비중 점검 권장.',
+    time:'오늘 09:14'
+  },
+  {
+    icon:'📈', cls:'alert-report',
+    title:'NVDA 목표주가 상향',
+    body:'골드만삭스 $1,100 → 현재 대비 +26.2% 상승 여력 제시.',
+    time:'어제 16:30'
+  },
+  {
+    icon:'⚠️', cls:'alert-urgent',
+    title:'카카오 손절 라인 접근',
+    body:'평균 손실률 -10.2% — 리스크 한도(-12%) 근접. PB 확인 요망.',
+    time:'어제 11:02'
+  },
+  {
+    icon:'📉', cls:'',
+    title:'환율 리스크 — USD/KRW',
+    body:'원달러 1,368원 돌파. 미국 자산 환노출 비중 16.7% 재검토.',
+    time:'2일 전'
+  },
+  {
+    icon:'🏆', cls:'alert-report',
+    title:'YTD 수익 벤치마크 +4.1%p 상회',
+    body:'KOSPI +8.3% 대비 포트폴리오 +12.4% 달성. 1등급 성과 유지.',
+    time:'주간 리포트'
+  },
+];
+
+// ── 2. Allocation Pie ─────────────────────────
+
+function drawPie() {
+  const svg = document.getElementById('pie-svg');
+  const W = 130, H = 130, cx = 65, cy = 65, R = 56, r = 36;
+  let angle = -Math.PI / 2;
+  let paths = '';
+
+  ALLOC.forEach(seg => {
+    const a = (seg.pct / 100) * Math.PI * 2;
+    const x1 = cx + R * Math.cos(angle);
+    const y1 = cy + R * Math.sin(angle);
+    const x2 = cx + R * Math.cos(angle + a);
+    const y2 = cy + R * Math.sin(angle + a);
+    const xi1 = cx + r * Math.cos(angle);
+    const yi1 = cy + r * Math.sin(angle);
+    const xi2 = cx + r * Math.cos(angle + a);
+    const yi2 = cy + r * Math.sin(angle + a);
+    const lf = a > Math.PI ? 1 : 0;
+    const d = `M${x1},${y1} A${R},${R} 0 ${lf} 1 ${x2},${y2} L${xi2},${yi2} A${r},${r} 0 ${lf} 0 ${xi1},${yi1} Z`;
+    paths += `<path d="${d}" fill="${seg.color}" stroke="#fff" stroke-width="2" style="cursor:pointer;transition:opacity .2s" onmouseenter="this.style.opacity='.75'" onmouseleave="this.style.opacity='1'"><title>${seg.name} ${seg.pct}%</title></path>`;
+    angle += a;
+  });
+
+  svg.innerHTML = paths;
+
+  const legend = document.getElementById('alloc-legend');
+  legend.innerHTML = ALLOC.map(s => `
+    <div class="legend-row">
+      <div class="legend-dot" style="background:${s.color}"></div>
+      <span class="legend-name">${s.name}</span>
+      <span class="legend-pct">${s.pct}%</span>
+      <div class="legend-bar-wrap">
+        <div class="legend-bar-fill" style="width:${s.pct}%;background:${s.color}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── 3. Performance Chart ──────────────────────
+
+function drawChart() {
+  const canvas = document.getElementById('perf-canvas');
+  const parent = canvas.parentElement;
+  canvas.width  = parent.clientWidth * devicePixelRatio;
+  canvas.height = 160 * devicePixelRatio;
+  canvas.style.width  = parent.clientWidth + 'px';
+  canvas.style.height = '160px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const W = parent.clientWidth, H = 160;
+  const pad = { top:12, right:20, bottom:28, left:42 };
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+
+  // Generate 12-month data
+  const n = 252;
+  const port  = [0];
+  const bench = [0];
+  for (let i = 1; i < n; i++) {
+    const dPort  = (Math.random() - 0.48) * 0.9 + 0.055 / n;
+    const dBench = (Math.random() - 0.49) * 0.8 + 0.035 / n;
+    port.push(port[i-1]  + dPort);
+    bench.push(bench[i-1] + dBench);
+  }
+  // Scale to ~12.4% and ~8.3%
+  const pScale = 12.4 / (port[n-1] * 100 || 1);
+  const bScale = 8.3  / (bench[n-1] * 100 || 1);
+  const portPct  = port.map(v => v * 100 * pScale);
+  const benchPct = bench.map(v => v * 100 * bScale);
+
+  const allVals = [...portPct, ...benchPct];
+  const minV = Math.min(...allVals) - 1;
+  const maxV = Math.max(...allVals) + 1;
+
+  function toX(i) { return pad.left + (i / (n-1)) * chartW; }
+  function toY(v) { return pad.top + (1 - (v - minV) / (maxV - minV)) * chartH; }
+
+  // Grid lines
+  ctx.strokeStyle = '#e8ecf4';
+  ctx.lineWidth = 1;
+  const ticks = 4;
+  for (let t = 0; t <= ticks; t++) {
+    const v = minV + (t / ticks) * (maxV - minV);
+    const y = toY(v);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#9aa3be';
+    ctx.font = '9px Noto Sans KR';
+    ctx.textAlign = 'right';
+    ctx.fillText((v >= 0 ? '+' : '') + v.toFixed(1) + '%', pad.left - 4, y + 3);
+  }
+
+  // Month labels
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  ctx.fillStyle = '#9aa3be';
+  ctx.font = '9px Noto Sans KR';
+  ctx.textAlign = 'center';
+  for (let m = 0; m < 12; m++) {
+    const x = pad.left + ((m + 0.5) / 12) * chartW;
+    ctx.fillText(months[m], x, H - 6);
+  }
+
+  // Zero line
+  ctx.strokeStyle = '#cdd2e2';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  const y0 = toY(0);
+  ctx.beginPath(); ctx.moveTo(pad.left, y0); ctx.lineTo(W - pad.right, y0); ctx.stroke();
+  ctx.setLineDash([]);
+
+  function drawLine(data, color, fillColor) {
+    ctx.beginPath();
+    data.forEach((v, i) => {
+      if (i === 0) ctx.moveTo(toX(i), toY(v));
+      else ctx.lineTo(toX(i), toY(v));
+    });
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (fillColor) {
+      ctx.lineTo(toX(n-1), toY(0));
+      ctx.lineTo(toX(0), toY(0));
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+    }
+  }
+
+  // Benchmark
+  drawLine(benchPct, '#c4a35a', null);
+
+  // Portfolio with fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
+  grad.addColorStop(0, 'rgba(26,51,96,.18)');
+  grad.addColorStop(1, 'rgba(26,51,96,.01)');
+  drawLine(portPct, '#1a3360', grad);
+
+  // Animated end-dot — save snapshot first so animation can restore it
+  const endX = toX(n-1);
+  const endY = toY(portPct[n-1]);
+  const snap = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  window._chartEndDot = { ctx, endX, endY, phase: window._chartEndDot ? window._chartEndDot.phase : 0, snap };
+}
+
+function animateChartDot() {
+  const d = window._chartEndDot;
+  if (!d) return;
+  d.phase += 0.07;
+  const r = 4 + Math.sin(d.phase) * 2;
+  const { ctx, endX, endY } = d;
+
+  // Restore snapshot behind dot, then draw pulsing dot on top
+  if (d.snap) {
+    ctx.putImageData(d.snap, 0, 0);
+  }
+
+  // Halo
+  ctx.beginPath();
+  ctx.arc(endX, endY, r + 4, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(26,51,96,.10)';
+  ctx.fill();
+
+  // Core dot
+  ctx.beginPath();
+  ctx.arc(endX, endY, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a3360';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(endX, endY, r - 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+}
+
+// ── 4. Holdings Table ─────────────────────────
+
+function renderHoldings() {
+  const tbody = document.getElementById('holdings-body');
+  tbody.innerHTML = HOLDINGS.map((h, i) => {
+    const retCls = h.ret >= 0 ? 'pct-up' : 'pct-dn';
+    const chgStr = h.chg === 0 ? '0.00%' : (h.chg > 0 ? '+' : '') + h.chg.toFixed(2) + '%';
+    const chgCls = h.chg > 0 ? 'pct-up' : h.chg < 0 ? 'pct-dn' : 'pct-neutral';
+    const retStr = (h.ret >= 0 ? '+' : '') + h.ret.toFixed(1) + '%';
+    const tagLabel = h.type === 'KR' ? 'KR' : h.type === 'US' ? 'US' : h.type === 'ETF' ? 'ETF' : h.type === '채권' ? '채권' : h.type;
+    return `<tr data-idx="${i}" id="hrow-${i}">
+      <td>
+        <span class="stock-name">${h.name}</span>
+        <span class="tag ${h.tag}">${tagLabel}</span>
+      </td>
+      <td>${h.weight.toFixed(1)}%</td>
+      <td>${h.eval.toFixed(1)}M</td>
+      <td class="pct-neutral">${h.buy.toLocaleString()}</td>
+      <td id="hcur-${i}" class="${retCls}">${h.cur.toLocaleString()}</td>
+      <td id="hret-${i}" class="${retCls}">${retStr}</td>
+      <td id="hchg-${i}" class="${chgCls}">${chgStr}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── 5. Alerts Panel ───────────────────────────
+
+function renderAlerts() {
+  const list = document.getElementById('alert-list');
+  list.innerHTML = ALERTS.map((a, i) => `
+    <div class="alert-card ${a.cls}" id="alert-${i}">
+      <div class="alert-icon-wrap">${a.icon}</div>
+      <div class="alert-content">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-body">${a.body}</div>
+        <div class="alert-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── 6. Animations ─────────────────────────────
+
+// KPI: total asset ticks
+let _totalBase = 482000000;
+let _totalChgBase = 2400000;
+function tickKPI() {
+  // Small realistic fluctuation ±20,000~50,000 won
+  const delta = (Math.random() - 0.5) * 50000;
+  _totalBase += delta;
+  _totalChgBase += delta;
+
+  const bil = _totalBase / 1e8;
+  document.getElementById('kpi-total').textContent =
+    '₩' + bil.toFixed(2) + '억';
+
+  const sign = _totalChgBase >= 0 ? '+' : '';
+  const chgM = (_totalChgBase / 1e6).toFixed(1);
+  const chgPct = ((_totalChgBase / (_totalBase - _totalChgBase)) * 100).toFixed(2);
+  const el = document.getElementById('kpi-total-chg');
+  el.textContent = `${sign}₩${chgM}M (${sign}${chgPct}%)`;
+  el.className = 'kpi-sub ' + (_totalChgBase >= 0 ? 'kpi-up' : 'kpi-dn');
+}
+
+// Holdings: tick one row at a time
+let _tickIdx = 0;
+function tickHolding() {
+  const i = _tickIdx % HOLDINGS.length;
+  _tickIdx++;
+  const h = HOLDINGS[i];
+
+  // Simulate price move
+  const noise = (Math.random() - 0.48) * (h.cur * 0.003);
+  h.cur = Math.max(h.buy * 0.5, h.cur + noise);
+  h.ret = ((h.cur - h.buy) / h.buy) * 100;
+  h.chg += (Math.random() - 0.5) * 0.08;
+  h.chg = Math.max(-4, Math.min(4, h.chg));
+
+  const retCls = h.ret >= 0 ? 'pct-up' : 'pct-dn';
+  const chgCls = h.chg > 0 ? 'pct-up' : h.chg < 0 ? 'pct-dn' : 'pct-neutral';
+
+  const curEl = document.getElementById('hcur-' + i);
+  const retEl = document.getElementById('hret-' + i);
+  const chgEl = document.getElementById('hchg-' + i);
+  const row   = document.getElementById('hrow-' + i);
+
+  if (curEl) {
+    curEl.textContent = Math.round(h.cur).toLocaleString();
+    curEl.className = retCls;
+  }
+  if (retEl) {
+    const retStr = (h.ret >= 0 ? '+' : '') + h.ret.toFixed(1) + '%';
+    retEl.textContent = retStr;
+    retEl.className = retCls;
+  }
+  if (chgEl) {
+    const chgStr = h.chg === 0 ? '0.00%' : (h.chg > 0 ? '+' : '') + h.chg.toFixed(2) + '%';
+    chgEl.textContent = chgStr;
+    chgEl.className = chgCls + ' chg-flash' + (h.chg < 0 ? '-dn' : '');
+    setTimeout(() => {
+      if (chgEl) chgEl.className = chgCls;
+    }, 700);
+  }
+  if (row) {
+    row.classList.add('updating');
+    setTimeout(() => row.classList.remove('updating'), 800);
+  }
+}
+
+// Alert card highlight cycle
+let _alertIdx = 0;
+function cycleAlert() {
+  // Remove previous
+  const prev = document.querySelector('.alert-card.highlight');
+  if (prev) prev.classList.remove('highlight');
+
+  const card = document.getElementById('alert-' + _alertIdx);
+  if (card) card.classList.add('highlight');
+  _alertIdx = (_alertIdx + 1) % ALERTS.length;
+}
+
+// ── 7. Chart Tabs ─────────────────────────────
+
+document.querySelectorAll('.chart-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    drawChart();
+  });
+});
+
+// ── 8. Init ───────────────────────────────────
+
+drawPie();
+renderHoldings();
+renderAlerts();
+
+// Defer chart until fonts/layout settle
+setTimeout(() => {
+  drawChart();
+  // Chart dot animation
+  setInterval(animateChartDot, 50);
+}, 200);
+
+// KPI ticks every 1.2s
+setInterval(tickKPI, 1200);
+
+// Holdings tick every 700ms (one at a time)
+setInterval(tickHolding, 700);
+
+// Alert cycle every 5s
+cycleAlert();
+setInterval(cycleAlert, 5000);
+
+// Resize chart on window resize
+window.addEventListener('resize', () => {
+  drawChart();
+  setTimeout(animateChartDot, 100);
+});
+
+// Nav item click
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

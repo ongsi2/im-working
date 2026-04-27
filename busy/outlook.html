@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>받은편지함 — Outlook</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f3f3f3;--panel:#fff;--border:#e1dfdd;--border-s:#c8c6c4;
+  --text:#201f1e;--dim:#605e5c;--mute:#8a8886;
+  --accent:#0078D4;--accent-dk:#005a9e;--accent-lt:#deecf9;
+  --hover:#f3f2f1;--sel:#e8f0fe;--red:#d13438;--amber:#ca5010;
+}
+html,body{height:100%;width:100%;font-family:'Segoe UI','Malgun Gothic','맑은 고딕',sans-serif;font-size:12px;color:var(--text);background:var(--bg);overflow:hidden;user-select:none}
+/* RIBBON */
+#ribbon{display:flex;flex-direction:column;flex-shrink:0}
+#rtabs{display:flex;align-items:center;padding:0 8px;background:var(--accent);height:30px;gap:2px}
+#rtabs .tab{color:rgba(255,255,255,.88);font-size:12px;padding:4px 11px;cursor:pointer;border-radius:2px 2px 0 0;transition:background .1s}
+#rtabs .tab:hover{background:rgba(255,255,255,.12)}
+#rtabs .tab.active{background:#fff;color:var(--accent);font-weight:600}
+#rtabs .spacer{flex:1}
+#rtabs .acct{color:rgba(255,255,255,.9);font-size:11px;padding:0 8px}
+#rbody{display:flex;align-items:center;padding:4px 8px;gap:1px;min-height:52px;background:var(--panel);border-bottom:1px solid var(--border)}
+.rgroup{display:flex;align-items:flex-end;gap:0;padding:0 6px;border-right:1px solid var(--border);height:44px}
+.rgroup:last-child{border-right:none}
+.rbtn{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:2px 6px;min-width:40px;height:42px;border:1px solid transparent;border-radius:2px;cursor:pointer;background:transparent;font-family:inherit;font-size:10px;color:var(--text);gap:2px;transition:background .1s,border-color .1s}
+.rbtn:hover{background:var(--hover);border-color:var(--border)}
+.rbtn .ri{font-size:18px;line-height:1}
+.rbtn.big .ri{font-size:22px}.rbtn.big{height:42px}
+.rbtn.pr .ri{color:var(--accent)}
+.rbtn.sm{flex-direction:row;height:14px;min-width:80px;font-size:11px;padding:1px 4px;align-items:center;justify-content:flex-start;gap:4px}
+.rbtn.sm .ri{font-size:12px}
+.rcol{display:flex;flex-direction:column;height:44px;justify-content:space-around;padding:2px 0}
+/* SEARCH */
+#sbar{display:flex;align-items:center;padding:4px 8px;background:var(--panel);border-bottom:1px solid var(--border);gap:6px;height:32px}
+#swrap{display:flex;align-items:center;flex:1;max-width:520px;background:#f0f0f0;border:1px solid var(--border-s);border-radius:2px;padding:0 8px;gap:6px;height:24px}
+#swrap:focus-within{border-color:var(--accent);background:#fff}
+#swrap .si{color:var(--mute);font-size:13px}
+#sinput{border:none;background:transparent;outline:none;font-family:inherit;font-size:12px;flex:1;color:var(--text)}
+#sinput::placeholder{color:var(--mute)}
+#sscope{font-size:11px;color:var(--dim);border:1px solid var(--border);border-radius:2px;padding:1px 6px;background:#fff}
+/* LAYOUT */
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#main{display:flex;flex:1;overflow:hidden}
+/* FOLDER PANE */
+#fpane{width:200px;min-width:160px;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:4px 0}
+#fpane::-webkit-scrollbar{width:4px}
+#fpane::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:2px}
+.fsec{font-size:10px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px 2px}
+.fi{display:flex;align-items:center;padding:5px 8px 5px 12px;cursor:pointer;gap:6px;border-left:2px solid transparent;font-size:12px;color:var(--text);transition:background .1s}
+.fi:hover{background:var(--hover)}
+.fi.active{background:var(--accent-lt);border-left-color:var(--accent);color:var(--accent);font-weight:600}
+.fi .ico{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.fi .fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi .fb{font-size:10px;background:var(--accent);color:#fff;padding:0 5px;border-radius:10px;font-weight:700;min-width:16px;text-align:center;flex-shrink:0}
+.fi.sub{padding-left:26px}
+.fi.sub .ico{font-size:12px}
+.fdiv{height:1px;background:var(--border);margin:4px 8px}
+.fexp{display:flex;align-items:center;padding:4px 8px 4px 12px;cursor:pointer;gap:6px;font-size:11px;color:var(--dim)}
+.fexp:hover{color:var(--accent)}
+/* MSG LIST */
+#mlpane{width:360px;min-width:280px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#mlhead{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 5px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0}
+#mlhead .ftitle{font-size:14px;font-weight:700}
+#mlhead .msort{font-size:11px;color:var(--mute);cursor:pointer}
+#ftabs{display:flex;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0}
+#ftabs .ft{flex:1;text-align:center;padding:6px 4px;font-size:11px;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .1s}
+#ftabs .ft:hover{color:var(--text)}
+#ftabs .ft.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+#mlist{flex:1;overflow-y:auto}
+#mlist::-webkit-scrollbar{width:4px}
+#mlist::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:2px}
+.mi{display:flex;flex-direction:column;padding:8px 10px 7px;border-bottom:1px solid var(--border);cursor:pointer;position:relative;transition:background .15s}
+.mi:hover{background:var(--hover)}
+.mi.active{background:var(--sel);border-left:2px solid var(--accent)}
+.mi.unread .ms,.mi.unread .msu{font-weight:700}
+.mi.nh{animation:nhp 1.5s ease-out}
+@keyframes nhp{0%{background:#cce4f6}100%{background:transparent}}
+.mi .mr1{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px}
+.mi .ms{font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mi .md{font-size:10px;color:var(--mute);flex-shrink:0;white-space:nowrap}
+.mi .mr2{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.mi .ud{width:7px;height:7px;background:var(--accent);border-radius:50%;flex-shrink:0}
+.mi .msu{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--text)}
+.mi .mr3{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.mi .mp{font-size:11px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mi .micos{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:11px;color:var(--mute)}
+.mi .micos .flag{color:var(--amber)}
+.mi .ibar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+/* READING PANE */
+#rpane{flex:1;background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+#rtbar{display:flex;align-items:center;padding:4px 12px;border-bottom:1px solid var(--border);gap:4px;flex-shrink:0;background:var(--panel)}
+.rbtn2{display:flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid transparent;border-radius:2px;background:transparent;font-family:inherit;font-size:11px;color:var(--text);cursor:pointer;transition:background .1s,border-color .1s}
+.rbtn2:hover{background:var(--hover);border-color:var(--border)}
+.rbtn2 .ri{font-size:13px;color:var(--dim)}
+.rbtn2.pr{color:var(--accent)}.rbtn2.pr .ri{color:var(--accent)}
+.rdiv{width:1px;height:20px;background:var(--border);margin:0 2px}
+#rcont{flex:1;overflow-y:auto;padding:16px 20px 8px}
+#rcont::-webkit-scrollbar{width:6px}
+#rcont::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:3px}
+#esubj{font-size:18px;font-weight:700;color:var(--text);margin-bottom:12px;line-height:1.3}
+#emeta{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+#eav{width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+#emd{flex:1;min-width:0}
+#emd .fn{font-weight:700;font-size:13px}
+#emd .fa{font-size:11px;color:var(--mute);margin-bottom:3px}
+#emd .ml{font-size:11px;color:var(--dim);display:flex;gap:6px;flex-wrap:wrap}
+#emd .ml .lbl{color:var(--mute)}
+#emr{font-size:11px;color:var(--mute);text-align:right;flex-shrink:0;white-space:nowrap}
+#ebody{font-size:13px;line-height:1.65;color:var(--text);margin-bottom:14px}
+#ebody p{margin-bottom:10px}
+#ebody .greet{font-weight:600;margin-bottom:6px}
+#atts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;padding:10px 12px;background:#f9f9f9;border:1px solid var(--border);border-radius:3px}
+.ac{display:flex;align-items:center;gap:6px;padding:4px 10px;background:#fff;border:1px solid var(--border-s);border-radius:2px;font-size:11px;cursor:pointer;transition:border-color .1s,background .1s}
+.ac:hover{border-color:var(--accent);background:var(--accent-lt)}
+.ac .ai{font-size:16px}
+.ac .an{font-size:11px;font-weight:600;color:var(--text)}
+.ac .az{font-size:10px;color:var(--mute)}
+/* QUICK REPLY */
+#qr{border-top:1px solid var(--border);padding:10px 14px;background:var(--panel);flex-shrink:0}
+#qrtabs{display:flex;gap:4px;margin-bottom:8px}
+.qrt{padding:3px 10px;border:1px solid var(--border);border-radius:2px;background:#fff;font-family:inherit;font-size:11px;color:var(--dim);cursor:pointer;transition:all .1s}
+.qrt:hover{border-color:var(--accent);color:var(--accent)}
+.qrt.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+#rta{width:100%;height:60px;resize:none;border:1px solid var(--border-s);border-radius:2px;padding:6px 8px;font-family:inherit;font-size:12px;color:var(--text);outline:none;line-height:1.5;caret-color:var(--text)}
+#rta:focus{border-color:var(--accent)}
+#rfoot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.rsend{background:var(--accent);color:#fff;border:none;padding:4px 14px;border-radius:2px;font-family:inherit;font-size:12px;cursor:pointer;transition:background .1s}
+.rsend:hover{background:var(--accent-dk)}
+.rdisc{background:transparent;border:1px solid var(--border-s);padding:4px 10px;border-radius:2px;font-family:inherit;font-size:11px;color:var(--dim);cursor:pointer}
+.rdisc:hover{border-color:var(--accent);color:var(--accent)}
+/* STATUS BAR */
+#sbar2{display:flex;align-items:center;padding:0 10px;height:22px;background:var(--accent);color:rgba(255,255,255,.92);font-size:11px;gap:14px;flex-shrink:0}
+#sbar2 .sv{width:1px;height:12px;background:rgba(255,255,255,.3)}
+#sbar2 .sr{margin-left:auto;display:flex;align-items:center;gap:12px}
+#synd{display:flex;align-items:center;gap:5px}
+#syndot{width:7px;height:7px;background:rgba(255,255,255,.8);border-radius:50%;transition:opacity .3s}
+#syndot.pulse{animation:sp 1.5s ease-in-out}
+@keyframes sp{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.4);background:#fff}}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:3px}
+</style>
+</head>
+<body data-deadzone="true" data-vitals-type="document" data-title="받은편지함 — Outlook" data-favicon="📨" data-app="Outlook">
+<div id="app">
+
+<!-- RIBBON -->
+<div id="ribbon">
+  <div id="rtabs">
+    <div class="tab active">홈</div>
+    <div class="tab">보내기·받기</div>
+    <div class="tab">폴더</div>
+    <div class="tab">보기</div>
+    <div class="tab">도움말</div>
+    <div class="spacer"></div>
+    <div class="acct">김민준 — minj.kim@corp.co.kr</div>
+  </div>
+  <div id="rbody">
+    <div class="rgroup">
+      <button class="rbtn big pr"><span class="ri">✉</span><span>새 메일</span></button>
+    </div>
+    <div class="rgroup">
+      <div class="rcol">
+        <button class="rbtn sm"><span class="ri">↩</span>답장</button>
+        <button class="rbtn sm"><span class="ri">↩↩</span>전체 답장</button>
+        <button class="rbtn sm"><span class="ri">↪</span>전달</button>
+      </div>
+    </div>
+    <div class="rgroup">
+      <button class="rbtn"><span class="ri">🗑</span><span>삭제</span></button>
+      <button class="rbtn"><span class="ri">📦</span><span>보관</span></button>
+      <button class="rbtn"><span class="ri">🚫</span><span>정크</span></button>
+    </div>
+    <div class="rgroup">
+      <div class="rcol">
+        <button class="rbtn sm"><span class="ri">✓</span>읽음으로 표시</button>
+        <button class="rbtn sm"><span class="ri">📌</span>고정</button>
+        <button class="rbtn sm"><span class="ri">🏷</span>분류</button>
+      </div>
+    </div>
+    <div class="rgroup">
+      <button class="rbtn"><span class="ri">📁</span><span>이동</span></button>
+      <button class="rbtn"><span class="ri">⚙</span><span>규칙</span></button>
+    </div>
+    <div class="rgroup">
+      <button class="rbtn"><span class="ri">📅</span><span>일정 보기</span></button>
+      <button class="rbtn"><span class="ri">👤</span><span>연락처</span></button>
+    </div>
+    <div class="rgroup">
+      <div class="rcol">
+        <button class="rbtn sm"><span class="ri">🔍</span>검색</button>
+        <button class="rbtn sm"><span class="ri">⚗</span>필터</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div id="sbar">
+  <div id="swrap">
+    <span class="si">🔍</span>
+    <input id="sinput" type="text" placeholder="Outlook 검색 (Ctrl+E)">
+  </div>
+  <select id="sscope">
+    <option>현재 폴더</option><option>모든 폴더</option>
+    <option>현재 사서함</option><option>모든 사서함</option>
+  </select>
+</div>
+
+<!-- THREE PANE -->
+<div id="main">
+
+  <!-- FOLDER PANE -->
+  <div id="fpane">
+    <div class="fsec">즐겨찾기</div>
+    <div class="fi active" onclick="selF(this,'받은편지함')"><span class="ico">📥</span><span class="fn">받은편지함</span><span class="fb" id="ib">12</span></div>
+    <div class="fi" onclick="selF(this,'보낸편지함')"><span class="ico">📤</span><span class="fn">보낸편지함</span></div>
+    <div class="fi" onclick="selF(this,'임시 보관함')"><span class="ico">📝</span><span class="fn">임시 보관함</span><span class="fb" style="background:var(--amber)">3</span></div>
+    <div class="fdiv"></div>
+    <div class="fsec">minj.kim@corp.co.kr</div>
+    <div class="fi" onclick="selF(this,'받은편지함')"><span class="ico">📥</span><span class="fn">받은편지함</span><span class="fb" id="ib2">12</span></div>
+    <div class="fi sub" onclick="selF(this,'프로젝트 A')"><span class="ico">📂</span><span class="fn">프로젝트 A</span><span class="fb">4</span></div>
+    <div class="fi sub" onclick="selF(this,'고객사')"><span class="ico">📂</span><span class="fn">고객사</span><span class="fb">2</span></div>
+    <div class="fi sub" onclick="selF(this,'내부')"><span class="ico">📂</span><span class="fn">내부</span></div>
+    <div class="fi sub" onclick="selF(this,'파견')"><span class="ico">📂</span><span class="fn">파견</span><span class="fb">1</span></div>
+    <div class="fi" onclick="selF(this,'보낸편지함')"><span class="ico">📤</span><span class="fn">보낸편지함</span></div>
+    <div class="fi" onclick="selF(this,'임시 보관함')"><span class="ico">📝</span><span class="fn">임시 보관함</span><span class="fb" style="background:var(--amber)">3</span></div>
+    <div class="fi" onclick="selF(this,'삭제된 항목')"><span class="ico">🗑</span><span class="fn">삭제된 항목</span></div>
+    <div class="fi" onclick="selF(this,'정크 메일')"><span class="ico">⚠</span><span class="fn">정크 메일</span><span class="fb" style="background:var(--mute)">6</span></div>
+    <div class="fi" onclick="selF(this,'보관함')"><span class="ico">🗄</span><span class="fn">보관함</span></div>
+    <div class="fdiv"></div>
+    <div class="fexp">▾ 검색 폴더</div>
+    <div class="fi sub" onclick="selF(this,'읽지 않은 메일')"><span class="ico">🔵</span><span class="fn">읽지 않은 메일</span></div>
+    <div class="fi sub" onclick="selF(this,'중요 메일')"><span class="ico">⭐</span><span class="fn">중요 메일</span></div>
+  </div>
+
+  <!-- MESSAGE LIST PANE -->
+  <div id="mlpane">
+    <div id="mlhead">
+      <span class="ftitle">받은편지함</span>
+      <span class="msort">날짜순 ▾</span>
+    </div>
+    <div id="ftabs">
+      <div class="ft active">전체</div>
+      <div class="ft">읽지 않음</div>
+      <div class="ft">중요</div>
+      <div class="ft">멘션됨</div>
+    </div>
+    <div id="mlist"></div>
+  </div>
+
+  <!-- READING PANE -->
+  <div id="rpane">
+    <div id="rtbar">
+      <button class="rbtn2 pr"><span class="ri">↩</span>답장</button>
+      <button class="rbtn2 pr"><span class="ri">↩↩</span>전체 답장</button>
+      <button class="rbtn2 pr"><span class="ri">↪</span>전달</button>
+      <div class="rdiv"></div>
+      <button class="rbtn2"><span class="ri">🗑</span>삭제</button>
+      <button class="rbtn2"><span class="ri">📦</span>보관</button>
+      <button class="rbtn2"><span class="ri">📌</span>고정</button>
+      <div class="rdiv"></div>
+      <button class="rbtn2"><span class="ri">⭐</span>플래그</button>
+      <button class="rbtn2"><span class="ri">🏷</span>분류</button>
+      <button class="rbtn2"><span class="ri">📁</span>이동</button>
+      <div class="rdiv"></div>
+      <button class="rbtn2"><span class="ri">⋯</span>더 보기</button>
+    </div>
+    <div id="rcont">
+      <div id="esubj">RE: Q2 실적 보고서 검토 요청</div>
+      <div id="emeta">
+        <div id="eav">이</div>
+        <div id="emd">
+          <div class="fn">이수민</div>
+          <div class="fa">leesumin@company.com</div>
+          <div class="ml"><span class="lbl">받는사람:</span><span>김민준; 박재원; 최지현</span></div>
+          <div class="ml"><span class="lbl">참조:</span><span>정태영; HR팀 &lt;hr@corp.co.kr&gt;</span></div>
+        </div>
+        <div id="emr">2026년 4월 27일 (월) 오전 10:42<br><span style="color:var(--accent)">⭐ 중요</span></div>
+      </div>
+      <div id="ebody">
+        <p class="greet">김민준 팀장님, 안녕하세요.</p>
+        <p>Q2 실적 보고서 초안을 첨부 파일로 공유드립니다. 지난 분기 대비 매출은 약 8.3% 증가하였으나, 영업이익률은 원가 상승 요인으로 인해 소폭 하락한 것으로 집계되었습니다. 관련 세부 항목은 첨부된 엑셀 파일 3번 시트를 참고해 주시기 바랍니다.</p>
+        <p>특히 3분기 목표 대비 달성률 분석 부분에서 팀장님의 의견을 반영하고자 합니다. 혹시 이번 주 목요일 오전까지 검토 의견 주실 수 있을까요? 경영진 보고는 다음 주 월요일로 예정되어 있어 일정이 다소 촉박합니다.</p>
+        <p>추가로, 지역별 매출 분석 자료는 현재 GIS팀에서 별도 작성 중이며, 늦어도 수요일까지 취합 완료될 예정입니다. 전체 보고서 포함 여부도 함께 검토 부탁드립니다.</p>
+        <p>항상 수고 많으십니다. 기타 문의 사항은 내선 3214 또는 회신으로 연락 주시면 감사하겠습니다.<br><br>감사합니다.<br><strong>이수민</strong> 드림<br>경영기획팀 | corp.co.kr | 내선 3214</p>
+      </div>
+      <div id="atts">
+        <div class="ac"><span class="ai">📊</span><div><div class="an">Q2_실적보고서_초안_v3.xlsx</div><div class="az">1.2 MB</div></div></div>
+        <div class="ac"><span class="ai">📄</span><div><div class="an">영업이익률_분석.pdf</div><div class="az">856 KB</div></div></div>
+        <div class="ac"><span class="ai">📋</span><div><div class="an">지역별매출_참고자료.pptx</div><div class="az">3.4 MB</div></div></div>
+      </div>
+    </div>
+    <!-- QUICK REPLY -->
+    <div id="qr">
+      <div id="qrtabs">
+        <button class="qrt active">답장</button>
+        <button class="qrt">전체 답장</button>
+        <button class="qrt">전달</button>
+      </div>
+      <textarea id="rta" placeholder="회신 메시지를 입력하세요..."></textarea>
+      <div id="rfoot">
+        <button class="rdisc">취소</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:11px;color:var(--mute)">Ctrl+Enter로 보내기</span>
+          <button class="rsend">보내기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #main -->
+
+<!-- STATUS BAR -->
+<div id="sbar2">
+  <div id="synd"><div id="syndot"></div><span id="syntxt">최근 동기화: 방금</span></div>
+  <div class="sv"></div>
+  <span id="scount">12개 · 읽지 않음 3</span>
+  <div class="sr">
+    <span>사서함: 18.4 GB / 50 GB</span>
+    <div class="sv"></div>
+    <span>Microsoft Exchange · 연결됨</span>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+const msgs=[
+  {id:1,s:'이수민',a:'leesumin@company.com',sub:'RE: Q2 실적 보고서 검토 요청',pre:'Q2 실적 보고서 초안을 첨부 파일로 공유드립니다. 지난 분기 대비 매출은 약 8.3% 증가하였으나...',dt:'오전 10:42',u:false,fl:false,at:true,imp:true},
+  {id:2,s:'[필독] 보안팀',a:'security@corp.co.kr',sub:'[필독] 4월 정기 보안 교육 안내',pre:'4월 보안 교육은 4월 30일(수) 오후 2시 본사 강당에서 진행됩니다. 전 직원 필수 참석...',dt:'오전 9:55',u:true,fl:false,at:false,imp:true},
+  {id:3,s:'박재원',a:'jwpark@corp.co.kr',sub:'주간 KPI 리뷰 — 회의록',pre:'안녕하세요. 지난 금요일 주간 KPI 리뷰 회의 내용을 정리하여 공유드립니다...',dt:'어제',u:true,fl:true,at:true,imp:false},
+  {id:4,s:'최지현',a:'jhchoi@corp.co.kr',sub:'[공지] 사무실 이전 안내 (5월 2일)',pre:'5월 2일(토)부터 서울 강남구 신사동 신사타워 18층으로 이전됩니다...',dt:'어제',u:false,fl:false,at:true,imp:false},
+  {id:5,s:'HR팀',a:'hr@corp.co.kr',sub:'5월 급여 명세서 발급 안내',pre:'5월 급여 명세서가 발급되었습니다. 사내 인사시스템에서 확인하실 수 있습니다...',dt:'어제',u:true,fl:false,at:false,imp:false},
+  {id:6,s:'김태호 부장',a:'thkim@corp.co.kr',sub:'FWD: 파견 업무 협의 일정 조율 건',pre:'파견 업무 관련하여 협력사 미팅 일정을 조율 중입니다. 가능한 일정 확인 후 회신...',dt:'4/25',u:false,fl:true,at:false,imp:false},
+  {id:7,s:'정태영',a:'tyjung@corp.co.kr',sub:'RE: 고객사 계약 갱신 검토 요청',pre:'첨부드린 계약서 검토 부탁드립니다. 주요 변경 사항은 3조, 7조이며 법무팀 의견도...',dt:'4/25',u:false,fl:false,at:true,imp:false},
+  {id:8,s:'IT 헬프데스크',a:'helpdesk@corp.co.kr',sub:'[안내] VPN 클라이언트 업데이트 필수 (v4.2)',pre:'보안 취약점 패치를 위한 VPN 클라이언트 업데이트가 배포되었습니다. 이번 주 금요일까지...',dt:'4/24',u:false,fl:false,at:false,imp:false},
+  {id:9,s:'조민서',a:'mscho@corp.co.kr',sub:'신규 고객사 온보딩 자료 공유',pre:'신규 고객사 ABC코퍼레이션 온보딩 일정 및 체크리스트를 공유드립니다...',dt:'4/24',u:false,fl:false,at:true,imp:false},
+  {id:10,s:'재무팀',a:'finance@corp.co.kr',sub:'Q1 비용 처리 마감 안내 — 4/28(화) 18:00',pre:'Q1 비용 처리 마감일이 이번 화요일 오후 6시입니다. 미처리 건이 있으시면 서둘러 제출...',dt:'4/23',u:true,fl:false,at:false,imp:true},
+  {id:11,s:'noreply',a:'noreply@teams.microsoft.com',sub:'Teams 알림: 프로젝트A 채널에 새 메시지',pre:'박재원님이 "Q2 킥오프 일정 확정" 메시지를 남겼습니다. Teams에서 확인하세요...',dt:'4/23',u:false,fl:false,at:false,imp:false},
+  {id:12,s:'윤서연',a:'syyoon@corp.co.kr',sub:'RE: 내부 교육 커리큘럼 검토 부탁드립니다',pre:'교육 커리큘럼 초안을 검토하였습니다. 전반적으로 잘 정리되어 있으나 3주차 일정이...',dt:'4/22',u:false,fl:true,at:true,imp:false},
+  {id:13,s:'강동현',a:'dhkang@corp.co.kr',sub:'[긴급] 서버 장애 대응 현황 공유',pre:'금일 오전 2시 30분경 발생한 서버 장애는 현재 복구 완료되었습니다. 원인 분석 결과...',dt:'4/22',u:false,fl:false,at:true,imp:true},
+  {id:14,s:'총무팀',a:'admin@corp.co.kr',sub:'5월 사내 행사 참석 여부 확인 요청',pre:'5월 가족의 날 행사 참석 여부를 4월 29일까지 총무팀으로 회신 부탁드립니다...',dt:'4/21',u:false,fl:false,at:false,imp:false},
+  {id:15,s:'이현우',a:'hwlee@corp.co.kr',sub:'프로젝트 A 마일스톤 진행 현황 공유',pre:'이번 주 프로젝트 A 마일스톤 달성률은 74%로 당초 목표 대비 소폭 지연 중입니다...',dt:'4/21',u:false,fl:false,at:true,imp:false},
+];
+let selId=1;
+
+function render(){
+  document.getElementById('mlist').innerHTML=msgs.map(m=>`
+<div class="mi${m.u?' unread':''}${m.id===selId?' active':''}" id="m${m.id}" onclick="selM(${m.id})">
+  ${m.imp?'<div class="ibar"></div>':''}
+  <div class="mr1"><span class="ms">${m.s}</span><span class="md">${m.dt}</span></div>
+  <div class="mr2">${m.u?'<span class="ud"></span>':'<span style="width:7px;flex-shrink:0"></span>'}<span class="msu">${m.sub}</span></div>
+  <div class="mr3"><span class="mp">${m.pre}</span><span class="micos">${m.at?'📎':''} ${m.fl?'<span class="flag">🚩</span>':''}</span></div>
+</div>`).join('');
+}
+
+function selM(id){selId=id;render();}
+function selF(el,name){
+  document.querySelectorAll('.fi').forEach(f=>f.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelector('.ftitle').textContent=name;
+}
+
+document.querySelectorAll('.ft').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.ft').forEach(x=>x.classList.remove('active'));t.classList.add('active');
+}));
+document.querySelectorAll('.qrt').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.qrt').forEach(x=>x.classList.remove('active'));t.classList.add('active');
+}));
+
+render();
+
+/* SYNC PULSE */
+let syncing=false;
+function doSync(){
+  if(syncing)return;syncing=true;
+  const dot=document.getElementById('syndot'),txt=document.getElementById('syntxt');
+  dot.classList.add('pulse');txt.textContent='이메일 동기화 중...';
+  setTimeout(()=>{dot.classList.remove('pulse');txt.textContent='최근 동기화: 방금';syncing=false;},2200);
+}
+setInterval(()=>{if(!syncing)doSync();},9500);
+
+/* BADGE TICK */
+let ticked=false;
+setTimeout(()=>{
+  if(ticked)return;ticked=true;
+  document.getElementById('ib').textContent='13';
+  document.getElementById('ib2').textContent='13';
+  document.getElementById('scount').textContent='13개 · 읽지 않음 4';
+  const r=document.getElementById('m3');if(r){r.classList.add('nh');setTimeout(()=>r.classList.remove('nh'),1600);}
+},7500);
+
+/* PERIODIC ROW HIGHLIGHT */
+setInterval(()=>{
+  const rows=document.querySelectorAll('.mi');if(!rows.length)return;
+  const r=rows[Math.floor(Math.random()*Math.min(rows.length,5))];
+  r.classList.add('nh');setTimeout(()=>r.classList.remove('nh'),1500);
+},15000);
+
+/* FAKE TYPING */
+const ta=document.getElementById('rta');
+const ft='확인했습니다. 목요일 오전까지 검토 의견 드리겠습니다.';
+let typing=false,tt,et;
+function doType(){
+  if(typing||document.activeElement===ta)return;
+  typing=true;let i=0;ta.value='';
+  function nc(){
+    if(document.activeElement===ta){typing=false;return;}
+    if(i<ft.length){ta.value+=ft[i++];tt=setTimeout(nc,55+Math.random()*40);}
+    else et=setTimeout(doErase,2200);
+  }nc();
+}
+function doErase(){
+  if(document.activeElement===ta){typing=false;return;}
+  if(ta.value.length>0){ta.value=ta.value.slice(0,-1);et=setTimeout(doErase,28+Math.random()*20);}
+  else typing=false;
+}
+function schedType(){setTimeout(()=>{doType();schedType();},12000+Math.random()*7000);}
+schedType();
+ta.addEventListener('focus',()=>{clearTimeout(tt);clearTimeout(et);typing=false;ta.value='';});
+</script>
+<script type="module" src="../shared.js"></script>
+</body>
+</html>

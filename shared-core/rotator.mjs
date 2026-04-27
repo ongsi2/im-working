@@ -54,6 +54,7 @@ export function clearState() {
 
 export const ALL_SCENES = [
   '열일하는중.html',
+  // page 1 scenes
   'busy/trader.html', 'busy/ppt.html', 'busy/email.html',
   'busy/calendar.html', 'busy/design.html', 'busy/messenger.html',
   'busy/issuetracker.html', 'busy/crypto.html', 'busy/devops.html',
@@ -62,23 +63,55 @@ export const ALL_SCENES = [
   'busy/3dmodel.html', 'busy/notebook.html', 'busy/atc.html',
   'busy/soc.html', 'busy/translator.html', 'busy/erp.html',
   'busy/wms.html', 'busy/latex.html', 'busy/hts.html',
-  // page 2 scenes
+  // page 2 — first 6
   'busy/crm.html', 'busy/bi.html', 'busy/gis.html',
   'busy/photo.html', 'busy/zoom.html', 'busy/dba.html',
+  // page 2 — additional 18
+  'busy/outlook.html', 'busy/sheets.html', 'busy/teams.html', 'busy/hris.html',
+  'busy/vscode.html', 'busy/postman.html', 'busy/grafana.html', 'busy/kibana.html',
+  'busy/bloomberg.html', 'busy/portfolio.html', 'busy/audit.html',
+  'busy/whiteboard.html', 'busy/afterfx.html', 'busy/obs.html',
+  'busy/aws.html', 'busy/splunk.html',
+  'busy/matlab.html',
+  'busy/hometax.html',
 ];
 
 // Role-based scene groupings — used when settings.rotation.role is set.
 // Each role represents a coherent "one person's job" so the rotation looks
 // believable across scenes (vs. ATC + DAW + legal review absurdity).
 export const ROLE_GROUPS = {
-  office:    ['busy/email.html', 'busy/calendar.html', 'busy/messenger.html', 'busy/erp.html', 'busy/ppt.html', 'busy/crm.html', 'busy/bi.html', 'busy/zoom.html'],
-  dev:       ['열일하는중.html', 'busy/issuetracker.html', 'busy/messenger.html', 'busy/devops.html', 'busy/notebook.html', 'busy/dba.html'],
-  finance:   ['busy/trader.html', 'busy/hts.html', 'busy/crypto.html', 'busy/email.html', 'busy/bi.html'],
-  creative:  ['busy/design.html', 'busy/ppt.html', 'busy/videoedit.html', 'busy/daw.html', 'busy/3dmodel.html', 'busy/photo.html'],
-  research:  ['busy/notebook.html', 'busy/latex.html', 'busy/translator.html', 'busy/dba.html'],
-  ops:       ['busy/atc.html', 'busy/soc.html', 'busy/wms.html', 'busy/hts.html', 'busy/gis.html'],
-  pro:       ['busy/medical.html', 'busy/legal.html'],
-  mixed:     null, // null = use ALL_SCENES (광인 모드)
+  office: [
+    'busy/email.html', 'busy/calendar.html', 'busy/messenger.html', 'busy/erp.html', 'busy/ppt.html',
+    'busy/crm.html', 'busy/bi.html', 'busy/zoom.html',
+    'busy/outlook.html', 'busy/sheets.html', 'busy/teams.html', 'busy/hris.html',
+  ],
+  dev: [
+    '열일하는중.html', 'busy/issuetracker.html', 'busy/messenger.html', 'busy/devops.html', 'busy/notebook.html',
+    'busy/dba.html',
+    'busy/vscode.html', 'busy/postman.html', 'busy/grafana.html', 'busy/kibana.html',
+  ],
+  finance: [
+    'busy/trader.html', 'busy/hts.html', 'busy/crypto.html', 'busy/email.html', 'busy/bi.html',
+    'busy/bloomberg.html', 'busy/portfolio.html', 'busy/audit.html',
+  ],
+  creative: [
+    'busy/design.html', 'busy/ppt.html', 'busy/videoedit.html', 'busy/daw.html', 'busy/3dmodel.html',
+    'busy/photo.html',
+    'busy/whiteboard.html', 'busy/afterfx.html', 'busy/obs.html',
+  ],
+  research: [
+    'busy/notebook.html', 'busy/latex.html', 'busy/translator.html', 'busy/dba.html',
+    'busy/matlab.html',
+  ],
+  ops: [
+    'busy/atc.html', 'busy/soc.html', 'busy/wms.html', 'busy/hts.html', 'busy/gis.html',
+    'busy/aws.html', 'busy/splunk.html', 'busy/grafana.html', 'busy/kibana.html',
+  ],
+  pro: [
+    'busy/medical.html', 'busy/legal.html',
+    'busy/hometax.html',
+  ],
+  mixed: null, // null = use ALL_SCENES (광인 모드)
 };
 
 export const ROLE_LABELS = {
@@ -173,6 +206,44 @@ export function stopRotation() {
   if (timer) clearTimeout(timer);
   const state = loadState();
   if (state) { state.enabled = false; saveState(state); }
+}
+
+/** Tour mode — fast cycle through one role's scenes. Different from
+ *  normal rotation in that interval is short (default 6s) and there's
+ *  a `tour: true` flag so Esc cleanly exits to hub. */
+export function beginTour(role, intervalSec = 6) {
+  if (timer) clearTimeout(timer);
+  const sceneSet = resolveSceneSet(role, []);
+  if (!sceneSet.length) return false;
+  const order = buildOrder(sceneSet, []);
+  const state = {
+    enabled: true,
+    tour: true,
+    role,
+    order,
+    cursor: 0,
+    baseSec: intervalSec,
+    jitterPct: 0.15,
+    blacklist: [],
+    nextAt: Date.now() + intervalSec * 1000,
+    pausedUntil: null,
+  };
+  saveState(state);
+  navigateTo(order[0]);
+  return true;
+}
+
+/** Returns true if the active rotation is a tour. */
+export function isTouring() {
+  const s = loadState();
+  return !!(s && s.tour && s.enabled);
+}
+
+/** End the tour and clear rotation state. Caller is responsible for
+ *  navigating back to hub. */
+export function stopTour() {
+  if (timer) clearTimeout(timer);
+  clearState();
 }
 
 export function panic(settings) {

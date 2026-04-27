@@ -52,6 +52,8 @@ Busy.WakeLock = WakeLock;
 Busy.PiP = PiP;
 Busy.start = () => Start.startEverything(Busy.settings);
 Busy.stop  = () => Start.stopEverything();
+Busy.startTour = (role, intervalSec) => Start.startTour(role, intervalSec);
+Busy.endTour = () => Start.endTour();
 try { mountVitals(Busy.settings); } catch (e) { console.warn('[Busy] vitals failed', e); }
 try { mountKeys(Busy.settings); } catch (e) { console.warn('[Busy] Keys failed', e); }
 try { mountFirstHint(); } catch (e) { console.warn('[Busy] FirstHint failed', e); }

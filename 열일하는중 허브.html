@@ -209,6 +209,18 @@
     <div style="margin-left:auto; color:var(--mute)">단축키 <span class="kbd">1</span>~<span class="kbd">6</span> 으로 바로 이동</div>
   </div>
 
+  <div class="tour-bar" id="busy-tour-bar">
+    <span class="label">▶ 샥샥 투어 (6초/씬, ESC로 종료)</span>
+    <button class="tour-chip" data-role="office">🧑‍💼 사무직 <span class="count">12</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="dev">👨‍💻 개발자 <span class="count">10</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="finance">💰 금융 <span class="count">8</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="creative">🎨 창작 <span class="count">9</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="research">🔬 연구 <span class="count">5</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="ops">🛡 관제 <span class="count">9</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="pro">🏥 전문직 <span class="count">3</span><span class="play">▶</span></button>
+    <button class="tour-chip" data-role="mixed">🎲 혼합 <span class="count">48</span><span class="play">▶</span></button>
+  </div>
+
   <div class="grid hub-page hub-page-active" data-page="1">
 
     <a class="card" href="열일하는중.html" data-key="1" data-busy-role="dev">
@@ -1332,6 +1344,295 @@
       </div>
     </a>
 
+    <a class="card" href="busy/outlook.html" data-busy-role="office">
+      <div class="preview"><div style="height:100%;display:grid;grid-template-columns:30% 35% 35%;background:#f3f3f3;font-size:5px">
+        <div style="background:#0078d4;color:#fff;padding:4px"><div style="font-weight:700">받은편지함</div><div style="opacity:0.8;font-size:4.5px;margin-top:2px">12</div><div style="opacity:0.6;margin-top:1px">보낸편지함</div><div style="opacity:0.6">임시 보관함</div><div style="opacity:0.6">정크 메일</div></div>
+        <div style="background:#fff;padding:3px;border-right:1px solid #ddd"><div style="font-size:4.5px;font-weight:600">이수민</div><div style="font-size:4px;color:#888">RE: Q2 보고...</div><div style="font-size:4.5px;margin-top:3px;font-weight:600">김과장</div><div style="font-size:4px;color:#888">[필독] 보안</div><div style="font-size:4.5px;margin-top:3px;color:#0078d4;font-weight:700">박지훈 ●</div><div style="font-size:4px;color:#888">미팅 일정</div></div>
+        <div style="background:#fff;padding:3px"><div style="font-size:5px;font-weight:600">RE: Q2 보고서</div><div style="font-size:4px;color:#666;margin-top:1px">이수민 → 김민준</div><div style="font-size:4px;margin-top:2px;line-height:1.3">안녕하세요. 검토 의견 정리하여 회신드립니다...</div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#0078d4">31 · OUTLOOK</span>
+        <div class="title">이메일 (Outlook)</div>
+        <div class="desc">받은편지함 12건 · 읽지않음 3 · Exchange 동기화 중.</div>
+        <div class="row"><span class="kb">Microsoft 365 · 김PM</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/sheets.html" data-busy-role="office">
+      <div class="preview"><div style="height:100%;background:#fff;display:grid;grid-template-rows:14px 12px 1fr;font-size:5px">
+        <div style="background:#fff;border-bottom:1px solid #ddd;padding:2px 4px;color:#333;display:flex;gap:4px;align-items:center"><span style="background:#0f9d58;width:8px;height:8px;border-radius:1px"></span><span style="font-weight:600">Q2_매출분석_v8</span></div>
+        <div style="background:#f9f9f9;border-bottom:1px solid #ddd;padding:1px 4px;font-family:monospace;font-size:4.5px;color:#1a73e8">K42 · =SUMIFS(매출!G:G, ...)</div>
+        <div style="display:grid;grid-template-columns:18px repeat(6,1fr);grid-auto-rows:9px;font-size:4px;color:#222">
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0">A</div>
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0;padding:0 2px">권역</div>
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0;padding:0 2px">4월</div>
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0;padding:0 2px">5월</div>
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0;padding:0 2px">6월</div>
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0;padding:0 2px">YoY</div>
+          <div style="background:#f0f0f0;text-align:center;border:0.5px solid #e0e0e0;padding:0 2px">Q2</div>
+          <div style="background:#f8f8f8;text-align:center;border:0.5px solid #e0e0e0">2</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px">서울</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right">412</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right">468</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right">503</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right;color:#0f9d58">+12%</div>
+          <div style="border:0.5px solid #1a73e8;padding:0 2px;text-align:right;background:#e8f0fe;font-weight:700">1,383</div>
+          <div style="background:#f8f8f8;text-align:center;border:0.5px solid #e0e0e0">3</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px">부산</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right">218</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right">235</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right">241</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right;color:#0f9d58">+8%</div>
+          <div style="border:0.5px solid #e0e0e0;padding:0 2px;text-align:right;font-weight:700">694</div>
+        </div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#0f9d58">32 · SHEETS</span>
+        <div class="title">스프레드시트 (Sheets)</div>
+        <div class="desc">Q2_매출분석_v8 · K42 SUMIFS · 합계 ₩1,847M.</div>
+        <div class="row"><span class="kb">Google Sheets · ⭐ 즐겨찾기</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/teams.html" data-busy-role="office">
+      <div class="preview"><div style="height:100%;background:#f5f5f5;display:grid;grid-template-columns:28% 1fr;font-size:5px">
+        <div style="background:#5b5fc7;color:#fff;padding:4px"><div style="font-weight:700">성장팀</div><div style="opacity:0.85;margin-top:2px">📢 일반 <span style="background:#fff;color:#5b5fc7;padding:0 3px;border-radius:6px;font-size:4px">3</span></div><div style="opacity:0.7">마케팅</div><div style="opacity:0.7">데이터</div><div style="opacity:0.7;margin-top:3px;font-weight:600">엔지니어링</div><div style="opacity:0.7">devops <span style="background:#e74c3c;color:#fff;padding:0 3px;border-radius:6px;font-size:4px">12</span></div></div>
+        <div style="background:#fff;padding:3px;display:flex;flex-direction:column;gap:2px;font-size:4.5px">
+          <div><b style="color:#5b5fc7">김PM</b> 14:23 — Q2 KPI 자료 공유</div>
+          <div><b style="color:#5b5fc7">이수민</b> 14:24 — 확인했어요 👍</div>
+          <div><b style="color:#5b5fc7">박지훈</b> 14:25 — 디자인 시안 v3 어디?</div>
+          <div style="font-style:italic;color:#888">시스템: 박지훈님이 회의 시작 — 28분</div>
+          <div><b style="color:#5b5fc7">조대표</b> 14:40 — 이번 주말까지 부탁</div>
+        </div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#5b5fc7">33 · TEAMS</span>
+        <div class="title">팀 채널 (Teams)</div>
+        <div class="desc">성장팀 일반 · 11명 · 박지훈 회의 진행 중.</div>
+        <div class="row"><span class="kb">Microsoft Teams · 11 멤버</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/hris.html" data-busy-role="office">
+      <div class="preview"><div style="height:100%;background:#fafafa;display:grid;grid-template-rows:14px 1fr;font-size:5px">
+        <div style="background:#fff;border-bottom:2px solid #f7941d;padding:3px;display:flex;gap:6px;align-items:center"><span style="font-weight:700">사람관리</span><span style="opacity:0.6">대시보드</span></div>
+        <div style="padding:3px;display:grid;grid-template-columns:repeat(4,1fr) 1fr;gap:3px">
+          <div style="background:#fff;border-top:2px solid #f7941d;padding:2px;text-align:center"><div style="font-weight:700;font-size:9px">142</div><div style="font-size:4px;color:#666">전 직원</div></div>
+          <div style="background:#fff;border-top:2px solid #4285f4;padding:2px;text-align:center"><div style="font-weight:700;font-size:9px;color:#4285f4">7</div><div style="font-size:4px;color:#666">입사</div></div>
+          <div style="background:#fff;border-top:2px solid #34a853;padding:2px;text-align:center"><div style="font-weight:700;font-size:9px;color:#34a853">12</div><div style="font-size:4px;color:#666">휴가</div></div>
+          <div style="background:#fff;border-top:2px solid #9c27b0;padding:2px;text-align:center"><div style="font-weight:700;font-size:9px;color:#9c27b0">24</div><div style="font-size:4px;color:#666">평가</div></div>
+          <div style="background:#fff;padding:2px"><div style="font-size:4.5px;color:#888">A등급</div><div style="font-size:5.5px;font-weight:600;color:#f7941d">이수민</div><div style="font-size:4px;color:#999">상위 25%</div></div>
+        </div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#f7941d">34 · HRIS</span>
+        <div class="title">사람관리 (Workday)</div>
+        <div class="desc">142명 · 입사 7 · 휴가 신청 12 · 평가 진행 24.</div>
+        <div class="row"><span class="kb">Workday · 김PM (HR)</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/vscode.html" data-busy-role="dev">
+      <div class="preview"><div style="height:100%;background:#1e1e1e;display:grid;grid-template-columns:14px 30% 1fr;font-size:4.5px;color:#ddd;font-family:Consolas,monospace">
+        <div style="background:#333;display:flex;flex-direction:column;align-items:center;padding-top:3px;gap:4px;font-size:8px">📁<span style="opacity:0.5">🔍</span><span style="opacity:0.5">🌿</span></div>
+        <div style="background:#252526;padding:2px"><div style="opacity:0.6">growth-platform</div><div style="margin-left:4px">▾ src/</div><div style="margin-left:8px">App.tsx <span style="color:#fff">●</span></div><div style="margin-left:8px;opacity:0.6">index.tsx</div><div style="margin-left:4px;opacity:0.6">tests/</div><div style="margin-left:0;opacity:0.6">package.json</div></div>
+        <div style="padding:2px"><div style="background:#1e1e1e;color:#888"><span style="opacity:0.4">1</span> <span style="color:#c586c0">function</span> <span style="color:#dcdcaa">App</span>() {</div><div style="color:#888"><span style="opacity:0.4">2</span>   <span style="color:#c586c0">const</span> [data, set] = <span style="color:#dcdcaa">useState</span>(null);</div><div style="color:#888"><span style="opacity:0.4">3</span>   <span style="color:#c586c0">return</span> &lt;<span style="color:#4ec9b0">Dashboard</span>/&gt;</div><div style="color:#888"><span style="opacity:0.4">4</span> }</div><div style="color:#888;background:#2d2d30"><span style="opacity:0.4">5</span> <span style="background:#0e72eb;width:1px;height:8px;display:inline-block">|</span></div><div style="margin-top:3px;background:#000;color:#7ecf85;padding:1px 2px">$ pnpm dev</div><div style="background:#000;color:#bbb;padding:0 2px">VITE ready in 412 ms</div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#0e72eb">35 · VSCODE</span>
+        <div class="title">코드 에디터 (VS Code)</div>
+        <div class="desc">App.tsx · 3개 탭 · 터미널 활성 · 0 errors / 3 warnings.</div>
+        <div class="row"><span class="kb">growth-platform · master ⇡2</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/postman.html" data-busy-role="dev">
+      <div class="preview"><div style="height:100%;background:#2c2c2c;color:#ddd;display:grid;grid-template-rows:1fr 1fr;font-size:4.5px;font-family:Consolas,monospace">
+        <div style="padding:3px"><div style="display:flex;gap:3px;align-items:center"><span style="background:#26a65b;color:#fff;padding:0 4px;font-weight:700;border-radius:2px">GET</span><span style="background:#1e1e1e;padding:1px 4px;flex:1">api.growth.com/users/4382</span><span style="background:#ff6c37;color:#fff;padding:1px 5px;border-radius:2px;font-weight:700">Send</span></div><div style="margin-top:3px;font-size:4px;opacity:0.7">Headers (8) · Body · Tests</div><div style="margin-top:2px;background:#1e1e1e;padding:1px 3px;font-size:3.5px"><span style="color:#999">Authorization:</span> <span style="color:#ce9178">Bearer eyJh...</span></div></div>
+        <div style="background:#1e1e1e;padding:3px;border-top:1px solid #444"><div style="display:flex;gap:4px"><span style="background:#26a65b;color:#fff;padding:0 4px;border-radius:2px;font-weight:700">200 OK</span><span style="opacity:0.7">142ms · 2.4 KB</span></div><div style="margin-top:2px;font-size:3.5px"><span style="color:#9cdcfe">"id"</span>: <span style="color:#b5cea8">4382</span>,</div><div style="font-size:3.5px"><span style="color:#9cdcfe">"email"</span>: <span style="color:#ce9178">"kim@example.com"</span>,</div><div style="font-size:3.5px"><span style="color:#9cdcfe">"created_at"</span>: <span style="color:#ce9178">"2026-04-26"</span></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#ff6c37">36 · POSTMAN</span>
+        <div class="title">API 테스트 (Postman)</div>
+        <div class="desc">GET /users/4382 · 200 OK · 142ms · 5개 탭.</div>
+        <div class="row"><span class="kb">User API · PROD env</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/grafana.html" data-busy-role="dev">
+      <div class="preview"><div style="height:100%;background:#111217;color:#ddd;padding:3px;display:grid;grid-template-rows:auto 1fr;gap:2px;font-size:4px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px">
+          <div style="background:#1f1f23;padding:2px;text-align:center"><div style="color:#7ecf85;font-weight:700;font-size:7px">12.4k</div><div style="opacity:0.6">req/s</div></div>
+          <div style="background:#1f1f23;padding:2px;text-align:center"><div style="color:#ffb020;font-weight:700;font-size:7px">142ms</div><div style="opacity:0.6">p99</div></div>
+          <div style="background:#1f1f23;padding:2px;text-align:center"><div style="color:#7ecf85;font-weight:700;font-size:7px">0.04%</div><div style="opacity:0.6">err</div></div>
+          <div style="background:#1f1f23;padding:2px;text-align:center"><div style="color:#42a5f5;font-weight:700;font-size:7px">8.4k</div><div style="opacity:0.6">sess</div></div>
+        </div>
+        <div style="background:#1f1f23;padding:2px;position:relative">
+          <svg style="width:100%;height:100%" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,20 10,18 20,22 30,15 40,17 50,12 60,14 70,10 80,12 90,8 100,10" fill="none" stroke="#42a5f5" stroke-width="0.6"/><polyline points="0,25 10,24 20,23 30,22 40,21 50,20 60,19 70,18 80,17 90,16 100,15" fill="none" stroke="#7ecf85" stroke-width="0.6"/></svg>
+          <div style="position:absolute;top:1px;left:3px;font-size:3px;color:#888">latency p50/p95/p99</div>
+        </div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#F2741D">37 · GRAFANA</span>
+        <div class="title">옵저버빌리티</div>
+        <div class="desc">Production Overview · 8 panels · 1 critical alert.</div>
+        <div class="row"><span class="kb">Grafana · eu-west-1</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/kibana.html" data-busy-role="dev">
+      <div class="preview"><div style="height:100%;background:#fafbfc;color:#333;padding:3px;font-size:4px;display:grid;grid-template-rows:auto 14px 1fr;gap:2px">
+        <div style="background:#fff;border:1px solid #ddd;padding:2px;font-family:Consolas,monospace;font-size:3.5px;color:#00bfb3">service.name : <span style="color:#5b9bd5">"api-gateway"</span> and response.status_code &gt;= <span style="color:#d63838">500</span></div>
+        <div style="display:flex;align-items:flex-end;gap:1px;background:#fff;padding:1px"><div style="background:#5b9bd5;width:3%;height:30%"></div><div style="background:#5b9bd5;width:3%;height:50%"></div><div style="background:#5b9bd5;width:3%;height:40%"></div><div style="background:#5b9bd5;width:3%;height:70%"></div><div style="background:#5b9bd5;width:3%;height:60%"></div><div style="background:#5b9bd5;width:3%;height:80%"></div><div style="background:#5b9bd5;width:3%;height:90%"></div><div style="background:#5b9bd5;width:3%;height:100%"></div></div>
+        <div style="background:#fff;padding:2px;font-family:Consolas,monospace;font-size:3.5px;line-height:1.5;color:#444"><div><span style="color:#888">14:23:42</span> <span style="background:#d63838;color:#fff;padding:0 2px">ERR</span> api-prod-3 status=500</div><div><span style="color:#888">14:23:39</span> <span style="background:#5b9bd5;color:#fff;padding:0 2px">INFO</span> api-prod-1 ok</div><div><span style="color:#888">14:23:35</span> <span style="background:#f29100;color:#fff;padding:0 2px">WARN</span> retry attempt 2</div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#00bfb3">38 · KIBANA</span>
+        <div class="title">로그 검색 (Elastic)</div>
+        <div class="desc">8,432 hits · KQL · 25 fields · 2 failed shards.</div>
+        <div class="row"><span class="kb">Discover · logs-*</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/bloomberg.html" data-busy-role="finance">
+      <div class="preview"><div style="height:100%;background:#000;color:#ff8c00;padding:2px;font-family:Consolas,monospace;font-size:4px;display:grid;grid-template-rows:14px 1fr 1fr">
+        <div style="border-bottom:1px solid #333;padding:1px 3px;color:#ffcc00;font-weight:700">AAPL US Equity DES &lt;GO&gt;</div>
+        <div style="padding:2px;display:grid;grid-template-columns:1fr 1fr;gap:2px"><div><div style="font-size:7px;color:#fff">AAPL</div><div style="font-size:8px;color:#00ff66;font-weight:700">245.67 ▲</div><div style="opacity:0.7">+1.24 (+0.51%)</div><div style="opacity:0.6">Vol 42.4M</div></div><div style="position:relative"><svg viewBox="0 0 50 30" style="width:100%;height:100%"><polyline points="0,20 5,18 10,22 15,15 20,17 25,12 30,14 35,10 40,12 45,8 50,5" fill="none" stroke="#ff8c00" stroke-width="0.5"/></svg></div></div>
+        <div style="border-top:1px solid #333;padding:2px;color:#fff"><div style="color:#ffcc00">NEWS</div><div style="font-size:3.5px">14:23 GS Raises Target $260</div><div style="font-size:3.5px">14:18 Fed Holds at 5.25-5.50%</div><div style="font-size:3.5px;color:#00ff66">14:11 KOSPI -1.2%</div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#ff8c00">39 · BLOOMBERG</span>
+        <div class="title">Bloomberg Terminal</div>
+        <div class="desc">AAPL US Equity · 245.67 +0.51% · NEWS / GP / WMD.</div>
+        <div class="row"><span class="kb">MARKET OPEN · 4 functions</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/portfolio.html" data-busy-role="finance">
+      <div class="preview"><div style="height:100%;background:#fff;padding:3px;font-size:4.5px;color:#222;display:grid;grid-template-rows:auto auto 1fr;gap:3px;font-family:'Noto Serif KR',serif">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;color:#1a3360">WealthDesk</div><div style="background:#c4a35a;color:#fff;padding:0 4px;font-size:3.5px">A++</div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px"><div style="border-top:2px solid #1a3360;padding:1px"><div style="font-weight:700;font-size:6px">₩4.82억</div><div style="font-size:3px;color:#888">자산</div></div><div style="border-top:2px solid #c4a35a;padding:1px"><div style="font-weight:700;font-size:6px;color:#0f9d58">+12.4%</div><div style="font-size:3px;color:#888">YTD</div></div><div style="border-top:2px solid #1a3360;padding:1px"><div style="font-weight:700;font-size:6px">8.2%</div><div style="font-size:3px;color:#888">현금</div></div><div style="border-top:2px solid #c4a35a;padding:1px"><div style="font-weight:700;font-size:6px">5/10</div><div style="font-size:3px;color:#888">위험</div></div></div>
+        <div style="display:grid;grid-template-columns:30% 1fr;gap:3px"><div style="display:grid;place-items:center"><div style="width:24px;height:24px;border-radius:50%;background:conic-gradient(#1a3360 0 42%,#c4a35a 42% 70%,#42a5f5 70% 88%,#0f9d58 88% 96%,#888 96% 100%)"></div></div><div style="font-size:3.5px;color:#444"><div>주식 42% · 채권 28%</div><div style="margin-top:1px">대체 18% · 현금 8%</div><div style="margin-top:1px;color:#0f9d58">▲ ₩2.4M</div></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#c4a35a">40 · PORTFOLIO</span>
+        <div class="title">자산 관리 (PB)</div>
+        <div class="desc">이재민 고객 · ₩4.82억 · YTD +12.4% · 12종목.</div>
+        <div class="row"><span class="kb">WealthDesk · PB 김PM</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/audit.html" data-busy-role="finance">
+      <div class="preview"><div style="height:100%;background:#fff;padding:3px;font-size:4.5px;color:#222;display:grid;grid-template-rows:auto auto 1fr;gap:2px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;color:#1a3360">AuditPro</div><div style="background:#1a3360;color:#fff;padding:0 4px;font-size:3.5px">73%</div></div>
+        <div style="font-size:3.5px;color:#666">(주)성장식품 - 2025회계연도 / 이수민 회계사</div>
+        <div style="display:grid;grid-template-columns:35px 1fr 32px 32px 24px;gap:1px;font-size:3.5px;align-content:start"><div style="background:#f0f0f0;padding:1px 2px">코드</div><div style="background:#f0f0f0;padding:1px 2px">계정</div><div style="background:#f0f0f0;padding:1px 2px;text-align:right">전기</div><div style="background:#f0f0f0;padding:1px 2px;text-align:right">당기</div><div style="background:#f0f0f0;padding:1px 2px;text-align:center">⚠</div><div style="padding:1px 2px">110</div><div style="padding:1px 2px">현금</div><div style="padding:1px 2px;text-align:right">820M</div><div style="padding:1px 2px;text-align:right">894M</div><div style="text-align:center">●</div><div style="padding:1px 2px;background:#fff7d6">120</div><div style="padding:1px 2px;background:#fff7d6">매출채권</div><div style="padding:1px 2px;text-align:right;background:#fff7d6">3,824M</div><div style="padding:1px 2px;text-align:right;background:#fff7d6;font-weight:700">4,283M</div><div style="text-align:center;background:#fff7d6;color:#d63838">⚠</div><div style="padding:1px 2px">130</div><div style="padding:1px 2px">재고</div><div style="padding:1px 2px;text-align:right">2,148M</div><div style="padding:1px 2px;text-align:right">2,012M</div><div style="text-align:center"></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#1a3360">41 · AUDIT</span>
+        <div class="title">감사 워크페이퍼</div>
+        <div class="desc">(주)성장식품 · 2025FY · 진행 73% · 매출채권 검토 중.</div>
+        <div class="row"><span class="kb">AuditPro · 삼정KPMG · 이수민</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/whiteboard.html" data-busy-role="creative">
+      <div class="preview"><div style="height:100%;background:#fafafa;background-image:radial-gradient(rgba(0,0,0,0.08) 1px,transparent 1px);background-size:8px 8px;padding:5px;position:relative">
+        <div style="position:absolute;top:8px;left:8px;background:#fff59d;padding:3px 5px;border-radius:2px;font-size:4px;box-shadow:1px 1px 2px rgba(0,0,0,0.1);transform:rotate(-2deg)">신규 고객 +120명</div>
+        <div style="position:absolute;top:18px;left:60px;background:#bbdefb;padding:3px 5px;border-radius:2px;font-size:4px;box-shadow:1px 1px 2px rgba(0,0,0,0.1);transform:rotate(1deg)">MAU +15%</div>
+        <div style="position:absolute;top:42px;left:25px;background:#c8e6c9;padding:3px 5px;border-radius:2px;font-size:4px;box-shadow:1px 1px 2px rgba(0,0,0,0.1);transform:rotate(-1deg)">온보딩 4h→2h</div>
+        <div style="position:absolute;top:55px;left:80px;background:#f8bbd0;padding:3px 5px;border-radius:2px;font-size:4px;box-shadow:1px 1px 2px rgba(0,0,0,0.1);transform:rotate(2deg)">리텐션 +5%</div>
+        <div style="position:absolute;top:80px;left:15px;font-size:5px;color:#888">▲ 5명 접속 중</div>
+        <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"><line x1="50" y1="20" x2="80" y2="30" stroke="#888" stroke-width="0.5" stroke-dasharray="2,2"/></svg>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#fbc02d">42 · MIRO</span>
+        <div class="title">화이트보드 (Miro)</div>
+        <div class="desc">Q2 OKR 워크숍 · 5명 접속 · 18개 스티키.</div>
+        <div class="row"><span class="kb">Miro · 자동 저장됨</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/afterfx.html" data-busy-role="creative">
+      <div class="preview"><div style="height:100%;background:#1e1e1e;color:#ddd;padding:3px;font-size:4px;display:grid;grid-template-rows:1fr auto;gap:3px">
+        <div style="background:linear-gradient(135deg,#1a237e,#311b92,#5e35b1);position:relative;border-radius:2px;display:grid;place-items:center;color:#fff"><div style="font-weight:800;font-size:9px;text-shadow:0 0 6px rgba(255,255,255,0.5)">BRAND</div><div style="position:absolute;top:2px;left:2px;font-size:3px;color:#888">02:14:03</div></div>
+        <div style="background:#2a2a2a;padding:2px;display:grid;grid-template-columns:35% 1fr;gap:2px"><div style="font-size:3.5px"><div>● 메인 텍스트</div><div>● 로고 마스크</div><div style="color:#0e72eb">● 3D 카메라 ◆</div><div>● 배경</div></div><div style="background:#1e1e1e;padding:1px;position:relative"><div style="position:absolute;top:2px;left:30%;width:1px;height:80%;background:#fff"></div><svg style="position:absolute;inset:0" viewBox="0 0 100 30"><rect x="20" y="5" width="60" height="3" fill="#0e72eb" opacity="0.6"/><rect x="35" y="11" width="40" height="3" fill="#7ecf85" opacity="0.6"/><polygon points="30,17 33,15 36,17 33,19" fill="#ffd700"/></svg></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#0e72eb">43 · AFTERFX</span>
+        <div class="title">모션 그래픽</div>
+        <div class="desc">Q2 브랜드 오프닝 · 02:14:03 · 10 레이어 · RAM 미리보기.</div>
+        <div class="row"><span class="kb">Adobe After Effects 2026</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/obs.html" data-busy-role="creative">
+      <div class="preview"><div style="height:100%;background:#1e1e1e;color:#ddd;padding:3px;font-size:4px;display:grid;grid-template-rows:1fr auto;gap:2px">
+        <div style="background:linear-gradient(135deg,#3d4a5c,#4a5b75);position:relative;border-radius:2px;border:1px solid #FFCC00;display:grid;place-items:center"><div style="font-size:7px;color:#fff;font-weight:700">이번 분기 KPI</div><div style="position:absolute;top:2px;right:2px;background:#ff0000;color:#fff;padding:0 2px;font-size:3px;border-radius:2px;font-weight:700">🔴 LIVE</div><div style="position:absolute;top:2px;left:2px;color:#fff;font-size:3px">👁 142 · 01:34:22</div></div>
+        <div style="background:#2a2a2a;padding:1px;display:grid;grid-template-columns:repeat(6,1fr);gap:1px;height:18px"><div style="background:linear-gradient(to top,#0f9d58 60%,#fbbc04 80%,#ea4335 95%,transparent 95%)"></div><div style="background:linear-gradient(to top,#0f9d58 40%,transparent 40%)"></div><div style="background:linear-gradient(to top,#0f9d58 70%,#fbbc04 85%,transparent 85%)"></div><div style="background:linear-gradient(to top,#0f9d58 30%,transparent 30%)"></div><div style="background:linear-gradient(to top,#0f9d58 50%,transparent 50%)"></div><div style="background:#444"></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#ff0000">44 · OBS</span>
+        <div class="title">스트리밍 송출</div>
+        <div class="desc">사내 라이브 · 5,800 kbps · 6 채널 믹서 · 142명 시청 중.</div>
+        <div class="row"><span class="kb">OBS Studio · YouTube Live</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/aws.html" data-busy-role="ops">
+      <div class="preview"><div style="height:100%;background:#fff;font-size:4px;color:#222;display:grid;grid-template-rows:14px 1fr">
+        <div style="background:#232f3e;color:#fff;padding:3px;display:flex;align-items:center;gap:4px"><span style="color:#ff9900;font-weight:800">AWS</span><span style="opacity:0.7">EC2 &gt; Instances</span></div>
+        <div style="padding:2px;display:grid;grid-template-rows:auto 1fr;gap:2px"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;font-size:3.5px"><div style="background:#f0f3f5;padding:1px;text-align:center"><div style="font-weight:700">CPU 32%</div></div><div style="background:#f0f3f5;padding:1px;text-align:center"><div style="font-weight:700">Net 4.2GB</div></div><div style="background:#f0f3f5;padding:1px;text-align:center"><div style="font-weight:700">Mem 68%</div></div><div style="background:#fff3e0;padding:1px;text-align:center;border-left:2px solid #d63838"><div style="font-weight:700;color:#d63838">ALARM</div></div></div><div style="background:#f8f9fa;padding:1px;font-size:3.5px"><div>i-08abc1 · t3.medium · <span style="color:#0f9d58">running</span></div><div>i-08abc2 · m5.large · <span style="color:#0f9d58">running</span></div><div>i-08abc3 · c5.xlarge · <span style="color:#888">stopped</span></div><div>i-08abc4 · t3.micro · <span style="color:#0f9d58">running</span></div></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#ff9900">45 · AWS</span>
+        <div class="title">AWS Console</div>
+        <div class="desc">EC2 · ap-northeast-2 · 8 instances · 1 ALARM · $1,247.</div>
+        <div class="row"><span class="kb">Seoul · CloudWatch · S3</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/splunk.html" data-busy-role="ops">
+      <div class="preview"><div style="height:100%;background:#fff;color:#222;padding:3px;font-size:4px;display:grid;grid-template-rows:auto 12px 1fr;gap:2px">
+        <div style="background:#f5f5f5;border:1px solid #ddd;padding:2px;font-family:Consolas,monospace;font-size:3.5px"><div>index=production source=*-api*</div><div>| stats count by status</div></div>
+        <div style="display:flex;align-items:flex-end;gap:1px"><div style="background:#5b9bd5;width:5%;height:30%"></div><div style="background:#5b9bd5;width:5%;height:55%"></div><div style="background:#5b9bd5;width:5%;height:40%"></div><div style="background:#5b9bd5;width:5%;height:75%"></div><div style="background:#5b9bd5;width:5%;height:65%"></div><div style="background:#5b9bd5;width:5%;height:85%"></div><div style="background:#5b9bd5;width:5%;height:95%"></div><div style="background:#5b9bd5;width:5%;height:100%"></div></div>
+        <div style="font-family:Consolas,monospace;font-size:3.5px;line-height:1.5"><div>14:23 status=200 host=api-1 ms=142</div><div>14:23 status=500 host=api-3 ms=2400</div><div>14:23 status=200 host=api-2 ms=98</div><div style="color:#65a637">5,832,123 events</div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#65a637">46 · SPLUNK</span>
+        <div class="title">로그 검색 (SIEM)</div>
+        <div class="desc">5.8M events · 21 indexers · 12% 알림 발생.</div>
+        <div class="row"><span class="kb">Splunk · production index</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/matlab.html" data-busy-role="research">
+      <div class="preview"><div style="height:100%;background:#f5f5f5;font-size:4px;display:grid;grid-template-rows:1fr 1fr;font-family:Consolas,monospace">
+        <div style="background:#fff;border-bottom:1px solid #ddd;padding:2px"><div style="color:#0e72eb">function</div><div style="margin-left:6px;color:#222">[W,b,loss] = train(X,y,lr,N)</div><div style="margin-left:6px;color:#7ecf85">  % gradient descent</div><div style="margin-left:6px"><span style="color:#0e72eb">for</span> i=<span style="color:#b5cea8">1</span>:N</div><div style="margin-left:12px">[g,l] = grad(W,X,y);</div><div style="margin-left:12px">W = W - lr.*g;</div></div>
+        <div style="background:#000;color:#0f0;padding:2px"><div>&gt;&gt; [W,b,loss] = train(X,y,0.01,200);</div><div style="opacity:0.8">Epoch 200/200: loss = 0.028</div><div>&gt;&gt; figure; plot(loss);</div><div style="position:relative;height:14px;background:#0a0a0a;margin-top:1px"><svg viewBox="0 0 50 12" style="width:100%;height:100%"><polyline points="0,2 5,4 10,5 15,7 20,8 25,9 30,10 35,10 40,11 45,11 50,11" fill="none" stroke="#0f9d58" stroke-width="0.5"/></svg></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#f7941d">47 · MATLAB</span>
+        <div class="title">수치 계산 (MATLAB)</div>
+        <div class="desc">신경망 학습 · 200 epochs · loss 0.028 · 12 변수.</div>
+        <div class="row"><span class="kb">MATLAB R2026a · NeuralAnalysis</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="busy/hometax.html" data-busy-role="pro">
+      <div class="preview"><div style="height:100%;background:#fff;font-size:4.5px;color:#222;display:grid;grid-template-rows:auto auto 1fr">
+        <div style="background:#fff;border-bottom:2px solid #00747a;padding:2px;display:flex;justify-content:space-between"><span style="color:#00747a;font-weight:700">국세청 홈택스</span><span style="color:#666;font-size:3.5px">이재민 대표</span></div>
+        <div style="padding:2px;background:#f5f5f5;font-size:3.5px;color:#666">부가가치세 일반과세자 신고 · ① 정보 ✓ → ② 매출세액 ✓ → <b style="color:#00747a">③ 매입세액</b> → ④ 신고서 → ⑤ 완료</div>
+        <div style="padding:2px;display:grid;grid-template-rows:auto 1fr auto;gap:2px"><div style="background:#fffbe6;border-left:3px solid #faad14;padding:1px 3px;font-size:3.5px;color:#666">⚠ 전자세금계산서 · 신용카드 매입세액을 입력하세요</div><div style="background:#fff;border:1px solid #ddd;font-size:3px"><div style="background:#f0f0f0;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:1px 2px"><span>거래처</span><span>매수</span><span>공급가액</span><span>부가세</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:1px 2px;border-top:1px solid #eee">(주)IT솔루션 / 24 / 12,400K / 1,240K</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:1px 2px;border-top:1px solid #eee">㈜성장유통 / 18 / 8,200K / 820K</div><div style="background:#fffbe6;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:1px 2px;font-weight:700">합계 / 142 / 48,720K / 4,872K</div></div></div>
+      </div></div>
+      <div class="body-area">
+        <span class="tag" style="color:#00747a">48 · 홈택스</span>
+        <div class="title">부가세 신고</div>
+        <div class="desc">(주)성장식품 · 2026년 1기 신고 · 매입세액 입력 중.</div>
+        <div class="row"><span class="kb">국세청 홈택스 · 임시저장됨</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
   </div>
 
   <div class="hub-pagination">
@@ -1701,6 +2002,35 @@
 .tag.pv-tex-t{color:#569cd6}
 .tag.pv-hts-t{color:#ff3040}
 
+/* === Tour bar (샥샥 모드) === */
+.tour-bar {
+  display: flex; gap: 8px; padding: 8px 14px;
+  background: rgba(20, 22, 26, 0.55);
+  border-radius: 14px;
+  align-items: center; flex-wrap: wrap;
+  margin: 0 0 10px;
+  font-family: system-ui, sans-serif;
+}
+.tour-bar .label {
+  font-size: 11px; color: #aaa;
+  padding: 0 8px 0 2px; letter-spacing: 0.04em; text-transform: uppercase;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.tour-chip {
+  background: rgba(80, 80, 84, 0.55); color: #ddd; border: 0;
+  padding: 7px 14px; border-radius: 18px; cursor: pointer;
+  font-size: 13px; transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit;
+}
+.tour-chip:hover { background: rgba(248, 213, 105, 0.25); transform: scale(1.04); color: #fff; }
+.tour-chip:hover .count { color: #f8d569; }
+.tour-chip .count { opacity: 0.55; font-size: 11px; font-variant-numeric: tabular-nums; }
+.tour-chip .play {
+  display: inline-block; opacity: 0.6; margin-left: 2px; font-size: 10px;
+}
+.tour-chip:hover .play { opacity: 1; }
+
 /* === Hub pagination === */
 .hub-page { display: none; }
 .hub-page.hub-page-active { display: grid; }
@@ -1730,12 +2060,8 @@
 .hub-pagination .dot.active { background: #f8d569; transform: scale(1.4); }
 .hub-pagination .label { font-size: 11px; opacity: 0.7; min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
 
-/* === Page 2 — 6 new scenes (CRM/BI/GIS/PHOTO/ZOOM/DBA) === */
-/* Page 2 layout: 3 cols × 2 rows (sparser, breathing room) */
-.hub-page[data-page="2"].hub-page-active {
-  grid-template-columns: repeat(3, 1fr) !important;
-  grid-template-rows: repeat(2, 1fr) !important;
-}
+/* === Page 2 — 24 scenes total (CRM/BI/GIS/PHOTO/ZOOM/DBA + 18 new) ===
+   Same 6×4 grid as page 1. */
 
 .pv-crm { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; height:100%; padding:5px; background:#1e272e; font-size:5px; color:#ccc; }
 .pv-crm .col { background:#2a3038; padding:3px; border-radius:2px; display:flex; flex-direction:column; gap:2px; }
@@ -1823,6 +2149,35 @@ document.addEventListener('keydown', (e) => {
   if (k === 'ArrowLeft' || k === 'PageUp') { goPage(-1); e.preventDefault(); }
   else if (k === 'ArrowRight' || k === 'PageDown') { goPage(+1); e.preventDefault(); }
 });
+
+// Hub tour bar — click chip → start role tour
+(function() {
+  function init() {
+    document.querySelectorAll('.tour-bar .tour-chip').forEach((chip) => {
+      chip.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!window.Busy?.startTour) {
+          alert('투어 모드 준비 중... 잠시 후 다시 시도해주세요.');
+          return;
+        }
+        await window.Busy.startTour(chip.dataset.role, 6);
+      });
+    });
+    // Refresh counts dynamically from rotator's ROLE_GROUPS
+    if (window.Busy?.Rotator?.ROLE_GROUPS && window.Busy?.Rotator?.ALL_SCENES) {
+      const G = window.Busy.Rotator.ROLE_GROUPS;
+      const ALL = window.Busy.Rotator.ALL_SCENES.length;
+      document.querySelectorAll('.tour-chip').forEach((c) => {
+        const role = c.dataset.role;
+        const n = (role === 'mixed' || !G[role]) ? ALL : G[role].length;
+        const cnt = c.querySelector('.count');
+        if (cnt) cnt.textContent = String(n);
+      });
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
 
 // Hub pagination
 (function() {
